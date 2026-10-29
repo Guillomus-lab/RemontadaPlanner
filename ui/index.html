@@ -447,11 +447,24 @@
   .splashDots span:nth-child(2){animation-delay:.15s;background:var(--accent2);}
   .splashDots span:nth-child(3){animation-delay:.3s;background:#fbbf24;}
   @keyframes splashDotBounce{0%,80%,100%{transform:translateY(0);opacity:.5;}40%{transform:translateY(-8px);opacity:1;}}
+  .splashBar{z-index:1;width:220px;height:5px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:14px;}
+  #splashBarFill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2),#fbbf24);
+      animation:splashBarFill 2.4s cubic-bezier(.3,.6,.4,1) forwards;}
+  #splashBarFill.done{animation:none;width:100%;transition:width .25s ease;}
+  @keyframes splashBarFill{from{width:0;}to{width:92%;}}
+  .splashStatus{z-index:1;font-size:11.5px;color:var(--text-dim);font-weight:600;min-height:16px;transition:opacity .2s ease;}
+  #splashScreen{cursor:pointer;}
 
   /* --- Update popup (checked once at launch, user accepts or dismisses) --- */
   #updateOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:2600;
       display:none;align-items:center;justify-content:center;}
   #updateOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  .updProgress{margin:14px 0 4px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .updProgress .splashBar{margin-top:0;}
+  #updateBarFill{height:100%;width:8%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2),#fbbf24);
+      animation:updBar 1.6s ease-in-out infinite alternate;}
+  @keyframes updBar{from{width:15%;}to{width:85%;}}
+  .updStatus{font-size:11.5px;color:var(--text-dim);font-weight:600;}
   #updateCard{width:340px;text-align:center;padding:26px;border-radius:20px;
       box-shadow:0 24px 70px rgba(0,0,0,.55);animation:modalPop .3s cubic-bezier(.34,1.56,.64,1);}
   #updateCard .updIcon{font-size:38px;margin-bottom:8px;}
@@ -1321,6 +1334,8 @@
   <div class="splashLogo">📅</div>
   <div class="splashName">Remontada<br>Planner</div>
   <div class="splashDots"><span></span><span></span><span></span></div>
+  <div class="splashBar"><div id="splashBarFill"></div></div>
+  <div class="splashStatus" id="splashStatus">Chargement de ton planning…</div>
 </div>
 <div id="app">
   <header>
@@ -1453,7 +1468,8 @@
     <div class="updIcon">🚀</div>
     <div class="updTitle">Nouvelle version disponible</div>
     <div class="updText" id="updateText"></div>
-    <div class="updBtns">
+    <div class="updProgress" id="updateProgress" style="display:none"><div class="splashBar"><div id="updateBarFill"></div></div><div class="updStatus" id="updateStatus"></div></div>
+    <div class="updBtns" id="updateBtns">
       <button id="updateLaterBtn">Plus tard</button>
       <button id="updateGoBtn">Mettre à jour</button>
     </div>
@@ -2070,8 +2086,8 @@ async function loadState(){
   applyLightDark(state.settings.theme === 'light' ? 'light' : 'dark');
   HOUR_H = Math.min(140, Math.max(32, Number(state.settings.zoom) || 72));
   render();
-  hideSplash();
   renderSettingsTab();
+  await hideSplash(); // launch popups must not open behind the splash
   if(!firstLoadDone){
     firstLoadDone = true;
     if(viewMode==='day') scrollToNow();
@@ -3158,7 +3174,11 @@ function getAudioCtx(){
   if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
   return audioCtx;
 }
+// Every effect was tuned very low (hardly audible on laptop speakers): one
+// master multiplier lifts them all evenly without touching each sound.
+const SFX_VOLUME = 1.6;
 function playTone(freq, startTime, duration, gainPeak, type='sine'){
+  gainPeak = Math.min(0.25, gainPeak * SFX_VOLUME);
   // Cosmetic only: never let a Web Audio hiccup (missing device, policy...)
   // break the caller — level-up/check/toast/purchase all call this first.
   try{
@@ -7035,26 +7055,92 @@ setTimeout(hideSplash, 6000);
 // Fades the launch splash out once the first real render has happened.
 // Idempotent (checks it's not already hidden) so later loadState() calls
 // (e.g. after restoring a backup) never re-trigger it.
-let splashHidden = false;
-function hideSplash(){
-  if(splashHidden) return;
-  splashHidden = true;
-  document.getElementById('splashScreen').classList.add('hide');
+// The data loads in a few ms, but a short launch screen makes the app feel
+// finished: it stays at least SPLASH_MIN_MS, with a progress bar and status
+// lines. A click skips it once the data is ready. Launch popups (tutorial,
+// rollover, update...) wait for `splashDone` so they never open behind it.
+const SPLASH_MIN_MS = 2400;
+const SPLASH_STEPS = ['Chargement de ton planning…', 'On prépare tes priorités…', 'Mise à jour de ta série 🔥…',
+  'On réveille tes rappels ⏰…', 'C\'est parti !'];
+let splashHidden = false, splashFinished = false, splashResolve = null;
+const splashDone = new Promise(r=> splashResolve = r);
+let splashStep = 0;
+const splashStepTimer = setInterval(()=>{
+  if(splashStep >= SPLASH_STEPS.length - 2) return; // the last line is kept for the very end
+  splashStep++;
+  const el = document.getElementById('splashStatus');
+  if(el) el.textContent = SPLASH_STEPS[splashStep];
+}, Math.round(SPLASH_MIN_MS / (SPLASH_STEPS.length - 0.5)));
+function finishSplash(){
+  if(splashFinished) return;
+  splashFinished = true;
+  clearInterval(splashStepTimer);
+  document.getElementById('splashStatus').textContent = SPLASH_STEPS[SPLASH_STEPS.length - 1];
+  document.getElementById('splashBarFill').classList.add('done');
+  setTimeout(()=>{
+    document.getElementById('splashScreen').classList.add('hide');
+    splashResolve();
+  }, 300);
 }
+// called once the first render is done; resolves when the splash is gone
+function hideSplash(){
+  if(!splashHidden){
+    splashHidden = true;
+    setTimeout(finishSplash, Math.max(0, SPLASH_MIN_MS - performance.now()));
+  }
+  return splashDone;
+}
+document.getElementById('splashScreen').addEventListener('click', ()=>{ if(splashHidden) finishSplash(); });
 
 // One-shot update check at launch, surfaced as a small popup (not a nag):
 // the user explicitly accepts (opens the release page) or dismisses it, and
 // a dismissal is remembered per-version so it won't reappear for the same release.
+async function installUpdate(res){
+  const btns = document.getElementById('updateBtns');
+  const prog = document.getElementById('updateProgress');
+  const status = document.getElementById('updateStatus');
+  btns.style.display = 'none';
+  prog.style.display = '';
+  status.textContent = 'Enregistrement de tes données…';
+  await persist();
+  while(saveInFlight) await new Promise(r=> setTimeout(r, 50));
+  status.textContent = 'Téléchargement de la nouvelle version…';
+  const out = await window.pywebview.api.install_update().catch(err=> ({ok:false, manual:true, error:String(err)}));
+  if(out && out.ok){
+    persistBlocked = true; // this window is about to close
+    status.textContent = 'Installée ! Redémarrage…';
+    return;
+  }
+  // failure: the current version is untouched, offer the manual way
+  prog.style.display = 'none';
+  btns.style.display = '';
+  document.getElementById('updateText').textContent = `${(out && out.error) || 'La mise à jour a échoué.'} Tu peux la télécharger depuis la page GitHub.`;
+  const go = document.getElementById('updateGoBtn');
+  go.textContent = 'Ouvrir la page';
+  go.onclick = ()=>{
+    window.pywebview.api.open_url((out && out.url) || res.url);
+    document.getElementById('updateOverlay').classList.remove('show');
+  };
+}
+
 function checkForUpdate(){
-  window.pywebview.api.check_update().then(res=>{
+  window.pywebview.api.check_update().then(async res=>{
     if(!res || !res.update_available) return;
+    await splashDone;
     if(localStorage.getItem('updateDismissed') === res.latest_version) return;
+    const auto = !!res.can_auto_update;
     document.getElementById('updateText').textContent =
-      `${res.release_name || res.latest_version} est disponible (tu utilises la ${res.current_version}).`;
+      `${res.release_name || res.latest_version} est disponible (tu utilises la ${res.current_version}).`
+      + (auto ? ' L\'app se met à jour toute seule et redémarre, tes données ne bougent pas.' : '');
+    document.getElementById('updateGoBtn').textContent = auto ? 'Mettre à jour maintenant' : 'Mettre à jour';
     document.getElementById('updateOverlay').classList.add('show');
-    document.getElementById('updateGoBtn').onclick = ()=>{
-      window.pywebview.api.open_url(res.url);
-      document.getElementById('updateOverlay').classList.remove('show');
+    document.getElementById('updateGoBtn').onclick = async ()=>{
+      if(!auto){
+        window.pywebview.api.open_url(res.url);
+        document.getElementById('updateOverlay').classList.remove('show');
+        return;
+      }
+      await installUpdate(res);
     };
     document.getElementById('updateLaterBtn').onclick = ()=>{
       localStorage.setItem('updateDismissed', res.latest_version);

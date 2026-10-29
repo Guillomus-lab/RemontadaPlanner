@@ -2,6 +2,7 @@ import datetime
 import glob
 import json
 import os
+import shutil
 import subprocess
 import sys
 import threading
@@ -239,11 +240,125 @@ def _fetch_latest_release():
     tag = payload.get("tag_name")
     if not tag:
         return None
+    asset = next((a for a in payload.get("assets") or [] if a.get("name") == UPDATE_ASSET_NAME), None)
     return {
         "tag": tag,
         "name": payload.get("name") or tag,
         "url": payload.get("html_url") or RELEASES_PAGE_URL,
+        "asset_url": (asset or {}).get("browser_download_url") or "",
+        # GitHub publishes the asset's SHA-256: the download is checked against it
+        "asset_sha256": ((asset or {}).get("digest") or "").replace("sha256:", "").lower(),
     }
+
+
+# ---------- In-app update (exe only) ----------
+# Windows can't overwrite a running .exe, but it can rename it: the new exe is
+# extracted next to it, the running one is renamed to .old, the new one takes
+# its name, then the app restarts on it. The .old file is deleted on next launch.
+UPDATE_ASSET_NAME = "RemontadaPlanner.zip"
+UPDATE_EXE_NAME = "RemontadaPlanner.exe"
+_DOWNLOAD_PREFIXES = (
+    "https://github.com/Guillomus-lab/RemontadaPlanner/releases/download/",
+)
+_latest_release = None  # filled by check_update, used by install_update
+
+
+def _running_exe():
+    """Path of the running RemontadaPlanner.exe, or None when run from sources."""
+    if not getattr(sys, "frozen", False) or sys.platform != "win32":
+        return None
+    return os.path.abspath(sys.executable)
+
+
+def _cleanup_old_exe():
+    exe = _running_exe()
+    if exe and os.path.exists(exe + ".old"):
+        try:
+            os.remove(exe + ".old")
+        except OSError:
+            pass  # still locked: retried on the next launch
+
+
+def _download(url, dest, timeout=60):
+    import hashlib
+
+    req = urllib.request.Request(url, headers={"User-Agent": "RemontadaPlanner"})
+    sha = hashlib.sha256()
+    with urllib.request.urlopen(req, timeout=timeout) as resp, open(dest, "wb") as f:
+        while True:
+            chunk = resp.read(256 * 1024)
+            if not chunk:
+                break
+            sha.update(chunk)
+            f.write(chunk)
+    return sha.hexdigest()
+
+
+def _install_update(release):
+    import tempfile
+    import zipfile
+
+    exe = _running_exe()
+    if not exe:
+        return {"ok": False, "manual": True, "error": "Mise à jour auto disponible seulement dans l'app installée (.exe)."}
+    url = release.get("asset_url") or ""
+    if not url.startswith(_DOWNLOAD_PREFIXES):
+        return {"ok": False, "manual": True, "error": "Fichier de mise à jour introuvable."}
+    exe_dir = os.path.dirname(exe)
+    new_exe = exe + ".new"
+    tmp_dir = tempfile.mkdtemp(prefix="remontada-update-")
+    zip_path = os.path.join(tmp_dir, UPDATE_ASSET_NAME)
+    try:
+        digest = _download(url, zip_path)
+        expected = release.get("asset_sha256") or ""
+        if expected and digest != expected:
+            return {"ok": False, "manual": True, "error": "Le téléchargement est abîmé (somme de contrôle différente)."}
+        with zipfile.ZipFile(zip_path) as z:
+            if UPDATE_EXE_NAME not in z.namelist():
+                return {"ok": False, "manual": True, "error": "Le zip ne contient pas l'app."}
+            with z.open(UPDATE_EXE_NAME) as src, open(new_exe, "wb") as dst:
+                shutil.copyfileobj(src, dst)
+            # keep the readme next to the exe up to date too
+            if "LISEZMOI.txt" in z.namelist():
+                try:
+                    with z.open("LISEZMOI.txt") as src, open(os.path.join(exe_dir, "LISEZMOI.txt"), "wb") as dst:
+                        dst.write(src.read())
+                except OSError:
+                    pass
+        if os.path.exists(exe + ".old"):
+            os.remove(exe + ".old")
+        os.replace(exe, exe + ".old")  # allowed on a running exe
+        try:
+            os.replace(new_exe, exe)
+        except OSError:
+            os.replace(exe + ".old", exe)  # put the working version back
+            raise
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError, zipfile.BadZipFile) as e:
+        try:
+            if os.path.exists(new_exe):
+                os.remove(new_exe)
+        except OSError:
+            pass
+        return {"ok": False, "manual": True, "error": f"Mise à jour impossible : {e}"}
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+    return {"ok": True, "exe": exe}
+
+
+def _restart(exe):
+    """Starts the new exe (it waits for this one to close, see
+    _already_running) then closes this window."""
+    flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+    subprocess.Popen([exe, "--after-update"], cwd=os.path.dirname(exe), creationflags=flags, close_fds=True)
+
+    def _close():
+        for w in list(webview.windows):
+            try:
+                w.destroy()
+            except Exception:
+                pass
+
+    threading.Timer(0.8, _close).start()
 
 
 def _notification_text(value, limit=220):
@@ -264,7 +379,6 @@ def _register_toast_app_id():
     if _toast_registered or sys.platform != "win32":
         return _toast_registered
     try:
-        import shutil
         import winreg
 
         # Copy the icon to a stable place: in the PyInstaller build, _MEIPASS
@@ -444,8 +558,6 @@ class Api:
         try:
             with _save_lock:
                 if os.path.exists(DATA_FILE):
-                    import shutil
-
                     shutil.copyfile(DATA_FILE, f"{DATA_FILE}.avant-import-{stamp}")
                 _atomic_write(DATA_FILE, data)
         except OSError as e:
@@ -456,9 +568,11 @@ class Api:
         """Called once at launch by the UI. Runs on pywebview's own call
         thread (not the UI thread) so the network round-trip never freezes
         the window; any failure just means 'no update info available'."""
+        global _latest_release
         release = _fetch_latest_release()
         if not release:
             return {"update_available": False}
+        _latest_release = release
         is_newer = _parse_version(release["tag"]) > _parse_version(APP_VERSION)
         return {
             "update_available": is_newer,
@@ -466,7 +580,25 @@ class Api:
             "latest_version": release["tag"],
             "release_name": release["name"],
             "url": release["url"],
+            # the app can download and install it by itself (exe + zip asset found)
+            "can_auto_update": bool(_running_exe() and release.get("asset_url")),
         }
+
+    def install_update(self):
+        """'Mettre à jour' in the update popup: download, check, swap the exe,
+        restart. Any failure leaves the current version untouched."""
+        release = _latest_release or _fetch_latest_release()
+        if not release or _parse_version(release["tag"]) <= _parse_version(APP_VERSION):
+            return {"ok": False, "error": "Aucune mise à jour à installer."}
+        result = _install_update(release)
+        if result.get("ok"):
+            try:
+                _restart(result["exe"])
+            except OSError as e:
+                return {"ok": False, "manual": True, "error": f"Installée, mais redémarrage impossible : {e}. Relance l'app."}
+            return {"ok": True}
+        result["url"] = release.get("url") or RELEASES_PAGE_URL
+        return result
 
     def open_url(self, url):
         """Opens a link (e.g. the release page) in the user's default
@@ -565,8 +697,19 @@ def _already_running():
     # clobber the thread's last-error value between the two calls).
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel32.CreateMutexW.restype = ctypes.c_void_p
-    _mutex_handle = kernel32.CreateMutexW(None, False, "Global\\RemontadaPlannerSingleInstance")
-    return ctypes.get_last_error() == 183  # ERROR_ALREADY_EXISTS
+    kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
+    # right after an update, the old version is still closing: wait for it
+    tries = 40 if "--after-update" in sys.argv else 1
+    for i in range(tries):
+        _mutex_handle = kernel32.CreateMutexW(None, False, "Global\\RemontadaPlannerSingleInstance")
+        if ctypes.get_last_error() != 183:  # ERROR_ALREADY_EXISTS
+            return False
+        if i < tries - 1:
+            kernel32.CloseHandle(_mutex_handle)
+            import time
+
+            time.sleep(0.25)
+    return True
 
 
 def main():
@@ -581,6 +724,7 @@ def main():
             0x40,  # MB_ICONINFORMATION
         )
         sys.exit(0)
+    _cleanup_old_exe()
 
     # Works both as a plain script and as a PyInstaller --onefile bundle
     # (PyInstaller extracts bundled data to sys._MEIPASS at runtime)

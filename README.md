@@ -43,16 +43,18 @@ uv venv .venv
 
 ### Si tu utilises l'exe téléchargé
 
-L'app vérifie automatiquement s'il existe une nouvelle version au lancement
-(appel à l'API GitHub Releases du dépôt). Si une mise à jour est disponible,
-une popup s'affiche avec deux choix :
-- **Mettre à jour** : ouvre la page de la release dans ton navigateur pour
-  télécharger le nouvel exe.
-- **Plus tard** : ferme la popup ; elle ne réapparaîtra pas pour cette même
+L'app vérifie au lancement s'il existe une nouvelle version (API GitHub
+Releases du dépôt). Si oui, une fenêtre propose deux choix :
+- **Mettre à jour maintenant** : l'app télécharge la nouvelle version, vérifie
+  qu'elle n'est pas abîmée (somme de contrôle SHA-256 publiée par GitHub),
+  remplace l'exe et redémarre toute seule. Tes données ne bougent pas (elles
+  sont stockées à part, pas dans l'exe). Si quelque chose échoue, la version
+  actuelle reste intacte et la fenêtre propose d'ouvrir la page de téléchargement.
+- **Plus tard** : ferme la fenêtre ; elle ne réapparaîtra pas pour cette même
   version (mais réapparaîtra à la version suivante).
 
-Remplace simplement l'ancien `RemontadaPlanner.exe` par le nouveau : tes
-données ne bougent pas (elles sont stockées à part, pas dans l'exe).
+La mise à jour automatique existe à partir de la v1.2.1 : depuis une version
+plus ancienne, il faut une dernière fois télécharger le zip et remplacer l'exe.
 
 Pas de connexion internet ou API GitHub indisponible : la vérification échoue
 silencieusement, l'app démarre normalement.
