@@ -1397,6 +1397,9 @@
               <option value="30">30 min avant</option>
             </select>
           </div>
+          <div class="settingsBtnRow">
+            <button id="testNotifyBtn">Tester la notification</button>
+          </div>
         </div>
         <div class="settingsBlock">
           <h4>⚖️ Charge quotidienne</h4>
@@ -5844,6 +5847,27 @@ document.getElementById('remindersToggle').onchange = (e)=>{
   if(e.target.checked){
     checkTaskReminders();
     showToast({icon:'⏰', text:'Rappels activés', sub:'Une notification Windows + un toast avant chaque tâche.'});
+  }
+};
+document.getElementById('testNotifyBtn').onclick = async (e)=>{
+  const btn = e.currentTarget;
+  const api = window.pywebview && window.pywebview.api;
+  if(!api || !api.test_notify){
+    showToast({icon:'⚠️', text:'Notifications indisponibles', sub:'Lance l\'app de bureau pour tester.'});
+    return;
+  }
+  btn.disabled = true;
+  try{
+    const res = await api.test_notify();
+    if(res && res.ok){
+      showToast({icon:'✅', text:'Notification envoyée', sub:'Rien en bas à droite ? Vérifie le mode Ne pas déranger / Assistant de concentration.'});
+    } else {
+      showToast({icon:'⚠️', text:'La notification a échoué', sub:(res && res.error) || 'Erreur inconnue'});
+    }
+  }catch(err){
+    showToast({icon:'⚠️', text:'La notification a échoué', sub:String(err && err.message || err)});
+  }finally{
+    btn.disabled = false;
   }
 };
 document.getElementById('reminderLead').onchange = (e)=>{

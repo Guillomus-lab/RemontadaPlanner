@@ -246,23 +246,58 @@ def _notification_text(value, limit=220):
     return text.strip()[:limit]
 
 
-def _windows_toast(title, message):
-    """Best-effort Windows toast. Tries the optional `winotify` package first
-    (nicest result), then falls back to a WinRT toast through PowerShell, which
-    ships with Windows and needs no dependency. Returns quickly: the toast is
-    fire-and-forget, reminders must never block the UI thread."""
+# Windows only shows toasts for an AppUserModelID it knows. An unknown id is
+# dropped silently (no error), so we register ours under HKCU (no admin
+# needed) with a display name and icon before the first toast.
+TOAST_APP_ID = "Guillomus.RemontadaPlanner"
+TOAST_ICON = os.path.join(APP_DIR, "app.ico")
+_toast_registered = False
+
+
+def _register_toast_app_id():
+    global _toast_registered
+    if _toast_registered or sys.platform != "win32":
+        return _toast_registered
+    try:
+        import shutil
+        import winreg
+
+        # Copy the icon to a stable place: in the PyInstaller build, _MEIPASS
+        # is a temp folder that changes on every launch.
+        base_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+        src_icon = os.path.join(base_dir, "app.ico")
+        if os.path.isfile(src_icon) and not os.path.isfile(TOAST_ICON):
+            shutil.copyfile(src_icon, TOAST_ICON)
+        key_path = rf"Software\Classes\AppUserModelId\{TOAST_APP_ID}"
+        with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE) as key:
+            winreg.SetValueEx(key, "DisplayName", 0, winreg.REG_SZ, "Remontada Planner")
+            if os.path.isfile(TOAST_ICON):
+                winreg.SetValueEx(key, "IconUri", 0, winreg.REG_SZ, TOAST_ICON)
+        _toast_registered = True
+    except Exception:
+        pass
+    return _toast_registered
+
+
+def _windows_toast(title, message, wait=False):
+    """Windows toast for task reminders. Tries the optional `winotify` package
+    first, then a WinRT toast through PowerShell (ships with Windows, no
+    dependency). Reminders are fire-and-forget; `wait=True` (the "Tester"
+    button) waits for PowerShell so a failure can be shown to the user."""
     title = _notification_text(title) or "Remontada Planner"
     message = _notification_text(message, 400)
+    if sys.platform != "win32":
+        return {"ok": False, "error": "notifications Windows uniquement"}
+    _register_toast_app_id()
+
     try:
         from winotify import Notification  # type: ignore
 
-        Notification(app_id="Remontada Planner", title=title, msg=message, duration="short").show()
+        icon = TOAST_ICON if os.path.isfile(TOAST_ICON) else ""
+        Notification(app_id=TOAST_APP_ID, title=title, msg=message, icon=icon, duration="short").show()
         return {"ok": True, "mode": "winotify"}
     except Exception:
         pass
-
-    if sys.platform != "win32":
-        return {"ok": False, "error": "notifications Windows uniquement"}
 
     xml = (
         '<toast><visual><binding template="ToastGeneric">'
@@ -279,17 +314,20 @@ def _windows_toast(title, message):
         "$xml = New-Object Windows.Data.Xml.Dom.XmlDocument;"
         f"$xml.LoadXml('{xml_literal}');"
         "$toast = New-Object Windows.UI.Notifications.ToastNotification $xml;"
-        "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Remontada Planner').Show($toast);"
+        f"[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('{TOAST_APP_ID}').Show($toast);"
     )
+    cmd = ["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", script]
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
     try:
-        subprocess.Popen(
-            ["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", script],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-        )
+        if not wait:
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags)
+            return {"ok": True, "mode": "powershell"}
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=20, creationflags=flags)
+        if res.returncode != 0:
+            err = (res.stderr or res.stdout or "").strip().splitlines()
+            return {"ok": False, "error": err[0][:200] if err else f"code {res.returncode}"}
         return {"ok": True, "mode": "powershell"}
-    except OSError as e:
+    except (OSError, subprocess.SubprocessError) as e:
         return {"ok": False, "error": str(e)}
 
 
@@ -358,6 +396,10 @@ class Api:
     def notify(self, title, message):
         """Windows toast used by task reminders. Fire-and-forget."""
         return _windows_toast(title, message)
+
+    def test_notify(self):
+        """'Tester' button in Settings: same toast, but waits for the result."""
+        return _windows_toast("Remontada Planner", "Les rappels Windows fonctionnent ✅", wait=True)
 
     def send_discord(self, webhook_url, content):
         """Weekly recap to a Discord webhook (e.g. the Luron bot's channel)."""
