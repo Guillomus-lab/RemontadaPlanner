@@ -147,6 +147,14 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
   (supersets pour les séances longues), retour au calme et conseils. Générées par
   `ui/workouts.js` (bibliothèque d'exercices + générateur). On peut garder la
   séance dans la note de la tâche ou lancer le minuteur.
+- Sidequest « Arrêter » (menu ⋯) : suivi de l'arrêt du tabac, de l'alcool ou
+  d'une autre habitude. Compteur, argent économisé, unités évitées, étapes santé
+  (tabac : repères OMS / Tabac Info Service), tes propres raisons, bouton
+  « 🌊 J'ai une envie » (minuteur de 3 min, respiration guidée, idées pour
+  changer d'idée), écarts notés sans remise à zéro des progrès, phrases de
+  motivation, boîte à outils et numéros d'aide. Pour l'alcool, un mini
+  questionnaire recommande un avis médical en cas de risque de sevrage.
+  Contenu dans `ui/quit.js`.
 - Concentration : bouton « ▶ Focus » au survol de chaque tâche du jour, et zone
   « En ce moment » dans la barre du jour pour la tâche en cours.
 - Sauvegarde de tes données (Profil → Réglages) : export dans un fichier et

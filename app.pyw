@@ -57,7 +57,7 @@ BACKUPS_TO_KEEP = 30
 SCHEMA_VERSION = 5
 
 # Bump this on every release alongside a matching GitHub tag (vX.Y.Z) / Release.
-APP_VERSION = "1.3.1"
+APP_VERSION = "1.4.0"
 UPDATE_CHECK_URL = "https://api.github.com/repos/Guillomus-lab/RemontadaPlanner/releases/latest"
 RELEASES_PAGE_URL = "https://github.com/Guillomus-lab/RemontadaPlanner/releases/latest"
 
@@ -103,6 +103,8 @@ DEFAULT_DATA = {
     "weekReviews": {},
     # weekly menus: { "2026-11-02": {"0-dej": "<recipe name>", "0-din": ..., ...} } (0 = Monday)
     "mealPlans": {},
+    # "quit" sidequests: [{id, kind, label, start, perDay, unitCost, reasons, lapses, cravings, seenMilestones}]
+    "quits": [],
     # recurring tasks: {id,title,start,duration,category,days:[0-6],from,until,skip:[dates]}
     "routines": [],
     # regularity challenges: {id,title,category,keywords,length,start,status,...}
