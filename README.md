@@ -30,7 +30,7 @@ uv venv .venv
 
 ## Mise à jour
 
-### Si tu utilises l'exe installé
+### Si tu utilises l'exe téléchargé
 
 L'app vérifie automatiquement s'il existe une nouvelle version au lancement
 (appel à l'API GitHub Releases du dépôt). Si une mise à jour est disponible,
@@ -61,8 +61,9 @@ le `.vbs`/`.bat`) après le `git pull`.
 
 1. Bump `APP_VERSION` dans `app.pyw`.
 2. Commit, tag (`git tag vX.Y.Z`), push (`git push && git push --tags`).
-3. `gh release create vX.Y.Z dist/RemontadaPlanner.exe --title "vX.Y.Z" --notes "..."`
-   (ou crée la release depuis l'interface GitHub).
+3. `gh release create vX.Y.Z dist/RemontadaPlanner.zip --title "vX.Y.Z" --notes "..."`
+   (ou crée la release depuis l'interface GitHub). Un seul lien de téléchargement —
+   le zip contient l'exe + le LISEZMOI — pour ne pas perdre les gens avec plusieurs choix.
 
 La vérification de mise à jour compare `APP_VERSION` au tag de la dernière
 release publiée sur `Guillomus-lab/RemontadaPlanner` — pense à publier une
