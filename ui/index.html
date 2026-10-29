@@ -601,6 +601,30 @@
       border-radius:10px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;}
   #dayThemesClose:hover{background:var(--surface3);}
 
+  /* --- First-launch onboarding tutorial (coachmarks) --- */
+  #onboardingOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(2px);
+      z-index:3000;display:none;}
+  #onboardingOverlay.show{display:block;animation:overlayIn .15s ease;}
+  #onboardingTooltip{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:16px;
+      padding:20px;width:300px;max-width:88vw;box-shadow:0 24px 60px rgba(0,0,0,.5);z-index:3002;
+      animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);}
+  #onboardingTooltip.centered{left:50%;top:50%;transform:translate(-50%,-50%)!important;width:340px;text-align:center;}
+  #onboardingStepCount{font-size:11px;color:var(--text-faint);font-weight:700;margin-bottom:8px;letter-spacing:.5px;
+      text-transform:uppercase;}
+  #onboardingText{font-size:14px;color:var(--text);line-height:1.55;margin-bottom:16px;}
+  #onboardingBtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  #onboardingSkip{background:transparent;border:none;color:var(--text-faint);font-size:11px;cursor:pointer;
+      text-decoration:underline;padding:4px 0;}
+  #onboardingPrev,#onboardingNext{border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;}
+  #onboardingPrev{background:var(--surface2);border:1px solid var(--border);color:var(--text);}
+  #onboardingNext{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+      margin-left:auto;}
+  #onboardingPrev:hover,#onboardingNext:hover{filter:brightness(1.08);}
+  .onboardingHighlight{position:relative!important;z-index:3001!important;border-radius:10px;
+      animation:onboardingPulse 1.4s ease-in-out infinite;}
+  @keyframes onboardingPulse{0%,100%{box-shadow:0 0 0 2px var(--accent),0 0 16px 2px var(--accent-soft);}
+      50%{box-shadow:0 0 0 3px var(--accent2),0 0 28px 6px var(--accent-soft);}}
+
   /* --- Custom confirm/alert/prompt modal (replaces native popups) --- */
   #confirmOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:2000;
       display:none;align-items:center;justify-content:center;}
@@ -888,6 +912,7 @@
     <div id="progressWrap"><span id="dayBadge">🌱</span><span id="progressLabel">0/0</span><div id="progressBarOuter"><div id="progressBarInner"></div></div></div>
     <div class="toolGroup">
       <button id="recapBtn" class="navbtn" title="Récap">🥧</button>
+      <button id="tutorialBtn" class="navbtn" title="Revoir le tutoriel">🎓</button>
       <button id="refreshBtn" class="navbtn" title="Rafraîchir les données">🔄</button>
       <button id="zoomOutBtn" class="navbtn" title="Zoom -">−</button>
       <button id="zoomInBtn" class="navbtn" title="Zoom +">+</button>
@@ -1002,6 +1027,18 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="onboardingOverlay">
+  <div id="onboardingTooltip">
+    <div id="onboardingStepCount"></div>
+    <div id="onboardingText"></div>
+    <div id="onboardingBtns">
+      <button id="onboardingSkip">Passer le tutoriel</button>
+      <button id="onboardingPrev">Précédent</button>
+      <button id="onboardingNext">Suivant</button>
     </div>
   </div>
 </div>
@@ -1290,6 +1327,7 @@ async function loadState(){
     firstLoadDone = true;
     if(viewMode==='day') scrollToNow();
     if(!nick() && !state.profile.askedName) setTimeout(askNickname, 700);
+    if(!state.onboardingSeen) setTimeout(startOnboarding, 500);
   }
 }
 
@@ -4065,6 +4103,93 @@ function initialLoad(){ if(loadStarted) return; loadStarted = true; loadState();
 window.addEventListener('pywebviewready', initialLoad);
 // fallback if event already fired before listener attached
 setTimeout(()=>{ if(window.pywebview && window.pywebview.api) initialLoad(); }, 300);
+
+// --- First-launch onboarding tutorial (coachmarks) ---------------------------
+// Each step either targets a selector (highlighted with a glowing ring, its
+// z-index briefly boosted above the dim overlay) or has target:null for a
+// centered intro/outro card. 'final' swaps the Next button for the closer.
+const ONBOARDING_STEPS = [
+  {target:null, text:"Bienvenue sur Remontada Planner ! 👋 Ton organiseur du quotidien, qui te récompense pour chaque tâche accomplie. Petit tour du propriétaire en quelques étapes ?"},
+  {target:'#openAddBtn', text:"Clique ici pour ajouter une nouvelle tâche à ta journée."},
+  {target:'#viewSwitch', text:"Bascule entre les vues Jour, Semaine et Mois selon ce que tu veux organiser."},
+  {target:'#catList', text:"Tes tâches sont colorées par catégorie — tu peux créer et personnaliser les tiennes ici."},
+  {target:'#timelineWrap', text:"Coche une tâche quand elle est terminée pour gagner de l'XP et quelques pièces 🪙 au passage !"},
+  {target:'#levelPill', text:"Ton profil : niveau, succès débloqués, boutique et avatar — tout se trouve ici."},
+  {target:'#recapBtn', text:"Le récap 🥧 affiche un camembert de la répartition de ton temps par catégorie."},
+  {target:null, text:"Et voilà, tu es prêt(e) ! Amuse-toi à planifier tes journées et à monter de niveau. 🚀", final:true},
+];
+let onboardingStep = 0, onboardingHighlighted = null;
+
+function startOnboarding(){
+  onboardingStep = 0;
+  document.getElementById('onboardingOverlay').classList.add('show');
+  renderOnboardingStep();
+}
+function clearOnboardingHighlight(){
+  if(onboardingHighlighted){
+    onboardingHighlighted.classList.remove('onboardingHighlight');
+    onboardingHighlighted.style.zIndex = '';
+    onboardingHighlighted = null;
+  }
+}
+function positionOnboardingTooltip(el, tooltip){
+  const r = el.getBoundingClientRect();
+  const tw = tooltip.offsetWidth || 300, th = tooltip.offsetHeight || 150;
+  let top = r.bottom + 14;
+  let left = r.left;
+  if(top + th > window.innerHeight - 10) top = Math.max(10, r.top - th - 14);
+  if(left + tw > window.innerWidth - 10) left = window.innerWidth - tw - 10;
+  if(left < 10) left = 10;
+  if(top < 10) top = 10;
+  tooltip.style.top = top + 'px';
+  tooltip.style.left = left + 'px';
+}
+function renderOnboardingStep(){
+  clearOnboardingHighlight();
+  const step = ONBOARDING_STEPS[onboardingStep];
+  const tooltip = document.getElementById('onboardingTooltip');
+  document.getElementById('onboardingStepCount').textContent = (onboardingStep+1)+'/'+ONBOARDING_STEPS.length;
+  document.getElementById('onboardingText').textContent = step.text;
+  document.getElementById('onboardingPrev').style.visibility = onboardingStep===0 ? 'hidden' : 'visible';
+  document.getElementById('onboardingNext').textContent = step.final ? "C'est parti !" : 'Suivant';
+  document.getElementById('onboardingSkip').style.visibility = step.final ? 'hidden' : 'visible';
+  if(!step.target){
+    tooltip.classList.add('centered');
+  } else {
+    tooltip.classList.remove('centered');
+    const el = document.querySelector(step.target);
+    if(el){
+      el.classList.add('onboardingHighlight');
+      onboardingHighlighted = el;
+      positionOnboardingTooltip(el, tooltip);
+    } else {
+      // target not present right now (e.g. hidden view): fall back to centered
+      tooltip.classList.add('centered');
+    }
+  }
+}
+function onboardingNext(){
+  const step = ONBOARDING_STEPS[onboardingStep];
+  if(step.final){ endOnboarding(); return; }
+  onboardingStep = Math.min(ONBOARDING_STEPS.length - 1, onboardingStep + 1);
+  renderOnboardingStep();
+}
+function onboardingPrev(){
+  onboardingStep = Math.max(0, onboardingStep - 1);
+  renderOnboardingStep();
+}
+function endOnboarding(){
+  clearOnboardingHighlight();
+  document.getElementById('onboardingOverlay').classList.remove('show');
+  state.onboardingSeen = true;
+  persist();
+}
+document.getElementById('onboardingNext').addEventListener('click', onboardingNext);
+document.getElementById('onboardingPrev').addEventListener('click', onboardingPrev);
+document.getElementById('onboardingSkip').addEventListener('click', endOnboarding);
+// Replay entry point: never touches onboardingSeen, so replaying never
+// confuses the first-run detection for this or any other save.
+document.getElementById('tutorialBtn').addEventListener('click', startOnboarding);
 </script>
 </body>
 </html>

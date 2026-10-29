@@ -50,6 +50,10 @@ DEFAULT_DATA = {
     # regularity challenges: {id,title,category,keywords,length,start,status,...}
     "challenges": [],
     "quests": {"claimed": {}},  # weekly quests already rewarded: { "2026-10-26": ["move7", ...] }
+    # True for every existing save migrating through _normalize()'s fill-missing-keys
+    # loop (so current users never see the tutorial again); _load_raw() flips this to
+    # False only on the genuine "no save file at all yet" branch (true first launch).
+    "onboardingSeen": True,
 }
 
 # Old English category keys -> new French ones (migration from pre-v2 saves)
@@ -143,7 +147,11 @@ def _latest_backup():
 
 def _load_raw():
     if not os.path.exists(DATA_FILE):
-        return _clone(DEFAULT_DATA)
+        # Genuine first run (no prior save of any kind): the only place that
+        # should ever hand back onboardingSeen=False and trigger the tutorial.
+        fresh = _clone(DEFAULT_DATA)
+        fresh["onboardingSeen"] = False
+        return fresh
     try:
         return _normalize(_read_json(DATA_FILE))
     except (OSError, ValueError, TypeError, AttributeError):
