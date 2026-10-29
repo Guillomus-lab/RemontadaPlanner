@@ -322,6 +322,11 @@
   #resetProgressBtn .resetBtnText{display:flex;flex-direction:column;gap:2px;min-width:0;}
   #resetProgressBtn .resetBtnTitle{font-size:13px;font-weight:800;color:var(--danger);}
   #resetProgressBtn .resetBtnSub{font-size:11px;font-weight:500;color:var(--text-faint);line-height:1.3;}
+  #replayTutorialBtn{width:100%;margin-top:10px;background:var(--surface2);border:1px solid var(--border);
+      color:var(--text);border-radius:10px;padding:10px 14px;font-size:12.5px;font-weight:700;cursor:pointer;
+      transition:background .15s ease, transform .1s ease;}
+  #replayTutorialBtn:hover{background:var(--surface3);}
+  #replayTutorialBtn:active{transform:scale(.98);}
 
   .xpFloat{position:absolute;font-size:13px;font-weight:900;color:var(--done);pointer-events:none;z-index:50;
       animation:xpFloatUp 1.1s cubic-bezier(.22,1,.36,1) forwards;text-shadow:0 2px 8px rgba(0,0,0,.4);}
@@ -364,6 +369,64 @@
   .toast .toastText{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3;}
   .toast .toastSub{font-size:10.5px;color:var(--text-faint);font-weight:600;margin-top:1px;}
 
+  /* --- Launch splash screen: stylized logo + loading motion --- */
+  #splashScreen{position:fixed;inset:0;z-index:5000;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;gap:10px;background:radial-gradient(circle at 50% 35%, rgba(139,92,246,.35), transparent 60%), var(--bg);
+      transition:opacity .45s ease, visibility .45s ease;}
+  #splashScreen.hide{opacity:0;visibility:hidden;pointer-events:none;}
+  .splashOrb{position:absolute;width:340px;height:340px;border-radius:50%;
+      background:radial-gradient(circle, var(--accent-soft), transparent 70%);
+      animation:splashOrbPulse 2.4s ease-in-out infinite;filter:blur(2px);}
+  @keyframes splashOrbPulse{0%,100%{transform:scale(.9);opacity:.6;}50%{transform:scale(1.15);opacity:1;}}
+  .splashLogo{font-size:64px;z-index:1;animation:splashLogoFloat 2.6s ease-in-out infinite,
+      splashLogoGlow 2.6s ease-in-out infinite;filter:drop-shadow(0 8px 28px var(--accent-soft));}
+  @keyframes splashLogoFloat{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-10px) rotate(3deg);}}
+  @keyframes splashLogoGlow{0%,100%{filter:drop-shadow(0 8px 20px var(--accent-soft));}
+      50%{filter:drop-shadow(0 10px 36px var(--accent2));}}
+  .splashName{z-index:1;font-size:20px;font-weight:900;letter-spacing:.02em;text-align:center;line-height:1.25;
+      background:linear-gradient(135deg,var(--accent),var(--accent2),#fbbf24);
+      -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+      background-size:200% 200%;animation:splashNameShimmer 3s ease-in-out infinite;}
+  @keyframes splashNameShimmer{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+  .splashDots{z-index:1;display:flex;gap:7px;margin-top:6px;}
+  .splashDots span{width:7px;height:7px;border-radius:50%;background:var(--accent);
+      animation:splashDotBounce 1s ease-in-out infinite;}
+  .splashDots span:nth-child(2){animation-delay:.15s;background:var(--accent2);}
+  .splashDots span:nth-child(3){animation-delay:.3s;background:#fbbf24;}
+  @keyframes splashDotBounce{0%,80%,100%{transform:translateY(0);opacity:.5;}40%{transform:translateY(-8px);opacity:1;}}
+
+  /* --- Update popup (checked once at launch, user accepts or dismisses) --- */
+  #updateOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:2600;
+      display:none;align-items:center;justify-content:center;}
+  #updateOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #updateCard{width:340px;text-align:center;padding:26px;border-radius:20px;
+      box-shadow:0 24px 70px rgba(0,0,0,.55);animation:modalPop .3s cubic-bezier(.34,1.56,.64,1);}
+  #updateCard .updIcon{font-size:38px;margin-bottom:8px;}
+  #updateCard .updTitle{font-size:16.5px;font-weight:800;margin-bottom:8px;}
+  #updateCard .updText{font-size:12.5px;color:var(--text-dim);line-height:1.5;margin-bottom:20px;}
+  .updBtns{display:flex;gap:10px;justify-content:center;}
+  .updBtns button{border-radius:10px;padding:9px 18px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  #updateLaterBtn{background:var(--surface2);border:1px solid var(--border);color:var(--text);}
+  #updateLaterBtn:hover{background:var(--surface3);}
+  #updateGoBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;}
+  #updateGoBtn:hover{filter:brightness(1.1);}
+
+  /* --- Glassmorphism pass: translucent frosted panels over blurred content --- */
+  header, #sidebar, #quickAdd, .toast, #miniCal, #celebrateMsg,
+  #profileCard, #taskModal, #dayRecapCard, #confirmCard, #recapCard, #questCard,
+  #weekFillCard, #dayThemesCard, #onboardingTooltip, #updateCard{
+      background:color-mix(in srgb, var(--surface) 72%, transparent)!important;
+      backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05);}
+
+  /* --- Subtle film-grain noise overlay for texture, app-wide --- */
+  #app::after{content:"";position:fixed;inset:0;z-index:4000;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");}
+
+  /* --- More motion: every clickable control gets a consistent, snappy feel --- */
+  button, .navbtn, .catRow, .wkQuest, .moCell{transition:transform .14s cubic-bezier(.34,1.56,.64,1), box-shadow .14s ease, filter .14s ease;}
+  button:active, .navbtn:active{transform:scale(.94);}
+
   #dayRecapOverlay{position:fixed;inset:0;z-index:1002;display:none;align-items:center;justify-content:center;
       background:rgba(10,8,16,.7);backdrop-filter:blur(3px);}
   #dayRecapOverlay.show{display:flex;animation:overlayIn .2s ease;}
@@ -378,9 +441,10 @@
   .toolGroup{display:flex;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border);
              border-radius:10px;padding:3px;flex-shrink:0;}
   .toolGroup .navbtn{width:30px;height:30px;}
-  #themeToggle{background:var(--surface2);border:1px solid var(--border);border-radius:9px;width:32px;height:32px;
+  #themeToggle,#sfxToggle{background:var(--surface2);border:1px solid var(--border);border-radius:9px;width:32px;height:32px;
                cursor:pointer;color:var(--text);font-size:14px;transition:transform .15s ease;flex-shrink:0;}
-  #themeToggle:hover{transform:scale(1.08);}
+  #themeToggle:hover,#sfxToggle:hover{transform:scale(1.08);}
+  #sfxToggle.muted{opacity:.5;}
   #calBtn{position:relative;}
 
   #miniCal{position:absolute;top:54px;right:150px;background:var(--surface);border:1px solid var(--border);
@@ -882,6 +946,12 @@
 </style>
 </head>
 <body data-theme="dark">
+<div id="splashScreen">
+  <div class="splashOrb"></div>
+  <div class="splashLogo">📅</div>
+  <div class="splashName">Remontada<br>Planner</div>
+  <div class="splashDots"><span></span><span></span><span></span></div>
+</div>
 <div id="app">
   <header>
     <h1>📅 Remontada Planner</h1>
@@ -912,12 +982,12 @@
     <div id="progressWrap"><span id="dayBadge">🌱</span><span id="progressLabel">0/0</span><div id="progressBarOuter"><div id="progressBarInner"></div></div></div>
     <div class="toolGroup">
       <button id="recapBtn" class="navbtn" title="Récap">🥧</button>
-      <button id="tutorialBtn" class="navbtn" title="Revoir le tutoriel">🎓</button>
       <button id="refreshBtn" class="navbtn" title="Rafraîchir les données">🔄</button>
       <button id="zoomOutBtn" class="navbtn" title="Zoom -">−</button>
       <button id="zoomInBtn" class="navbtn" title="Zoom +">+</button>
     </div>
     <button id="themeToggle" title="Mode clair/sombre">🌙</button>
+    <button id="sfxToggle" title="Activer/couper les sons">🔊</button>
   </header>
 
   <div id="quickAdd">
@@ -967,6 +1037,17 @@
   </div>
 </div>
 <div id="toastStack"></div>
+<div id="updateOverlay">
+  <div id="updateCard">
+    <div class="updIcon">🚀</div>
+    <div class="updTitle">Nouvelle version disponible</div>
+    <div class="updText" id="updateText"></div>
+    <div class="updBtns">
+      <button id="updateLaterBtn">Plus tard</button>
+      <button id="updateGoBtn">Mettre à jour</button>
+    </div>
+  </div>
+</div>
 <div id="dayRecapOverlay">
   <div id="dayRecapCard">
     <div class="recapEmoji" id="recapEmoji">🎉</div>
@@ -1016,6 +1097,7 @@
         <div class="shopSectionTitle">Choisis ton avatar</div>
         <div class="avatarGrid" id="identityAvatarGrid"></div>
         <button id="profileSaveBtn">Enregistrer</button>
+        <button id="replayTutorialBtn" onclick="startOnboarding()">🎓 Revoir le tutoriel</button>
         <div id="dangerZone">
           <div id="dangerZoneLabel">⚠️ Zone dangereuse</div>
           <button id="resetProgressBtn" onclick="resetAllProgress()">
@@ -1217,6 +1299,48 @@
 </div>
 
 <script>
+// ================= Sound design (synthesized, no audio assets needed) ====
+// Small Web Audio sfx engine: everything is generated on the fly (oscillator
+// envelopes), so there's nothing to bundle/license and it stays tiny.
+const SFX_KEY = 'sfxEnabled';
+let _audioCtx = null;
+function sfxEnabled(){ return localStorage.getItem(SFX_KEY) !== '0'; }
+function _ctx(){
+  if(!_audioCtx){
+    try{ _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e){ return null; }
+  }
+  if(_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+function playTone(freqs, {duration=0.14, type='sine', gain=0.05, stagger=0}={}){
+  if(!sfxEnabled()) return;
+  const ctx = _ctx(); if(!ctx) return;
+  freqs.forEach((f,i)=>{
+    const t0 = ctx.currentTime + i*stagger;
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(f, t0);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + duration + 0.02);
+  });
+}
+function sfxClick(){ playTone([740], {duration:0.07, type:'sine', gain:0.03}); }
+function sfxCheck(){ playTone([523.25, 783.99], {duration:0.16, type:'triangle', gain:0.05, stagger:0.05}); }
+function sfxToast(){ playTone([880], {duration:0.11, type:'sine', gain:0.035}); }
+function sfxCoin(){ playTone([987.77, 1318.51], {duration:0.14, type:'square', gain:0.035, stagger:0.045}); }
+function sfxCrit(){ playTone([659.25, 987.77, 1318.51], {duration:0.18, type:'triangle', gain:0.05, stagger:0.06}); }
+function sfxLevelUp(){ playTone([523.25, 659.25, 783.99, 1046.50], {duration:0.22, type:'triangle', gain:0.06, stagger:0.09}); }
+function sfxLaunch(){ playTone([392, 523.25, 659.25], {duration:0.3, type:'sine', gain:0.045, stagger:0.11}); }
+
+// Soft click on every toolbar/nav button press — kept to a narrow set of
+// controls on purpose so it stays a subtle accent, not a constant beep-fest.
+document.addEventListener('click', e=>{
+  if(e.target.closest('.navbtn, #openAddBtn, #profileSaveBtn, #themeToggle')) sfxClick();
+});
+
 const START_HOUR = 6, END_HOUR = 24; // 6h -> minuit
 let HOUR_H = 72; // px, dynamic zoom level
 let state = { schemaVersion:1, days:{}, categories:{}, templates:{}, unlockedAchievements:[],
@@ -1323,11 +1447,24 @@ async function loadState(){
   applyLightDark(state.settings.theme === 'light' ? 'light' : 'dark');
   HOUR_H = Math.min(140, Math.max(32, Number(state.settings.zoom) || 72));
   render();
+  hideSplash();
   if(!firstLoadDone){
     firstLoadDone = true;
     if(viewMode==='day') scrollToNow();
-    if(!nick() && !state.profile.askedName) setTimeout(askNickname, 700);
-    if(!state.onboardingSeen) setTimeout(startOnboarding, 500);
+    // Sequenced, not parallel: a true first launch previously fired both the name
+    // prompt and the coachmark tour on separate timers, so they'd stack on top of
+    // each other. Ask the name first (if needed), then start the tour once that's
+    // resolved — and if there's no name to ask for, go straight to the tour.
+    const needsName = !nick() && !state.profile.askedName;
+    const needsOnboarding = !state.onboardingSeen;
+    if(needsName){
+      setTimeout(async ()=>{
+        await askNickname();
+        if(needsOnboarding) setTimeout(startOnboarding, 400);
+      }, 600);
+    } else if(needsOnboarding){
+      setTimeout(startOnboarding, 500);
+    }
   }
 }
 
@@ -2497,6 +2634,7 @@ async function resetAllProgress(){
 }
 
 function showToast({icon, text, sub, cls}){
+  if(cls==='loot') sfxCoin(); else if(cls==='crit') sfxCrit(); else sfxToast();
   const stack = document.getElementById('toastStack');
   const el = document.createElement('div');
   el.className = 'toast'+(cls?(' '+cls):'');
@@ -2575,6 +2713,7 @@ function spawnXpFloat(originEl, amount, isCrit){
 }
 
 function showLevelUp(newLevel){
+  sfxLevelUp();
   document.getElementById('lvUpNum').textContent = newLevel;
   document.getElementById('lvUpTitle').textContent = levelTitleWithName(newLevel);
   const overlay = document.getElementById('levelUpOverlay');
@@ -2991,6 +3130,7 @@ function renderRoutines(){
 
 // ================= Check / delete (shared by every view) =================
 function onTaskChecked(t, dayKey, checked, el){
+  if(checked) sfxCheck(); else sfxClick();
   // anti-farm: a task scheduled on a future day can't be validated yet (no XP/gold
   // before the day actually happens) — revert the checkbox and explain why.
   if(checked && dayKey > todayKey()){
@@ -4032,6 +4172,18 @@ document.getElementById('themeToggle').onclick = ()=>{
   persist();
   updateGamification();
 };
+function applySfxIcon(){
+  const btn = document.getElementById('sfxToggle');
+  const on = sfxEnabled();
+  btn.textContent = on ? '🔊' : '🔇';
+  btn.classList.toggle('muted', !on);
+}
+document.getElementById('sfxToggle').onclick = ()=>{
+  localStorage.setItem(SFX_KEY, sfxEnabled() ? '0' : '1');
+  applySfxIcon();
+  if(sfxEnabled()) sfxClick();
+};
+applySfxIcon();
 document.getElementById('levelPill').onclick = ()=> openProfileModal();
 document.getElementById('profileClose').onclick = ()=> closeProfileModal();
 document.getElementById('profileOverlay').addEventListener('click', (e)=>{
@@ -4099,10 +4251,45 @@ document.addEventListener('keydown', (e)=>{
 });
 
 let loadStarted = false;
-function initialLoad(){ if(loadStarted) return; loadStarted = true; loadState(); }
+function initialLoad(){ if(loadStarted) return; loadStarted = true; sfxLaunch(); loadState(); checkForUpdate(); }
 window.addEventListener('pywebviewready', initialLoad);
 // fallback if event already fired before listener attached
 setTimeout(()=>{ if(window.pywebview && window.pywebview.api) initialLoad(); }, 300);
+// failsafe: never leave the user staring at the splash if something upstream
+// (bridge not ready, load() stuck) takes unexpectedly long.
+setTimeout(hideSplash, 6000);
+
+// Fades the launch splash out once the first real render has happened.
+// Idempotent (checks it's not already hidden) so later loadState() calls
+// (e.g. the refresh button) never re-trigger it.
+let splashHidden = false;
+function hideSplash(){
+  if(splashHidden) return;
+  splashHidden = true;
+  document.getElementById('splashScreen').classList.add('hide');
+}
+
+// One-shot update check at launch, surfaced as a small popup (not a nag):
+// the user explicitly accepts (opens the release page) or dismisses it, and
+// a dismissal is remembered per-version so it won't reappear for the same release.
+function checkForUpdate(){
+  window.pywebview.api.check_update().then(res=>{
+    if(!res || !res.update_available) return;
+    if(localStorage.getItem('updateDismissed') === res.latest_version) return;
+    document.getElementById('updateText').textContent =
+      `${res.release_name || res.latest_version} est disponible (tu utilises la ${res.current_version}).`;
+    document.getElementById('updateOverlay').classList.add('show');
+    document.getElementById('updateGoBtn').onclick = ()=>{
+      window.pywebview.api.open_url(res.url);
+      document.getElementById('updateOverlay').classList.remove('show');
+    };
+    document.getElementById('updateLaterBtn').onclick = ()=>{
+      localStorage.setItem('updateDismissed', res.latest_version);
+      document.getElementById('updateOverlay').classList.remove('show');
+    };
+  }).catch(()=>{});
+}
+
 
 // --- First-launch onboarding tutorial (coachmarks) ---------------------------
 // Each step either targets a selector (highlighted with a glowing ring, its
@@ -4121,6 +4308,7 @@ const ONBOARDING_STEPS = [
 let onboardingStep = 0, onboardingHighlighted = null;
 
 function startOnboarding(){
+  closeProfileModal();
   onboardingStep = 0;
   document.getElementById('onboardingOverlay').classList.add('show');
   renderOnboardingStep();
@@ -4154,6 +4342,12 @@ function renderOnboardingStep(){
   document.getElementById('onboardingNext').textContent = step.final ? "C'est parti !" : 'Suivant';
   document.getElementById('onboardingSkip').style.visibility = step.final ? 'hidden' : 'visible';
   if(!step.target){
+    // Clear any left/top left behind by a previous targeted step: those are
+    // plain inline styles (not !important) so they'd otherwise out-rank the
+    // .centered class's left:50%/top:50% and the card would render off-screen,
+    // cropped against the window edge instead of actually centered.
+    tooltip.style.left = '';
+    tooltip.style.top = '';
     tooltip.classList.add('centered');
   } else {
     tooltip.classList.remove('centered');
@@ -4187,9 +4381,8 @@ function endOnboarding(){
 document.getElementById('onboardingNext').addEventListener('click', onboardingNext);
 document.getElementById('onboardingPrev').addEventListener('click', onboardingPrev);
 document.getElementById('onboardingSkip').addEventListener('click', endOnboarding);
-// Replay entry point: never touches onboardingSeen, so replaying never
-// confuses the first-run detection for this or any other save.
-document.getElementById('tutorialBtn').addEventListener('click', startOnboarding);
+// Replay entry point (profile > Pseudo tab button): never touches
+// onboardingSeen, so replaying never confuses the first-run detection.
 </script>
 </body>
 </html>

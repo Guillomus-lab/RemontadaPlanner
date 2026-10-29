@@ -4,6 +4,9 @@ import json
 import os
 import sys
 import threading
+import urllib.error
+import urllib.request
+import webbrowser
 
 # The launcher (.vbs) runs the BASE interpreter's pythonw.exe directly: the uv venv's
 # pythonw.exe is a trampoline that spawns console python.exe, which either shows a
@@ -23,6 +26,11 @@ BACKUP_DIR = os.path.join(APP_DIR, "backups")
 BACKUPS_TO_KEEP = 30
 
 SCHEMA_VERSION = 4
+
+# Bump this on every release alongside a matching GitHub tag (vX.Y.Z) / Release.
+APP_VERSION = "1.0.0"
+UPDATE_CHECK_URL = "https://api.github.com/repos/Guillomus-lab/RemontadaPlanner/releases/latest"
+RELEASES_PAGE_URL = "https://github.com/Guillomus-lab/RemontadaPlanner/releases/latest"
 
 DEFAULT_DATA = {
     "schemaVersion": SCHEMA_VERSION,
@@ -182,9 +190,66 @@ def _prune_backups():
             pass
 
 
+def _parse_version(tag):
+    """'v1.2.3' / '1.2.3' -> (1, 2, 3); non-numeric parts are dropped so a tag
+    like 'v1.2.3-beta' still compares sanely against a plain '1.2.3'."""
+    cleaned = tag.strip().lstrip("vV")
+    parts = []
+    for p in cleaned.split("."):
+        digits = "".join(ch for ch in p if ch.isdigit())
+        parts.append(int(digits) if digits else 0)
+    return tuple(parts) or (0,)
+
+
+def _fetch_latest_release():
+    """Hits the GitHub API for the newest published release. Returns None on
+    any failure (offline, rate-limited, no release published yet, ...) —
+    the update check is best-effort and must never block or crash the app."""
+    req = urllib.request.Request(
+        UPDATE_CHECK_URL,
+        headers={"Accept": "application/vnd.github+json", "User-Agent": "RemontadaPlanner"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=4) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, ValueError, OSError):
+        return None
+    tag = payload.get("tag_name")
+    if not tag:
+        return None
+    return {
+        "tag": tag,
+        "name": payload.get("name") or tag,
+        "url": payload.get("html_url") or RELEASES_PAGE_URL,
+    }
+
+
 class Api:
     def load(self):
         return _load_raw()
+
+    def check_update(self):
+        """Called once at launch by the UI. Runs on pywebview's own call
+        thread (not the UI thread) so the network round-trip never freezes
+        the window; any failure just means 'no update info available'."""
+        release = _fetch_latest_release()
+        if not release:
+            return {"update_available": False}
+        is_newer = _parse_version(release["tag"]) > _parse_version(APP_VERSION)
+        return {
+            "update_available": is_newer,
+            "current_version": APP_VERSION,
+            "latest_version": release["tag"],
+            "release_name": release["name"],
+            "url": release["url"],
+        }
+
+    def open_url(self, url):
+        """Opens a link (e.g. the release page) in the user's default
+        browser — pywebview windows don't navigate external links on click."""
+        if isinstance(url, str) and url.startswith(("https://", "http://")):
+            webbrowser.open(url)
+        return {"ok": True}
 
     def get_category_recap(self, scope, ref_date):
         """Aggregate planned/done minutes per category for a day or ISO week
