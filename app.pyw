@@ -65,6 +65,7 @@ DEFAULT_DATA = {
         # Windows reminders + optional Discord weekly recap
         "reminders": False, "reminderLead": 10, "reminderSound": True,
         "mealIdeas": True, "reminderPromptSeen": False, "lastWeekReviewPrompt": "",
+        "workoutIdeas": True, "workoutLevel": 1, "workoutEquip": "none",
         "discordWebhook": "", "discordWeekly": False, "lastDiscordRecap": "",
         "lastRolloverPrompt": "",
     },  # UI prefs persisted across launches

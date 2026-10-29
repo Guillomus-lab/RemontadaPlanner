@@ -139,6 +139,16 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
   envoyer ses ingrédients dans « À planifier » comme liste de courses.
   **Menus de la semaine** (menu ⋯) : déjeuners et dîners des 7 jours, une
   liste de courses regroupée, et l'ajout des repas au planning.
+- Séances de sport suggérées (bonus, désactivable) : dans une tâche de sport
+  (sport, muscu, séance, course, yoga…), le bouton « 🏋️ Séance suggérée » propose
+  une séance complète selon la durée de la tâche, la zone (tout le corps, haut,
+  bas, abdos, cardio/HIIT, mobilité, course à pied), le niveau et le matériel :
+  échauffement, exercices avec séries, répétitions, repos et consigne technique
+  (supersets pour les séances longues), retour au calme et conseils. Générées par
+  `ui/workouts.js` (bibliothèque d'exercices + générateur). On peut garder la
+  séance dans la note de la tâche ou lancer le minuteur.
+- Concentration : bouton « ▶ Focus » au survol de chaque tâche du jour, et zone
+  « En ce moment » dans la barre du jour pour la tâche en cours.
 - Sauvegarde de tes données (Profil → Réglages) : export dans un fichier et
   restauration, avec une copie de sécurité gardée avant chaque restauration.
 - Barre du haut allégée : bilan, concentration, menus, récap, thème et sons

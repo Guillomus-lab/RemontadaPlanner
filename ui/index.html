@@ -1325,6 +1325,28 @@
   .mealActions button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;margin-left:auto;}
   .mealActions button:hover{filter:brightness(1.08);}
 
+  #workoutOverlay{position:fixed;inset:0;z-index:216;background:rgba(10,8,16,.62);backdrop-filter:blur(4px);
+      display:none;align-items:center;justify-content:center;}
+  #workoutOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #workoutCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px 24px;position:relative;
+      width:600px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);}
+  #workoutCard h3{margin:6px 0 2px;font-size:19px;font-weight:800;padding-right:24px;}
+  .wkClose{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text-faint);font-size:16px;cursor:pointer;}
+  .wkMeta{font-size:11.5px;color:var(--text-dim);margin-bottom:12px;}
+  .wkOptions{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+  .wkOpt{display:flex;align-items:center;gap:10px;}
+  .wkOpt>span{width:62px;flex-shrink:0;font-size:10.5px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;}
+  .wkOpt .mealFilters{margin:0;}
+  .wkBlock{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-top:8px;}
+  .wkBlockHead{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:800;}
+  .wkBlockHead span{color:var(--text-faint);font-weight:700;white-space:nowrap;}
+  .wkNote{font-size:11px;color:var(--accent);font-weight:700;margin-top:3px;}
+  .wkItem{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:7px 0;border-top:1px solid var(--border);}
+  .wkItem:first-of-type{border-top:none;}
+  .wkItem b{font-size:12.5px;}
+  .wkItem .wkDose{font-size:11.5px;font-weight:700;color:var(--text-dim);text-align:right;}
+  .wkItem .wkCue{grid-column:1 / -1;font-size:11px;color:var(--text-faint);line-height:1.45;}
+  .wkTips{margin:12px 0 0;padding-left:18px;font-size:11.5px;color:var(--text-dim);line-height:1.6;}
   #menuOverlay{position:fixed;inset:0;z-index:216;background:rgba(10,8,16,.62);backdrop-filter:blur(4px);
       display:none;align-items:center;justify-content:center;}
   #menuOverlay.show{display:flex;animation:overlayIn .15s ease;}
@@ -1414,6 +1436,7 @@
   <div id="moreMenu">
     <button class="mmItem" data-act="review">📊 Bilan de la semaine</button>
     <button class="mmItem" data-act="focus">🎯 Minuteur de concentration</button>
+    <button class="mmItem mmWorkout" data-act="workout">🏋️ Séance de sport</button>
     <button class="mmItem mmMeal" data-act="menus">🗓️ Menus de la semaine</button>
     <button class="mmItem mmMeal" data-act="meal">🍽️ Idée de repas</button>
     <button class="mmItem" id="recapBtn">🥧 Récap du temps</button>
@@ -1639,6 +1662,13 @@
           </div>
         </div>
         <div class="settingsBlock">
+          <h4>🏋️ Séances de sport</h4>
+          <div class="settingsHint">Quand une tâche parle de sport (sport, muscu, séance, course, yoga…), un bouton propose une séance complète selon la durée de la tâche : échauffement, exercices avec séries et repos, retour au calme.</div>
+          <div class="settingsRow">
+            <label><input type="checkbox" id="workoutIdeasToggle" /> Proposer des séances de sport</label>
+          </div>
+        </div>
+        <div class="settingsBlock">
           <h4>💡 Conseils</h4>
           <div class="settingsHint">La boucle quotidienne : note tes idées dans « À planifier » → choisis 3 priorités → avance → clôture la journée. L'app s'occupe des reports.</div>
         </div>
@@ -1822,6 +1852,27 @@
   </div>
 </div>
 
+<div id="workoutOverlay">
+  <div id="workoutCard">
+    <button id="workoutClose" title="Fermer" class="wkClose">✕</button>
+    <div class="mealKicker">🏋️ Séance suggérée par ton coach</div>
+    <h3 id="workoutTitle">—</h3>
+    <div id="workoutMeta" class="wkMeta"></div>
+    <div class="wkOptions">
+      <div class="wkOpt"><span>Durée</span><div class="mealFilters" id="wkDuration"></div></div>
+      <div class="wkOpt"><span>Zone</span><div class="mealFilters" id="wkZone"></div></div>
+      <div class="wkOpt"><span>Niveau</span><div class="mealFilters" id="wkLevel"></div></div>
+      <div class="wkOpt" id="wkEquipRow"><span>Matériel</span><div class="mealFilters" id="wkEquip"></div></div>
+    </div>
+    <div id="workoutBody"></div>
+    <div class="mealActions">
+      <button id="workoutNext">🎲 Une autre séance</button>
+      <button id="workoutTimer">▶ Lancer le minuteur</button>
+      <button id="workoutKeep" class="primary">📝 Garder dans la note</button>
+    </div>
+  </div>
+</div>
+
 <div id="menuOverlay">
   <div id="menuCard">
     <button id="menuClose" title="Fermer" style="position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text-faint);font-size:16px;cursor:pointer">✕</button>
@@ -1909,6 +1960,7 @@
 
 <script src="recipes.js"></script>
 <script src="recipes_world.js"></script>
+<script src="workouts.js"></script>
 <div id="mealOverlay">
   <div id="mealCard">
     <button id="mealClose" title="Fermer">✕</button>
@@ -1943,6 +1995,7 @@
       <label>Titre</label>
       <input id="modalTitle" placeholder="ex: Gym, Réunion client, Dessin..." />
       <button type="button" id="modalMealBtn" class="mealIdeaBtn">🍽️ Idée de repas</button>
+      <button type="button" id="modalWorkoutBtn" class="mealIdeaBtn">🏋️ Séance suggérée</button>
     </div>
     <div class="modalField">
       <label class="parallelLabel" id="priorityToggle">
@@ -1953,7 +2006,7 @@
     <div class="modalField">
       <button type="button" id="modalDetailsToggle">📝 Détails — note, lien</button>
       <div id="modalDetails">
-        <textarea id="modalNotes" placeholder="Une note pour toi (contexte, numéro, idée…)" maxlength="1000"></textarea>
+        <textarea id="modalNotes" placeholder="Une note pour toi (contexte, numéro, idée…)" maxlength="2000"></textarea>
         <input id="modalUrl" type="url" placeholder="https://… (lien utile)" maxlength="500" />
       </div>
     </div>
@@ -4056,6 +4109,9 @@ function ensureCollections(){
   if(!Number.isFinite(Number(state.settings.reminderLead))) state.settings.reminderLead = 10;
   if(typeof state.settings.reminderSound !== 'boolean') state.settings.reminderSound = true;
   if(typeof state.settings.mealIdeas !== 'boolean') state.settings.mealIdeas = true;
+  if(typeof state.settings.workoutIdeas !== 'boolean') state.settings.workoutIdeas = true;
+  if(![1,2,3].includes(state.settings.workoutLevel)) state.settings.workoutLevel = 1;
+  if(!['none','db','gym'].includes(state.settings.workoutEquip)) state.settings.workoutEquip = 'none';
   if(typeof state.settings.reminderPromptSeen !== 'boolean') state.settings.reminderPromptSeen = false;
   if(typeof state.settings.lastWeekReviewPrompt !== 'string') state.settings.lastWeekReviewPrompt = '';
   if(typeof state.settings.discordWebhook !== 'string') state.settings.discordWebhook = '';
@@ -4467,6 +4523,8 @@ function renderSettingsTab(){
   if(snd) snd.checked = state.settings.reminderSound !== false;
   const meal = document.getElementById('mealIdeasToggle');
   if(meal) meal.checked = state.settings.mealIdeas !== false;
+  const wk = document.getElementById('workoutIdeasToggle');
+  if(wk) wk.checked = state.settings.workoutIdeas !== false;
   const cap = document.getElementById('dayCapacityInput');
   if(cap) cap.value = String(Math.round((Number(state.settings.dayCapacity) || 480) / 6) / 10);
   const webhook = document.getElementById('discordWebhook');
@@ -4854,7 +4912,7 @@ function keepMealInNote(){
   if(!r) return;
   const notesEl = document.getElementById('modalNotes');
   const existing = notesEl.value.trim();
-  notesEl.value = ((existing ? existing + '\n\n' : '') + mealAsNote(r)).slice(0, 1000);
+  notesEl.value = ((existing ? existing + '\n\n' : '') + mealAsNote(r)).slice(0, 2000);
   document.getElementById('modalDetails').classList.add('show');
   closeMealIdea();
   showToast({icon:'📝', text:'Recette ajoutée à la note', sub:'Enregistre la tâche pour la garder.'});
@@ -5200,6 +5258,116 @@ function maybeSuggestReminders(task, dayKey){
   }, 700);
 }
 
+// ================= Workout ideas (generator in workouts.js) =================
+let workoutState = {minutes:45, zone:'full', current:null, fromModal:false, taskRef:null};
+const WK_DURATIONS = [15, 20, 30, 45, 60, 90];
+
+function workoutIdeasAvailable(){
+  return typeof generateWorkout === 'function' && !(state.settings && state.settings.workoutIdeas === false);
+}
+function isSportTask(title){
+  return /sport|seance|muscu|gym|salle|entrainement|workout|fitness|renfo|hiit|crossfit|abdo|gainage|cardio|yoga|pilates|etirement|mobilite|footing|course a pied|running|jogging|\brun\b|tabata|pompes|squat|jambes|haut du corps|bas du corps|circuit/.test(normTxt(title));
+}
+function updateWorkoutButton(){
+  const btn = document.getElementById('modalWorkoutBtn');
+  if(btn) btn.classList.toggle('show', workoutIdeasAvailable() && isSportTask(document.getElementById('modalTitle').value));
+}
+
+function nearestDuration(m){ return WK_DURATIONS.reduce((a,b)=> Math.abs(b - m) < Math.abs(a - m) ? b : a); }
+
+// task: {title, minutes, taskRef?} from the task modal, or null (menu / search)
+function openWorkout(task){
+  if(!workoutIdeasAvailable()) return;
+  workoutState.fromModal = !!task;
+  workoutState.taskRef = task && task.taskRef ? task.taskRef : null;
+  workoutState.zone = task ? guessWorkoutZone(task.title) : 'full';
+  workoutState.minutes = task && task.minutes ? nearestDuration(task.minutes) : 45;
+  rollWorkout();
+  document.getElementById('workoutOverlay').classList.add('show');
+  bumpCounter('workoutsOpened');
+}
+function closeWorkout(){ document.getElementById('workoutOverlay').classList.remove('show'); }
+
+function rollWorkout(){
+  workoutState.current = generateWorkout({minutes: workoutState.minutes, zone: workoutState.zone,
+    level: state.settings.workoutLevel, equip: state.settings.workoutEquip});
+  renderWorkout();
+}
+
+function renderChips(id, options, current, onPick){
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  options.forEach(([value, label])=>{
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.classList.toggle('on', value === current);
+    b.onclick = ()=> onPick(value);
+    el.appendChild(b);
+  });
+}
+
+function renderWorkout(){
+  const w = workoutState.current;
+  if(!w) return;
+  document.getElementById('workoutTitle').textContent = w.title;
+  document.getElementById('workoutMeta').textContent = w.meta;
+  renderChips('wkDuration', WK_DURATIONS.map(m=> [m, fmtDur(m)]), workoutState.minutes, v=>{ workoutState.minutes = v; rollWorkout(); });
+  renderChips('wkZone', Object.entries(WORKOUT_ZONES), workoutState.zone, v=>{ workoutState.zone = v; rollWorkout(); });
+  renderChips('wkLevel', Object.entries(WORKOUT_LEVELS).map(([k,v])=> [Number(k), v]), state.settings.workoutLevel, v=>{ state.settings.workoutLevel = v; persist(); rollWorkout(); });
+  renderChips('wkEquip', Object.entries(WORKOUT_EQUIP), state.settings.workoutEquip, v=>{ state.settings.workoutEquip = v; persist(); rollWorkout(); });
+  document.getElementById('wkEquipRow').style.display = (w.zone === 'run' || w.zone === 'mobility') ? 'none' : '';
+  const body = document.getElementById('workoutBody');
+  body.innerHTML = '';
+  w.blocks.forEach(b=>{
+    const blk = document.createElement('div');
+    blk.className = 'wkBlock';
+    blk.innerHTML = '<div class="wkBlockHead"><b></b><span></span></div>' + (b.note ? '<div class="wkNote"></div>' : '');
+    blk.querySelector('.wkBlockHead b').textContent = b.name;
+    blk.querySelector('.wkBlockHead span').textContent = `${b.min} min`;
+    if(b.note) blk.querySelector('.wkNote').textContent = b.note;
+    b.items.forEach(it=>{
+      const row = document.createElement('div');
+      row.className = 'wkItem';
+      row.innerHTML = '<b></b><span class="wkDose"></span><span class="wkCue"></span>';
+      row.querySelector('b').textContent = it.n;
+      row.querySelector('.wkDose').textContent = it.d || '';
+      row.querySelector('.wkCue').textContent = it.c || '';
+      blk.appendChild(row);
+    });
+    body.appendChild(blk);
+  });
+  const tips = document.createElement('ul');
+  tips.className = 'wkTips';
+  w.tips.forEach(t=>{ const li = document.createElement('li'); li.textContent = t; tips.appendChild(li); });
+  body.appendChild(tips);
+  document.getElementById('workoutKeep').style.display = workoutState.fromModal ? '' : 'none';
+}
+
+function keepWorkoutInNote(){
+  const w = workoutState.current;
+  if(!w) return;
+  const notesEl = document.getElementById('modalNotes');
+  const existing = notesEl.value.trim();
+  notesEl.value = ((existing ? existing + '\n\n' : '') + workoutAsNote(w)).slice(0, 2000);
+  document.getElementById('modalDetails').classList.add('show');
+  closeWorkout();
+  showToast({icon:'📝', text:'Séance ajoutée à la note', sub:'Enregistre la tâche pour la garder.'});
+}
+
+function startWorkoutTimer(){
+  const w = workoutState.current;
+  if(!w) return;
+  closeWorkout();
+  let ref = null;
+  if(workoutState.fromModal && editingTaskId && editingDayKey){
+    const t = (state.days[editingDayKey] || []).find(x=> x.id === editingTaskId);
+    if(t) ref = {dayKey: editingDayKey, taskId: t.id, title: t.title};
+    closeTaskModal();
+  }
+  if(focus && !focus.ended){ showFocusOverlay(); return; }
+  startFocus('work', w.minutes, ref || {dayKey: null, taskId: null, title: w.title});
+}
+
 // ================= Weekly menus (lunch + dinner for 7 days) =================
 const MENU_DAYS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 const MENU_SLOTS = [['dej','Déjeuner','12:30'], ['din','Dîner','19:30']];
@@ -5447,6 +5615,7 @@ function buildSearchGroups(query){
     {icon:'👤', title:'Ouvrir mon profil', sub:'Succès, boutique, historique', run:()=> openProfileModal()},
     {icon:'⚙️', title:'Ouvrir les réglages', sub:'Rappels, charge quotidienne, Discord', run:()=> openProfileSettings()},
     {icon:'🎯', title:'Mode concentration', sub:'Minuteur 25 min sur une tâche (Pomodoro)', run:()=> openFocusSetup(null, null)},
+    ...(workoutIdeasAvailable() ? [{icon:'🏋️', title:'Séance de sport', sub:'Une séance complète selon ton temps et ton niveau', run:()=> openWorkout(null)}] : []),
     {icon:'📊', title:'Bilan de la semaine', sub:'Stats de la semaine passée et 3 priorités', run:()=> openWeekReview()},
     ...(mealIdeasAvailable() ? [{icon:'🍽️', title:'Idée de repas', sub:'Une recette healthy au hasard', run:()=> openMealIdea(null)},
       {icon:'🗓️', title:'Menus de la semaine', sub:'Déjeuners et dîners + liste de courses', run:()=> openMenus()}] : []),
@@ -6481,6 +6650,7 @@ function openTaskModal(presetMinutes, task, opts){
   renderModalCategories();
   renderRepeatUI();
   updateMealButton();
+  updateWorkoutButton();
   document.getElementById('modalOverlay').classList.add('show');
   setTimeout(()=> document.getElementById('modalTitle').focus(), 80);
 }
@@ -6522,7 +6692,7 @@ async function saveModalTask(){
   const title = document.getElementById('modalTitle').value.trim();
   if(!title){ document.getElementById('modalTitle').focus(); return; }
   const isBacklog = !!editingBacklogId;
-  const notes = document.getElementById('modalNotes').value.trim().slice(0, 1000);
+  const notes = document.getElementById('modalNotes').value.trim().slice(0, 2000);
   const rawUrl = document.getElementById('modalUrl').value.trim();
   const url = rawUrl ? normalizeUrl(rawUrl) : '';
   if(rawUrl && !/^https?:\/\/[^\s]+$/i.test(url)){
@@ -6691,6 +6861,7 @@ document.addEventListener('keydown', (e)=>{
   if(e.key!=='Escape' || e.defaultPrevented) return; // already consumed by the confirm popup
   if(document.getElementById('moreMenu').classList.contains('show')) closeMoreMenu();
   else if(document.getElementById('mealOverlay').classList.contains('show')) closeMealIdea();
+  else if(document.getElementById('workoutOverlay').classList.contains('show')) closeWorkout();
   else if(document.getElementById('menuOverlay').classList.contains('show')) closeMenus();
   else if(document.getElementById('weekReviewOverlay').classList.contains('show')) closeWeekReview();
   else if(document.getElementById('focusOverlay').classList.contains('show')) closeFocusOverlay();
@@ -6840,6 +7011,20 @@ document.getElementById('quickInput').addEventListener('keydown', (e)=>{
   else if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); e.target.value = ''; updateQuickPreview(); e.target.blur(); }
 });
 document.getElementById('modalTitle').addEventListener('input', updateMealButton);
+document.getElementById('modalTitle').addEventListener('input', updateWorkoutButton);
+document.getElementById('modalWorkoutBtn').onclick = ()=> openWorkout({
+  title: document.getElementById('modalTitle').value,
+  minutes: Number(document.getElementById('modalDurSelect').value) || 45 });
+document.getElementById('workoutClose').onclick = closeWorkout;
+document.getElementById('workoutNext').onclick = rollWorkout;
+document.getElementById('workoutKeep').onclick = keepWorkoutInNote;
+document.getElementById('workoutTimer').onclick = startWorkoutTimer;
+document.getElementById('workoutOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'workoutOverlay') closeWorkout(); });
+document.getElementById('workoutIdeasToggle').onchange = (e)=>{
+  state.settings.workoutIdeas = e.target.checked;
+  persist();
+  updateWorkoutButton();
+};
 document.getElementById('modalStart').addEventListener('change', updateMealButton);
 document.getElementById('modalMealBtn').onclick = ()=> openMealIdea({
   title: document.getElementById('modalTitle').value, start: document.getElementById('modalStart').value });
@@ -6934,6 +7119,7 @@ function openMoreMenu(){
   const menu = document.getElementById('moreMenu');
   const r = document.getElementById('moreBtn').getBoundingClientRect();
   menu.querySelectorAll('.mmMeal').forEach(b=> b.style.display = mealIdeasAvailable() ? '' : 'none');
+  menu.querySelectorAll('.mmWorkout').forEach(b=> b.style.display = workoutIdeasAvailable() ? '' : 'none');
   menu.classList.add('show');
   const w = menu.offsetWidth;
   menu.style.top = `${Math.round(r.bottom + 6)}px`;
@@ -6957,6 +7143,7 @@ document.getElementById('moreMenu').addEventListener('click', (e)=>{
   if(act === 'review') openWeekReview();
   else if(act === 'focus') openFocusSetup(null, null);
   else if(act === 'menus') openMenus();
+  else if(act === 'workout') openWorkout(null);
   else if(act === 'meal') openMealIdea(null);
   else if(act === 'settings') openProfileSettings();
 });
