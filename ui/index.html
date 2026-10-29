@@ -306,6 +306,23 @@
       transition:filter .15s ease, transform .1s ease;}
   #profileSaveBtn:hover{filter:brightness(1.1);transform:translateY(-1px);}
 
+  /* --- Danger zone: full progress reset, deliberately set apart & calmer than before --- */
+  #dangerZone{margin-top:22px;padding-top:16px;border-top:1px dashed color-mix(in srgb, var(--danger) 35%, var(--border));}
+  #dangerZoneLabel{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+      color:var(--danger);opacity:.85;margin-bottom:8px;}
+  #resetProgressBtn{width:100%;display:flex;align-items:center;gap:12px;text-align:left;
+      background:var(--surface2);border:1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+      border-radius:12px;padding:12px 14px;cursor:pointer;
+      transition:background .18s ease, border-color .18s ease, transform .1s ease, box-shadow .18s ease;}
+  #resetProgressBtn:hover{background:color-mix(in srgb, var(--danger) 14%, var(--surface2));
+      border-color:var(--danger);box-shadow:0 6px 18px -4px color-mix(in srgb, var(--danger) 45%, transparent);
+      transform:translateY(-1px);}
+  #resetProgressBtn:active{transform:scale(.98);}
+  #resetProgressBtn .resetBtnIcon{font-size:20px;flex-shrink:0;filter:grayscale(.15);}
+  #resetProgressBtn .resetBtnText{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  #resetProgressBtn .resetBtnTitle{font-size:13px;font-weight:800;color:var(--danger);}
+  #resetProgressBtn .resetBtnSub{font-size:11px;font-weight:500;color:var(--text-faint);line-height:1.3;}
+
   .xpFloat{position:absolute;font-size:13px;font-weight:900;color:var(--done);pointer-events:none;z-index:50;
       animation:xpFloatUp 1.1s cubic-bezier(.22,1,.36,1) forwards;text-shadow:0 2px 8px rgba(0,0,0,.4);}
   @keyframes xpFloatUp{
@@ -974,7 +991,16 @@
         <div class="shopSectionTitle">Choisis ton avatar</div>
         <div class="avatarGrid" id="identityAvatarGrid"></div>
         <button id="profileSaveBtn">Enregistrer</button>
-        <button id="resetProgressBtn" class="danger" style="margin-top:18px;background:#dc2626;border-color:#dc2626;color:#fff;" onclick="resetAllProgress()">⚠️ Réinitialiser toute ma progression</button>
+        <div id="dangerZone">
+          <div id="dangerZoneLabel">⚠️ Zone dangereuse</div>
+          <button id="resetProgressBtn" onclick="resetAllProgress()">
+            <span class="resetBtnIcon">🗑️</span>
+            <span class="resetBtnText">
+              <span class="resetBtnTitle">Réinitialiser toute ma progression</span>
+              <span class="resetBtnSub">Succès, planning, pseudo, boutique… tout repart de zéro</span>
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1586,6 +1612,7 @@ async function saveTemplateFromToday(){
   }
   state.templates[name] = tasks.map(t=>({title:t.title, start:t.start, duration:t.duration, category:t.category,
     ...(t.parallel ? {parallel:true} : {})}));
+  bumpCounter('templatesSaved');
   persist(); renderTemplates();
   showToast({icon:'💾', text:`Modèle « ${name} » enregistré`});
 }
@@ -1595,6 +1622,7 @@ async function copyYesterday(){
   const yKey = iso(y);
   const src = state.days[yKey] || [];
   if(src.length===0){ await showAlert('Aucune tâche trouvée pour hier.', 'Rien à copier', '🤷'); return; }
+  bumpCounter('copyYesterdayUsed');
   addCopiesToDay(src, 'd\'hier');
 }
 
@@ -1889,6 +1917,8 @@ function computeGameStats(){
   let sameMinuteCompletion = false; // two tasks checked within the same day both starting at identical minute (back to back override) placeholder
   let singleTaskDay = false; // a day with exactly 1 task, fully completed
   let allCategoriesEverUsed = new Set();
+  let categoryDoneCounts = new Map(); // total completed tasks per category, all-time
+  let sameDayEarlyLate = false; // a single day with both an early-bird and a night-owl task done
 
   Object.entries(state.days).forEach(([dayKey, list])=>{
     if(!list || list.length===0) return;
@@ -1900,13 +1930,16 @@ function computeGameStats(){
     if(list.length===1 && done.length===1) singleTaskDay = true;
     list.forEach(t=>{ if(t.done && t.bonusXp) bonusXp += t.bonusXp; allCategoriesEverUsed.add(t.category); });
 
+    let dayHasEarly = false, dayHasLate = false;
     done.forEach(t=>{
       const startMin = hhmmToMinutes(t.start);
-      if(startMin < 8*60) earlyBird = true;
-      if(startMin >= 22*60) nightOwl = true;
+      if(startMin < 8*60){ earlyBird = true; dayHasEarly = true; }
+      if(startMin >= 22*60){ nightOwl = true; dayHasLate = true; }
       if(startMin >= 23*60) lateNightDone = true;
       if(t.parallel) parallelUsed = true;
+      categoryDoneCounts.set(t.category, (categoryDoneCounts.get(t.category)||0) + 1);
     });
+    if(dayHasEarly && dayHasLate) sameDayEarlyLate = true;
     const doneCats = new Set(done.map(t=>t.category));
     if(doneCats.size >= 4) varietyDay = true;
 
@@ -1920,14 +1953,19 @@ function computeGameStats(){
   const quest = questStats(), chal = challengeStats();
   const totalXp = totalTasksDone*10 + totalDaysCompleted*25 + bonusXp + quest.xp + chal.xp;
   const now = new Date();
+  let maxTasksInCategory = 0;
+  categoryDoneCounts.forEach(v=> { maxTasksInCategory = Math.max(maxTasksInCategory, v); });
   return {totalTasksDone, totalDaysCompleted, totalDaysWithTasks, bestStreak, totalXp,
           earlyBird, nightOwl, varietyDay, weekendPerfect, maxTasksInDay, parallelUsed,
           lateNightDone, singleTaskDay, categoriesEverUsedCount: allCategoriesEverUsed.size,
+          maxTasksInCategory, sameDayEarlyLate,
           remixUsed: getCounter('remixUsed'), randomUsed: getCounter('randomUsed'),
           themesUsedCount: (state.counters && state.counters.themesUsed) ? state.counters.themesUsed.length : 0,
           daysCleared: getCounter('daysCleared'), tasksDeleted: getCounter('tasksDeleted'),
           themeToggles: getCounter('themeToggles'), zoomClicks: getCounter('zoomClicks'),
           konamiFound: getCounter('konamiFound'),
+          templatesSaved: getCounter('templatesSaved'), copyYesterdayUsed: getCounter('copyYesterdayUsed'),
+          refreshClicks: getCounter('refreshClicks'),
           questsDone: quest.done, questWeeksCleared: quest.weeksCleared,
           challengesWon: chal.won, bestChallengeWon: chal.best,
           challengesStarted: getCounter('challengesStarted'),
@@ -1943,7 +1981,11 @@ function computeGameStats(){
             : 0,
           isAppOpenPastMidnightLocal: now.getHours() < 4, // using the app super late at night
           isAppOpenAtDawn: now.getHours() >= 4 && now.getHours() < 6,
-          isFriday13: now.getDay()===5 && now.getDate()===13};
+          isFriday13: now.getDay()===5 && now.getDate()===13,
+          isNewYearsDay: now.getMonth()===0 && now.getDate()===1,
+          isHalloween: now.getMonth()===9 && now.getDate()===31,
+          isLeapDay: now.getMonth()===1 && now.getDate()===29,
+          isPalindromeTime: (()=>{ const t = pad(now.getHours())+pad(now.getMinutes()); return t === t.split('').reverse().join(''); })()};
 }
 
 function computeBestStreak(){
@@ -1960,13 +2002,35 @@ function computeBestStreak(){
   return Math.max(best, computeStreak());
 }
 
-function xpThreshold(level){ return 50*level*(level-1); } // cumulative XP needed to reach `level`
+// Cumulative XP needed to reach `level`. Levels 1-20 keep the exact original
+// quadratic curve (50*level*(level-1)) so existing level5/level10/level16 unlocks
+// never shift for players who already hit them. Beyond level 20 the curve switches
+// to a flat linear cost per level (+450 XP/level) so level 100 stays reachable:
+// xpThreshold(20) = 50*20*19 = 19000, xpThreshold(100) = 19000 + 450*80 = 55000 XP total.
+// At ~10 XP/task and 5-15 tasks/day (50-150 XP/day, more with streak/day-completion
+// bonuses), that's roughly 1-3 years of consistent daily use to hit level 100.
+const XP_LEVEL_BREAKPOINT = 20;
+const XP_PER_LEVEL_BEYOND_BREAKPOINT = 450;
+function xpThreshold(level){
+  if(level<=XP_LEVEL_BREAKPOINT) return 50*level*(level-1);
+  const base = 50*XP_LEVEL_BREAKPOINT*(XP_LEVEL_BREAKPOINT-1);
+  return base + XP_PER_LEVEL_BEYOND_BREAKPOINT*(level-XP_LEVEL_BREAKPOINT);
+}
 function levelFromXp(xp){
   let lvl=1;
   while(xpThreshold(lvl+1) <= xp) lvl++;
   return lvl;
 }
 function levelTitle(lvl){
+  if(lvl>=100) return 'Empereur Suprême du Temps';
+  if(lvl>=95) return 'Au-delà du Temps';
+  if(lvl>=85) return 'Mythe Vivant';
+  if(lvl>=75) return 'Titan des To-Do';
+  if(lvl>=65) return 'Demi-Dieu de la Productivité';
+  if(lvl>=55) return 'Architecte du Temps';
+  if(lvl>=45) return 'Virtuose de l\'Agenda';
+  if(lvl>=35) return 'Icône du Quotidien';
+  if(lvl>=25) return 'Légende Urbaine';
   if(lvl>=16) return 'Légende';
   if(lvl>=11) return 'Maître du temps';
   if(lvl>=8) return 'Stratège';
@@ -2005,6 +2069,18 @@ const ACHIEVEMENTS = [
    check:s=>levelFromXp(s.totalXp)>=10},
   {id:'level16', icon:'🏵️', name:'Statut légendaire', desc:'Atteins le niveau 16',
    check:s=>levelFromXp(s.totalXp)>=16},
+  {id:'level25', icon:'🛡️', name:'Icône confirmée', desc:'Atteins le niveau 25',
+   check:s=>levelFromXp(s.totalXp)>=25},
+  {id:'level50', icon:'🏛️', name:'Mi-parcours mythique', desc:'Atteins le niveau 50',
+   check:s=>levelFromXp(s.totalXp)>=50},
+  {id:'level75', icon:'⚜️', name:'Presque intouchable', desc:'Atteins le niveau 75',
+   check:s=>levelFromXp(s.totalXp)>=75},
+  {id:'level100', icon:'🌠', name:'Rang suprême', desc:'Atteins le niveau 100, le rang maximal',
+   check:s=>levelFromXp(s.totalXp)>=100},
+  {id:'tasks1000', icon:'🏭', name:'Machine infinie', desc:'1000 tâches complétées au total',
+   check:s=>s.totalTasksDone>=1000},
+  {id:'streak60', icon:'🧘', name:'Zen absolu', desc:'60 jours parfaits d\'affilée',
+   check:s=>s.bestStreak>=60},
 
   // --- habitudes & variété ---
   {id:'earlybird', icon:'🌅', name:'Lève-tôt', desc:'Termine une tâche prévue avant 8h',
@@ -2023,6 +2099,10 @@ const ACHIEVEMENTS = [
    check:s=>s.parallelUsed},
   {id:'minimalist', icon:'🎯', name:'Minimaliste', desc:'Complète une journée avec une seule tâche',
    check:s=>s.singleTaskDay},
+  {id:'specialiste', icon:'🔬', name:'Spécialiste', desc:'50 tâches complétées dans une même catégorie',
+   check:s=>s.maxTasksInCategory>=50},
+  {id:'amplitude', icon:'⏳', name:'Amplitude totale', desc:'Termine une tâche avant 8h et une autre après 22h le même jour',
+   check:s=>s.sameDayEarlyLate},
 
   // --- découverte des fonctionnalités ---
   {id:'remixer', icon:'🧬', name:'Alchimiste', desc:'Utilise le Remix de journée',
@@ -2049,6 +2129,12 @@ const ACHIEVEMENTS = [
    check:s=>s.ownedThemesCount>=3},
   {id:'collector2', icon:'🎭', name:'Collection d\'avatars', desc:'Débloque 5 avatars payants dans la boutique',
    check:s=>s.purchasedAvatarsCount>=5},
+  {id:'archiviste', icon:'🗃️', name:'Archiviste', desc:'Enregistre 5 modèles de journée',
+   check:s=>s.templatesSaved>=5},
+  {id:'lazybutsmart', icon:'🦥', name:'Flemmard malin', desc:'Copie la journée d\'hier 20 fois',
+   check:s=>s.copyYesterdayUsed>=20},
+  {id:'paranoid', icon:'🔄', name:'Jamais trop prudent', desc:'Recharge les données depuis le disque 15 fois',
+   check:s=>s.refreshClicks>=15},
 
   // --- easter eggs secrets (noms/desc cachés tant que non débloqués) ---
   {id:'konami', icon:'🕹️', name:'Les vrais savent', desc:'Entre le code Konami : ↑ ↑ ↓ ↓ ← → ← → B A',
@@ -2061,6 +2147,14 @@ const ACHIEVEMENTS = [
    check:s=>s.isFriday13, secret:true},
   {id:'lastminute', icon:'🌃', name:'Dans le dernier wagon', desc:'Termine une tâche prévue après 23h',
    check:s=>s.lateNightDone, secret:true},
+  {id:'newyear', icon:'🎉', name:'Bonne résolution', desc:'Ouvre l\'app le 1er janvier',
+   check:s=>s.isNewYearsDay, secret:true},
+  {id:'halloween', icon:'🎃', name:'Trick or planning', desc:'Ouvre l\'app le 31 octobre',
+   check:s=>s.isHalloween, secret:true},
+  {id:'leapday', icon:'🐸', name:'Jour bissextile', desc:'Ouvre l\'app un 29 février (ça n\'arrive qu\'une fois tous les 4 ans)',
+   check:s=>s.isLeapDay, secret:true},
+  {id:'palindrome', icon:'🔁', name:'Heure miroir', desc:'Ouvre l\'app à une heure palindrome (ex: 12:21)',
+   check:s=>s.isPalindromeTime, secret:true},
 
   // --- planning, quêtes & défis ---
   {id:'routine1', icon:'🔁', name:'Pilote automatique', desc:'Crée ta première routine (tâche répétée)',
@@ -3872,6 +3966,7 @@ document.getElementById('dayThemesOverlay').addEventListener('click', (e)=>{
   if(e.target.id==='dayThemesOverlay') closeDayThemesModal();
 });
 document.getElementById('refreshBtn').onclick = async ()=>{
+  bumpCounter('refreshClicks');
   await loadState();
   showToast({icon:'🔄', text:'Données rechargées depuis le disque'});
 };
