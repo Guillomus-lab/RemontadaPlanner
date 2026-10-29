@@ -62,7 +62,7 @@ DEFAULT_DATA = {
         # realistic daily load target, in minutes (used by the charge indicator)
         "dayCapacity": 480,
         # Windows reminders + optional Discord weekly recap
-        "reminders": False, "reminderLead": 10,
+        "reminders": False, "reminderLead": 10, "reminderSound": True,
         "discordWebhook": "", "discordWeekly": False, "lastDiscordRecap": "",
         "lastRolloverPrompt": "",
     },  # UI prefs persisted across launches
@@ -279,34 +279,32 @@ def _register_toast_app_id():
     return _toast_registered
 
 
-def _windows_toast(title, message, wait=False):
-    """Windows toast for task reminders. Tries the optional `winotify` package
-    first, then a WinRT toast through PowerShell (ships with Windows, no
-    dependency). Reminders are fire-and-forget; `wait=True` (the "Tester"
-    button) waits for PowerShell so a failure can be shown to the user."""
+def _windows_toast(title, message, wait=False, sound=True):
+    """Windows toast for task reminders, sent as a WinRT toast through
+    PowerShell (ships with Windows, no dependency, same result on every PC).
+    Reminders are fire-and-forget; `wait=True` (the "Tester" button) waits for PowerShell so a failure can be shown to the user.
+    `sound` plays Windows' "Rappel" chime; False makes the toast silent."""
     title = _notification_text(title) or "Remontada Planner"
     message = _notification_text(message, 400)
     if sys.platform != "win32":
         return {"ok": False, "error": "notifications Windows uniquement"}
     _register_toast_app_id()
 
-    try:
-        from winotify import Notification  # type: ignore
-
-        icon = TOAST_ICON if os.path.isfile(TOAST_ICON) else ""
-        Notification(app_id=TOAST_APP_ID, title=title, msg=message, icon=icon, duration="short").show()
-        return {"ok": True, "mode": "winotify"}
-    except Exception:
-        pass
-
-    xml = (
-        '<toast><visual><binding template="ToastGeneric">'
+    audio_tag = (
+        '<audio src="ms-winsoundevent:Notification.Reminder"/>' if sound else '<audio silent="true"/>'
+    )
+    # scenario="reminder" keeps the toast on screen until dismissed (instead of
+    # sliding away after a few seconds); Windows requires a button for it.
+    toast_xml = (
+        '<toast scenario="reminder"><visual><binding template="ToastGeneric">'
         f"<text>{xml.sax.saxutils.escape(title)}</text>"
         f"<text>{xml.sax.saxutils.escape(message)}</text>"
-        "</binding></visual></toast>"
+        "</binding></visual>"
+        '<actions><action content="OK" arguments="dismiss" activationType="system"/></actions>'
+        f"{audio_tag}</toast>"
     )
     # PowerShell single-quoted literal: only ' needs escaping (as '').
-    xml_literal = xml.replace("'", "''")
+    xml_literal = toast_xml.replace("'", "''")
     script = (
         "$ErrorActionPreference='Stop';"
         "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null;"
@@ -393,13 +391,13 @@ class Api:
             webbrowser.open(url)
         return {"ok": True}
 
-    def notify(self, title, message):
+    def notify(self, title, message, sound=True):
         """Windows toast used by task reminders. Fire-and-forget."""
-        return _windows_toast(title, message)
+        return _windows_toast(title, message, sound=bool(sound))
 
-    def test_notify(self):
+    def test_notify(self, sound=True):
         """'Tester' button in Settings: same toast, but waits for the result."""
-        return _windows_toast("Remontada Planner", "Les rappels Windows fonctionnent ✅", wait=True)
+        return _windows_toast("Remontada Planner", "Les rappels Windows fonctionnent ✅", wait=True, sound=bool(sound))
 
     def send_discord(self, webhook_url, content):
         """Weekly recap to a Discord webhook (e.g. the Luron bot's channel)."""
