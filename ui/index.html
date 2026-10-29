@@ -1181,6 +1181,33 @@
   .settingsBtnRow button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;}
   .settingsBtnRow button:hover{filter:brightness(1.08);}
 
+  /* --- Meal ideas (bonus) --- */
+  .mealIdeaBtn{display:none;margin-top:7px;background:var(--surface2);border:1px dashed var(--border);color:var(--text-dim);
+      border-radius:9px;padding:6px 11px;font-size:11.5px;font-weight:700;cursor:pointer;}
+  .mealIdeaBtn.show{display:inline-flex;align-items:center;gap:6px;}
+  .mealIdeaBtn:hover{border-color:var(--accent);color:var(--text);}
+  #mealOverlay{position:fixed;inset:0;z-index:216;background:rgba(10,8,16,.62);backdrop-filter:blur(4px);
+      display:none;align-items:center;justify-content:center;}
+  #mealOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #mealCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px 24px;
+      width:500px;max-width:93vw;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5);
+      animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);position:relative;}
+  #mealClose{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text-faint);font-size:16px;cursor:pointer;}
+  .mealKicker{font-size:10.5px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
+  #mealName{margin:6px 0 3px;font-size:19px;font-weight:800;line-height:1.25;padding-right:20px;}
+  #mealMeta{font-size:11.5px;color:var(--text-dim);margin-bottom:12px;}
+  .mealFilters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .mealFilters button{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:999px;
+      padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;}
+  .mealFilters button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;}
+  #mealCard h4{margin:12px 0 6px;font-size:11px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
+  #mealIngredients, #mealSteps{margin:0;padding-left:20px;font-size:12.5px;line-height:1.6;color:var(--text);}
+  .mealActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
+  .mealActions button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;
+      padding:8px 12px;font-size:11.5px;font-weight:700;cursor:pointer;}
+  .mealActions button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;margin-left:auto;}
+  .mealActions button:hover{filter:brightness(1.08);}
+
   /* --- Insights cards --- */
   #historyInsights{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:4px 0 18px;}
   .insightCard{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:10px 12px;
@@ -1425,6 +1452,13 @@
           </div>
         </div>
         <div class="settingsBlock">
+          <h4>🍽️ Idées de repas</h4>
+          <div class="settingsHint">Quand une tâche parle de repas (déjeuner, dîner, petit-déj…), un bouton propose une recette healthy avec ses ingrédients. Plus de 100 recettes, sans internet.</div>
+          <div class="settingsRow">
+            <label><input type="checkbox" id="mealIdeasToggle" /> Proposer des idées de repas</label>
+          </div>
+        </div>
+        <div class="settingsBlock">
           <h4>💡 Conseils</h4>
           <div class="settingsHint">Le loop quotidien : capture dans le backlog → choisis 3 priorités → exécute → clôture la journée. L'app s'occupe des reports.</div>
         </div>
@@ -1608,12 +1642,39 @@
   </div>
 </div>
 
+<script src="recipes.js"></script>
+<div id="mealOverlay">
+  <div id="mealCard">
+    <button id="mealClose" title="Fermer">✕</button>
+    <div class="mealKicker" id="mealKicker">🍽️ Idée de repas</div>
+    <h3 id="mealName">—</h3>
+    <div id="mealMeta"></div>
+    <div class="mealFilters" id="mealFilters">
+      <button data-f="">Tout</button>
+      <button data-f="proteine">💪 Protéiné</button>
+      <button data-f="leger">🥗 Léger</button>
+      <button data-f="vege">🌱 Végétarien</button>
+      <button data-f="rapide">⚡ Rapide</button>
+    </div>
+    <h4>Ingrédients · 1 personne</h4>
+    <ul id="mealIngredients"></ul>
+    <h4>Préparation</h4>
+    <ol id="mealSteps"></ol>
+    <div class="mealActions">
+      <button id="mealNext">🎲 Une autre idée</button>
+      <button id="mealShop" title="Crée une tâche Courses dans « À planifier » avec la liste des ingrédients">🛒 Ajouter aux courses</button>
+      <button id="mealKeep" class="primary">📝 Garder dans la note</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalOverlay">
   <div id="taskModal">
     <h3>✨ Nouvelle tâche</h3>
     <div class="modalField">
       <label>Titre</label>
       <input id="modalTitle" placeholder="ex: Gym, Réunion client, Dessin..." />
+      <button type="button" id="modalMealBtn" class="mealIdeaBtn">🍽️ Idée de repas</button>
     </div>
     <div class="modalField">
       <label class="parallelLabel" id="priorityToggle">
@@ -3715,6 +3776,7 @@ function ensureCollections(){
   if(typeof state.settings.reminders !== 'boolean') state.settings.reminders = false;
   if(!Number.isFinite(Number(state.settings.reminderLead))) state.settings.reminderLead = 10;
   if(typeof state.settings.reminderSound !== 'boolean') state.settings.reminderSound = true;
+  if(typeof state.settings.mealIdeas !== 'boolean') state.settings.mealIdeas = true;
   if(typeof state.settings.discordWebhook !== 'string') state.settings.discordWebhook = '';
   if(typeof state.settings.discordWeekly !== 'boolean') state.settings.discordWeekly = false;
   if(typeof state.settings.lastDiscordRecap !== 'string') state.settings.lastDiscordRecap = '';
@@ -4119,6 +4181,8 @@ function renderSettingsTab(){
   if(lead) lead.value = String(Number(state.settings.reminderLead) || 10);
   const snd = document.getElementById('reminderSoundToggle');
   if(snd) snd.checked = state.settings.reminderSound !== false;
+  const meal = document.getElementById('mealIdeasToggle');
+  if(meal) meal.checked = state.settings.mealIdeas !== false;
   const cap = document.getElementById('dayCapacityInput');
   if(cap) cap.value = String(Math.round((Number(state.settings.dayCapacity) || 480) / 6) / 10);
   const webhook = document.getElementById('discordWebhook');
@@ -4280,6 +4344,123 @@ function checkTaskReminders(){
   if(changed) persist();
 }
 
+// ================= Meal ideas (bonus, recipes in recipes.js) =================
+const MEAL_LABELS = {pd:'Petit-déjeuner', dej:'Déjeuner', din:'Dîner', col:'Collation'};
+const MEAL_TAG_LABELS = {proteine:'💪 protéiné', leger:'🥗 léger', vege:'🌱 végétarien', rapide:'⚡ rapide'};
+let mealState = {kind:null, filter:'', current:null, seen:new Set(), fromModal:false};
+
+function mealIdeasAvailable(){
+  return typeof RECIPES !== 'undefined' && Array.isArray(RECIPES) && RECIPES.length > 0
+    && !(state.settings && state.settings.mealIdeas === false);
+}
+
+// Which meal a task is about, from its title (and its time for a generic "repas").
+function mealKindFromTask(title, start){
+  const t = normTxt(title);
+  if(!t) return null;
+  if(/petit[- ]?dej|breakfast|brunch/.test(t)) return 'pd';
+  if(/gouter|collation|snack|en-cas|encas/.test(t)) return 'col';
+  if(/dejeuner|lunch/.test(t)) return 'dej';
+  if(/diner|souper/.test(t)) return 'din';
+  if(/repas|manger|recette|cuisiner|\bplat\b/.test(t)){
+    const m = start ? hhmmToMinutes(start) : 12*60;
+    if(m < 10*60+30) return 'pd';
+    if(m < 15*60) return 'dej';
+    if(m < 18*60) return 'col';
+    return 'din';
+  }
+  return null;
+}
+
+// A preferred style hinted by the title ("petit-déj riche en protéines", "repas léger"...).
+function mealFilterFromTitle(title){
+  const t = normTxt(title);
+  if(/prot|sport|muscu/.test(t)) return 'proteine';
+  if(/vege|vegan/.test(t)) return 'vege';
+  if(/leger|sain|healthy|equilibr|detox/.test(t)) return 'leger';
+  if(/rapide|express|vite/.test(t)) return 'rapide';
+  return '';
+}
+
+function updateMealButton(){
+  const btn = document.getElementById('modalMealBtn');
+  if(!btn) return;
+  const kind = mealIdeasAvailable() ? mealKindFromTask(document.getElementById('modalTitle').value, document.getElementById('modalStart').value) : null;
+  btn.classList.toggle('show', !!kind);
+}
+
+function mealPool(){
+  return RECIPES.filter(r=> (!mealState.kind || r.m.includes(mealState.kind)) && (!mealState.filter || r.tags.includes(mealState.filter)));
+}
+
+function pickMeal(){
+  let pool = mealPool();
+  if(!pool.length){ mealState.filter = ''; pool = mealPool(); } // e.g. no "léger" snack: fall back to all
+  let fresh = pool.filter(r=> !mealState.seen.has(r.n) && r !== mealState.current);
+  if(!fresh.length){ mealState.seen.clear(); fresh = pool.filter(r=> r !== mealState.current); }
+  if(!fresh.length) fresh = pool;
+  const r = fresh[Math.floor(Math.random() * fresh.length)];
+  mealState.seen.add(r.n);
+  mealState.current = r;
+  renderMealCard();
+}
+
+function renderMealCard(){
+  const r = mealState.current;
+  if(!r) return;
+  document.getElementById('mealKicker').textContent = '🍽️ Idée de repas' + (mealState.kind ? ' · ' + MEAL_LABELS[mealState.kind] : '');
+  document.getElementById('mealName').textContent = `${r.e} ${r.n}`;
+  document.getElementById('mealMeta').textContent = [`⏱️ ${fmtDur(r.t)}`, ...r.tags.map(t=> MEAL_TAG_LABELS[t]).filter(Boolean)].join(' · ');
+  const ing = document.getElementById('mealIngredients');
+  ing.innerHTML = '';
+  r.i.forEach(x=>{ const li = document.createElement('li'); li.textContent = x; ing.appendChild(li); });
+  const steps = document.getElementById('mealSteps');
+  steps.innerHTML = '';
+  r.s.forEach(x=>{ const li = document.createElement('li'); li.textContent = x; steps.appendChild(li); });
+  document.querySelectorAll('#mealFilters button').forEach(b=> b.classList.toggle('on', b.dataset.f === mealState.filter));
+  document.getElementById('mealKeep').style.display = mealState.fromModal ? '' : 'none';
+}
+
+// task: {title, start} from the open task modal, or null from the search palette
+function openMealIdea(task){
+  if(!mealIdeasAvailable()) return;
+  mealState.fromModal = !!task;
+  mealState.kind = task ? mealKindFromTask(task.title, task.start) : null;
+  mealState.filter = task ? mealFilterFromTitle(task.title) : '';
+  mealState.current = null;
+  pickMeal();
+  document.getElementById('mealOverlay').classList.add('show');
+  bumpCounter('mealIdeasOpened');
+}
+function closeMealIdea(){ document.getElementById('mealOverlay').classList.remove('show'); }
+
+function mealAsNote(r){
+  return `🍽️ ${r.n} (${fmtDur(r.t)})\nIngrédients : ${r.i.join(', ')}\n` + r.s.map((x,i)=> `${i+1}. ${x}`).join('\n');
+}
+
+function keepMealInNote(){
+  const r = mealState.current;
+  if(!r) return;
+  const notesEl = document.getElementById('modalNotes');
+  const existing = notesEl.value.trim();
+  notesEl.value = ((existing ? existing + '\n\n' : '') + mealAsNote(r)).slice(0, 1000);
+  document.getElementById('modalDetails').classList.add('show');
+  closeMealIdea();
+  showToast({icon:'📝', text:'Recette ajoutée à la note', sub:'Enregistre la tâche pour la garder.'});
+}
+
+function addMealToShopping(){
+  const r = mealState.current;
+  if(!r) return;
+  const category = state.categories['Courses'] ? 'Courses' : (state.categories[activeCategory] ? activeCategory : Object.keys(state.categories)[0]);
+  state.backlog.push({
+    id: uid(), title: `Courses : ${r.n}`.slice(0, 90), duration: 30, category,
+    notes: r.i.map(x=> '• ' + x).join('\n').slice(0, 1000), url: '', createdAt: new Date().toISOString()
+  });
+  persist(); renderBacklog();
+  showToast({icon:'🛒', text:'Ajouté à « À planifier »', sub:`Courses : ${r.n} — ${r.i.length} ingrédients`});
+}
+
 // --- Discord weekly recap (webhook, e.g. the Luron bot) ---
 function buildWeeklyRecap(weekKeyStr){
   const keys = weekKeys(weekKeyStr);
@@ -4386,6 +4567,7 @@ function buildSearchGroups(query){
     {icon:'🎯', title:'Ouvrir les quêtes & défis', sub:'Objectifs de la semaine et défis de régularité', run:()=> openQuestModal()},
     {icon:'👤', title:'Ouvrir mon profil', sub:'Succès, boutique, historique', run:()=> openProfileModal()},
     {icon:'⚙️', title:'Ouvrir les réglages', sub:'Rappels, charge quotidienne, Discord', run:()=> openProfileSettings()},
+    ...(mealIdeasAvailable() ? [{icon:'🍽️', title:'Idée de repas', sub:'Une recette healthy au hasard', run:()=> openMealIdea(null)}] : []),
   ];
   const actionItems = actions.filter(a=> matches(a.title + ' ' + a.sub))
     .map(a=> ({...a, tag:'Action'}));
@@ -5415,6 +5597,7 @@ function openTaskModal(presetMinutes, task, opts){
   document.getElementById('modalBacklog').classList.toggle('show', !!task && !routine && !backlog);
   renderModalCategories();
   renderRepeatUI();
+  updateMealButton();
   document.getElementById('modalOverlay').classList.add('show');
   setTimeout(()=> document.getElementById('modalTitle').focus(), 80);
 }
@@ -5621,7 +5804,8 @@ document.getElementById('modalOverlay').addEventListener('click', (e)=>{
 document.getElementById('modalTitle').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.defaultPrevented) saveModalTask(); });
 document.addEventListener('keydown', (e)=>{
   if(e.key!=='Escape' || e.defaultPrevented) return; // already consumed by the confirm popup
-  if(document.getElementById('searchOverlay').classList.contains('show')) closeSearch();
+  if(document.getElementById('mealOverlay').classList.contains('show')) closeMealIdea();
+  else if(document.getElementById('searchOverlay').classList.contains('show')) closeSearch();
   else if(document.getElementById('closeDayOverlay').classList.contains('show')) closeCloseDayModal();
   else if(document.getElementById('modalOverlay').classList.contains('show')) closeTaskModal();
   else if(document.getElementById('weekFillOverlay').classList.contains('show')) closeWeekFill();
@@ -5700,6 +5884,27 @@ document.querySelectorAll('#repeatPresets button').forEach(b=> b.onclick = ()=>{
 });
 document.getElementById('modalDelete').onclick = deleteFromModal;
 document.getElementById('modalBacklog').onclick = moveEditingTaskToBacklog;
+document.getElementById('modalTitle').addEventListener('input', updateMealButton);
+document.getElementById('modalStart').addEventListener('change', updateMealButton);
+document.getElementById('modalMealBtn').onclick = ()=> openMealIdea({
+  title: document.getElementById('modalTitle').value, start: document.getElementById('modalStart').value });
+document.getElementById('mealClose').onclick = closeMealIdea;
+document.getElementById('mealNext').onclick = pickMeal;
+document.getElementById('mealKeep').onclick = keepMealInNote;
+document.getElementById('mealShop').onclick = addMealToShopping;
+document.getElementById('mealOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'mealOverlay') closeMealIdea(); });
+document.getElementById('mealFilters').addEventListener('click', (e)=>{
+  const b = e.target.closest('button');
+  if(!b) return;
+  mealState.filter = b.dataset.f;
+  mealState.current = null;
+  pickMeal();
+});
+document.getElementById('mealIdeasToggle').onchange = (e)=>{
+  state.settings.mealIdeas = e.target.checked;
+  persist();
+  updateMealButton();
+};
 document.getElementById('modalDetailsToggle').onclick = ()=>{
   document.getElementById('modalDetails').classList.toggle('show');
 };

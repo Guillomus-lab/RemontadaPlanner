@@ -63,6 +63,7 @@ DEFAULT_DATA = {
         "dayCapacity": 480,
         # Windows reminders + optional Discord weekly recap
         "reminders": False, "reminderLead": 10, "reminderSound": True,
+        "mealIdeas": True,
         "discordWebhook": "", "discordWeekly": False, "lastDiscordRecap": "",
         "lastRolloverPrompt": "",
     },  # UI prefs persisted across launches

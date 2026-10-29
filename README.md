@@ -118,6 +118,11 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
   qu'elles s'affichent ; si rien n'apparaît, regarde le mode Ne pas déranger.
 - Récap hebdomadaire Discord via webhook (par exemple le salon de Luron) :
   envoi manuel, ou automatique le lundi si activé. Aucun ping.
+- Idées de repas (bonus, désactivable) : dans une tâche de repas (déjeuner,
+  dîner, petit-déj, goûter…), le bouton « 🍽️ Idée de repas » propose une recette
+  healthy parmi plus de 100 (`ui/recipes.js`), avec filtres protéiné / léger /
+  végétarien / rapide. On peut garder la recette dans la note de la tâche ou
+  envoyer ses ingrédients dans « À planifier » comme liste de courses.
 - Insights locaux sur les 30 derniers jours : taux de complétion, charge vs
   capacité, meilleur créneau, catégorie la plus fiable, priorités tenues,
   reports et journées parfaites.
