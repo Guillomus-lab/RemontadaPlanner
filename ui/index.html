@@ -600,6 +600,46 @@
   .wkAdd:hover{border-color:var(--accent);color:var(--accent);}
   .wkEmpty{font-size:11px;color:var(--text-faint);text-align:center;padding:14px 4px;}
 
+  /* --- Récap camembert (time split by category) --- */
+  #recapOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:230;
+      display:none;align-items:center;justify-content:center;}
+  #recapOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #recapCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:0;
+      width:560px;max-height:86vh;box-shadow:0 24px 70px rgba(0,0,0,.55);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);
+      display:flex;flex-direction:column;overflow:hidden;}
+  #recapHeader{display:flex;align-items:center;gap:12px;padding:18px 22px;
+      background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface)), var(--surface));
+      border-bottom:1px solid var(--border);flex-shrink:0;}
+  #recapHeader h3{margin:0;font-size:17px;font-weight:800;flex:1;display:flex;align-items:center;gap:8px;}
+  #recapClose{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;
+      width:30px;height:30px;cursor:pointer;flex-shrink:0;font-size:14px;}
+  #recapClose:hover{background:var(--surface3);}
+  #recapScopeSwitch{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+      padding:3px;flex-shrink:0;margin:0 22px;margin-top:14px;}
+  #recapScopeSwitch button{flex:1;background:transparent;border:none;color:var(--text-dim);font-size:12px;font-weight:700;
+      padding:7px 11px;border-radius:7px;cursor:pointer;transition:all .15s ease;}
+  #recapScopeSwitch button:hover{color:var(--text);}
+  #recapScopeSwitch button.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+  #recapBody{padding:16px 22px 22px;overflow-y:auto;flex:1;}
+  #recapRange{font-size:11.5px;color:var(--text-faint);font-weight:600;margin-bottom:10px;text-align:center;}
+  #recapChartWrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap;justify-content:center;}
+  #recapCanvas{flex-shrink:0;}
+  #recapLegend{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px;}
+  .recapLegendRow{display:flex;align-items:center;gap:9px;background:var(--surface2);border:1px solid var(--border);
+      border-radius:10px;padding:8px 10px;}
+  .recapSwatch{width:13px;height:13px;border-radius:4px;flex-shrink:0;position:relative;overflow:hidden;}
+  .recapSwatch .swDone{position:absolute;inset:0;}
+  .recapSwatch .swPlanned{position:absolute;inset:0;opacity:.45;filter:saturate(.3) brightness(1.25);
+      background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.5) 0 2px, transparent 2px 4px);}
+  .recapLegendInfo{flex:1;min-width:0;}
+  .recapLegendName{font-size:12.5px;font-weight:700;color:var(--text);}
+  .recapLegendDetail{font-size:10.5px;color:var(--text-faint);font-weight:600;margin-top:1px;}
+  .recapLegendPct{font-size:12.5px;font-weight:800;color:var(--accent);flex-shrink:0;}
+  #recapEmptyMsg{font-size:12.5px;color:var(--text-faint);text-align:center;padding:30px 10px;line-height:1.6;}
+  #recapLegendHint{font-size:10.5px;color:var(--text-faint);text-align:center;margin-top:14px;line-height:1.5;}
+  .recapHintSwatch{display:inline-block;width:9px;height:9px;border-radius:3px;vertical-align:middle;margin:0 3px;
+      background-image:repeating-linear-gradient(45deg, var(--text-faint) 0 2px, transparent 2px 4px);opacity:.6;}
+
   /* month */
   .moDow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:6px;}
   .moDow div{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);font-weight:800;text-align:center;}
@@ -742,6 +782,7 @@
     </div>
     <div id="progressWrap"><span id="dayBadge">🌱</span><span id="progressLabel">0/0</span><div id="progressBarOuter"><div id="progressBarInner"></div></div></div>
     <div class="toolGroup">
+      <button id="recapBtn" class="navbtn" title="Récap">🥧</button>
       <button id="refreshBtn" class="navbtn" title="Rafraîchir les données">🔄</button>
       <button id="zoomOutBtn" class="navbtn" title="Zoom -">−</button>
       <button id="zoomInBtn" class="navbtn" title="Zoom +">+</button>
@@ -881,6 +922,23 @@
     <div class="modalActions">
       <button id="wfCancel" class="btnSecondary">Annuler</button>
       <button id="wfApply" class="btnPrimary">Planifier</button>
+    </div>
+  </div>
+</div>
+
+<div id="recapOverlay">
+  <div id="recapCard">
+    <div id="recapHeader">
+      <h3>🥧 Récap du temps par catégorie</h3>
+      <button id="recapClose">✕</button>
+    </div>
+    <div id="recapScopeSwitch">
+      <button type="button" data-scope="day">Jour</button>
+      <button type="button" data-scope="week">Semaine</button>
+    </div>
+    <div id="recapBody">
+      <div id="recapRange"></div>
+      <div id="recapContent"></div>
     </div>
   </div>
 </div>
@@ -3089,6 +3147,172 @@ function closeQuestModal(){
   document.getElementById('questOverlay').classList.remove('show');
   document.getElementById('challengeForm').classList.remove('show');
 }
+
+// ================= Récap camembert (time split by category) =================
+let recapScope = 'day';
+
+function minutesToFrHM(m){
+  m = Math.round(m || 0);
+  const h = Math.floor(m/60), mm = m%60;
+  if(h<=0) return mm+'min';
+  if(mm===0) return h+'h';
+  return h+'h'+pad(mm);
+}
+
+// Lightens/desaturates a category hex color for the "planned but not done" slice —
+// same idea as .task.done's saturate filter, just baked into a flat color for canvas.
+function desaturateColor(hex, satFactor=0.35, lightenTowards=0.55){
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+  if(!m) return hex || '#888888';
+  let r = parseInt(m[1],16), g = parseInt(m[2],16), b = parseInt(m[3],16);
+  const avg = (r+g+b)/3;
+  r = avg + (r-avg)*satFactor; g = avg + (g-avg)*satFactor; b = avg + (b-avg)*satFactor;
+  r = r + (255-r)*lightenTowards; g = g + (255-g)*lightenTowards; b = b + (255-b)*lightenTowards;
+  const toHex = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2,'0');
+  return '#'+toHex(r)+toHex(g)+toHex(b);
+}
+
+function drawRecapChart(categories){
+  const canvas = document.getElementById('recapCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  const size = 220;
+  canvas.width = size*dpr; canvas.height = size*dpr;
+  canvas.style.width = size+'px'; canvas.style.height = size+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0,0,size,size);
+  const cx = size/2, cy = size/2, radius = size/2 - 6;
+
+  const entries = Object.entries(categories).filter(([,c])=> (c.doneMinutes + c.plannedMinutes) > 0);
+  if(entries.length===0){
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI*2);
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface3') || '#333';
+    ctx.fill();
+    return;
+  }
+
+  const total = entries.reduce((s,[,c])=> s + c.doneMinutes + c.plannedMinutes, 0);
+  let angle = -Math.PI/2;
+  entries.forEach(([name, c])=>{
+    const sliceTotal = c.doneMinutes + c.plannedMinutes;
+    const sliceAngle = (sliceTotal/total) * Math.PI*2;
+    const doneAngle = sliceTotal>0 ? (c.doneMinutes/sliceTotal)*sliceAngle : 0;
+
+    // done portion: solid category color
+    if(doneAngle > 0){
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, angle, angle+doneAngle);
+      ctx.closePath();
+      ctx.fillStyle = c.color || '#888';
+      ctx.fill();
+    }
+    // planned-but-not-validated portion: greyed/desaturated variant + hatch
+    const plannedAngle = sliceAngle - doneAngle;
+    if(plannedAngle > 0){
+      const start = angle+doneAngle, end = angle+sliceAngle;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, start, end);
+      ctx.closePath();
+      ctx.fillStyle = desaturateColor(c.color);
+      ctx.fill();
+      // diagonal hatch on top, clipped to the slice, to make "skipped" visually distinct
+      ctx.clip();
+      ctx.strokeStyle = 'rgba(255,255,255,.35)';
+      ctx.lineWidth = 2;
+      for(let x=-size; x<size*2; x+=7){
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x+size, size);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    // thin separator between slices
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + radius*Math.cos(angle), cy + radius*Math.sin(angle));
+    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--surface') || '#1a1724';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    angle += sliceAngle;
+  });
+
+  // donut hole in the middle so it reads as a clean camembert, not a solid disc
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius*0.42, 0, Math.PI*2);
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--surface') || '#1a1724';
+  ctx.fill();
+}
+
+function renderRecapLegend(data){
+  const legend = document.createElement('div');
+  legend.id = 'recapLegend';
+  Object.entries(data.categories).forEach(([name, c])=>{
+    const row = document.createElement('div');
+    row.className = 'recapLegendRow';
+    row.innerHTML = `<span class="recapSwatch"><span class="swDone" style="background:${escapeHtml(c.color||'#888')}"></span>${c.plannedMinutes>0 ? `<span class="swPlanned" style="background:${escapeHtml(c.color||'#888')}"></span>` : ''}</span>
+      <div class="recapLegendInfo">
+        <div class="recapLegendName">${escapeHtml(name)}</div>
+        <div class="recapLegendDetail">✅ ${minutesToFrHM(c.doneMinutes)} fait${c.plannedMinutes>0 ? ` · ⏳ ${minutesToFrHM(c.plannedMinutes)} non validé` : ''}</div>
+      </div>
+      <div class="recapLegendPct">${Math.round(c.percentOfTotal||0)}%</div>`;
+    legend.appendChild(row);
+  });
+  return legend;
+}
+
+async function loadRecapData(){
+  const content = document.getElementById('recapContent');
+  const rangeEl = document.getElementById('recapRange');
+  content.innerHTML = '<div id="recapEmptyMsg">⏳ Chargement…</div>';
+  rangeEl.textContent = '';
+  let data;
+  try{
+    data = await window.pywebview.api.get_category_recap(recapScope, iso(currentDate));
+  } catch(err){
+    content.innerHTML = '<div id="recapEmptyMsg">🛠️ Bientôt disponible — cette vue arrive dans une prochaine mise à jour !</div>';
+    return;
+  }
+  if(!data || !data.categories || Object.keys(data.categories).length===0 || !data.totalMinutes){
+    content.innerHTML = '<div id="recapEmptyMsg">🤷 Rien à montrer pour l\'instant : planifie quelques tâches d\'abord.</div>';
+    return;
+  }
+  if(data.range){
+    rangeEl.textContent = data.range.from===data.range.to ? data.range.from : `du ${data.range.from} au ${data.range.to}`;
+  }
+  content.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.id = 'recapChartWrap';
+  const canvas = document.createElement('canvas');
+  canvas.id = 'recapCanvas';
+  wrap.appendChild(canvas);
+  wrap.appendChild(renderRecapLegend(data));
+  content.appendChild(wrap);
+  drawRecapChart(data.categories);
+  const hint = document.createElement('div');
+  hint.id = 'recapLegendHint';
+  hint.innerHTML = 'La partie <span class="recapHintSwatch"></span> grisée/hachurée d\'une catégorie est le temps que tu avais planifié mais pas validé — regarde où tu perds le plus de temps prévu pour mieux rééquilibrer ta semaine.';
+  content.appendChild(hint);
+}
+
+function setRecapScope(scope){
+  recapScope = (scope==='week') ? 'week' : 'day';
+  document.querySelectorAll('#recapScopeSwitch button').forEach(b=> b.classList.toggle('active', b.dataset.scope===recapScope));
+  loadRecapData();
+}
+
+function openRecapModal(){
+  setRecapScope(viewMode==='week' ? 'week' : 'day');
+  document.getElementById('recapOverlay').classList.add('show');
+}
+function closeRecapModal(){
+  document.getElementById('recapOverlay').classList.remove('show');
+}
+
 function renderQuestModal(){
   const tk = todayKey(), wk = weekKeyOf(tk);
   const qs = weeklyQuests(wk);
@@ -3445,6 +3669,7 @@ document.addEventListener('keydown', (e)=>{
   if(document.getElementById('modalOverlay').classList.contains('show')) closeTaskModal();
   else if(document.getElementById('weekFillOverlay').classList.contains('show')) closeWeekFill();
   else if(document.getElementById('questOverlay').classList.contains('show')) closeQuestModal();
+  else if(document.getElementById('recapOverlay').classList.contains('show')) closeRecapModal();
   else if(document.getElementById('dayThemesOverlay').classList.contains('show')) closeDayThemesModal();
   else if(document.getElementById('profileOverlay').classList.contains('show')) closeProfileModal();
   else if(document.getElementById('dayRecapOverlay').classList.contains('show')) document.getElementById('dayRecapOverlay').classList.remove('show');
@@ -3492,6 +3717,10 @@ document.getElementById('questPill').onclick = openQuestModal;
 document.getElementById('questsBtn').onclick = openQuestModal;
 document.getElementById('questClose').onclick = closeQuestModal;
 document.getElementById('questOverlay').addEventListener('click', (e)=>{ if(e.target.id==='questOverlay') closeQuestModal(); });
+document.getElementById('recapBtn').onclick = openRecapModal;
+document.getElementById('recapClose').onclick = closeRecapModal;
+document.getElementById('recapOverlay').addEventListener('click', (e)=>{ if(e.target.id==='recapOverlay') closeRecapModal(); });
+document.querySelectorAll('#recapScopeSwitch button').forEach(b=> b.onclick = ()=> setRecapScope(b.dataset.scope));
 document.getElementById('newChallengeBtn').onclick = openChallengeForm;
 document.getElementById('chCancel').onclick = ()=> document.getElementById('challengeForm').classList.remove('show');
 document.getElementById('chCreate').onclick = createChallengeFromForm;
