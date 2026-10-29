@@ -4340,7 +4340,13 @@ const ONBOARDING_STEPS = [
   {target:'#openAddBtn', text:"Clique ici pour ajouter une nouvelle tâche à ta journée."},
   {target:'#viewSwitch', text:"Bascule entre les vues Jour, Semaine et Mois selon ce que tu veux organiser."},
   {target:'#catList', text:"Tes tâches sont colorées par catégorie — tu peux créer et personnaliser les tiennes ici."},
-  {target:'#timelineWrap', text:"Coche une tâche quand elle est terminée pour gagner de l'XP et quelques pièces 🪙 au passage !"},
+  // Centered on purpose, not pinned to #timelineWrap: that element spans
+  // almost the full window height, which pushed the coachmark card into a
+  // degenerate positioning case (card rendered with no room for its own
+  // button row) specifically in the packaged WebView2 runtime — never
+  // reproduced in a desktop browser, but consistently broken there, so the
+  // safe fix is to stop depending on that element's bounding box at all.
+  {target:null, text:"Coche une tâche quand elle est terminée pour gagner de l'XP et quelques pièces 🪙 au passage !"},
   {target:'#levelPill', text:"Ton profil : niveau, succès débloqués, boutique et avatar — tout se trouve ici."},
   {target:'#recapBtn', text:"Le récap 🥧 affiche un camembert de la répartition de ton temps par catégorie."},
   {target:null, text:"Et voilà, tu es prêt(e) ! Amuse-toi à planifier tes journées et à monter de niveau. 🚀", final:true},
@@ -4366,6 +4372,10 @@ function positionOnboardingTooltip(el, tooltip){
   let top = r.bottom + 14;
   let left = r.left;
   if(top + th > window.innerHeight - 10) top = Math.max(10, r.top - th - 14);
+  // Extra safety net: whichever branch ran above, never let the card's
+  // bottom edge land past the viewport (it previously could still happen
+  // for very tall targets, silently pushing the button row out of view).
+  if(top + th > window.innerHeight - 10) top = Math.max(10, window.innerHeight - th - 10);
   if(left + tw > window.innerWidth - 10) left = window.innerWidth - tw - 10;
   if(left < 10) left = 10;
   if(top < 10) top = 10;
