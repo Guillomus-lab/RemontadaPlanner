@@ -465,7 +465,7 @@
   #updateGoBtn:hover{filter:brightness(1.1);}
 
   /* --- Glassmorphism pass: translucent frosted panels over blurred content --- */
-  header, #sidebar, #quickAdd, .toast, #miniCal, #celebrateMsg,
+  header, #sidebar, #quickAdd, .toast, #celebrateMsg,
   #profileCard, #taskModal, #dayRecapCard, #confirmCard, #recapCard, #questCard,
   #weekFillCard, #dayThemesCard, #onboardingTooltip, #updateCard{
       background:color-mix(in srgb, var(--surface) 72%, transparent)!important;
@@ -505,7 +505,6 @@
                cursor:pointer;color:var(--text);font-size:14px;transition:transform .15s ease;flex-shrink:0;}
   #themeToggle:hover,#sfxToggle:hover{transform:scale(1.08);}
   #sfxToggle.muted{opacity:.5;}
-  #calBtn{position:relative;}
   #moreBtn{font-size:17px;font-weight:800;line-height:1;}
   #moreBtn.on{background:var(--accent-soft);}
   #moreMenu{position:fixed;z-index:180;display:none;flex-direction:column;min-width:240px;background:var(--surface);
@@ -519,10 +518,6 @@
   .mmTools span{flex:1;font-size:10.5px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
   .mmTools .navbtn{width:32px;height:32px;}
 
-  #miniCal{position:absolute;top:54px;right:150px;background:var(--surface);border:1px solid var(--border);
-            border-radius:var(--radius);padding:10px;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.45);display:none;}
-  #miniCal.show{display:block;}
-  #miniCal input[type=date]{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:7px;font-size:13px;}
 
   main{flex:1;display:flex;overflow:hidden;}
   #sidebar{width:198px;border-right:1px solid var(--border);background:var(--surface);padding:18px 12px;flex-shrink:0;overflow-y:auto;}
@@ -1336,8 +1331,6 @@
     </div>
     <div id="dateLabel">—</div>
     <button id="todayBtn">Aujourd'hui</button>
-    <button id="calBtn" class="navbtn" title="Choisir une date" style="background:var(--surface2);border:1px solid var(--border);">🗓</button>
-    <div id="miniCal"><input type="date" id="dateInput" /></div>
     <div class="viewSwitch" id="viewSwitch">
       <button data-view="day">Jour</button>
       <button data-view="week">Semaine</button>
@@ -3882,7 +3875,6 @@ function render(){
   document.body.classList.add('view-'+viewMode);
   document.querySelectorAll('#viewSwitch button').forEach(b=> b.classList.toggle('active', b.dataset.view===viewMode));
   document.getElementById('dateLabel').textContent = periodLabel();
-  document.getElementById('dateInput').value = iso(currentDate);
   document.getElementById('todayBtn').textContent = viewMode==='day' ? 'Aujourd\'hui' : viewMode==='week' ? 'Cette semaine' : 'Ce mois';
   document.getElementById('prevDay').title = viewMode==='day' ? 'Jour précédent' : viewMode==='week' ? 'Semaine précédente' : 'Mois précédent';
   document.getElementById('nextDay').title = viewMode==='day' ? 'Jour suivant' : viewMode==='week' ? 'Semaine suivante' : 'Mois suivant';
@@ -6571,12 +6563,6 @@ document.addEventListener('keydown', (e)=>{
   else if(document.getElementById('dayThemesOverlay').classList.contains('show')) closeDayThemesModal();
   else if(document.getElementById('profileOverlay').classList.contains('show')) closeProfileModal();
   else if(document.getElementById('dayRecapOverlay').classList.contains('show')) document.getElementById('dayRecapOverlay').classList.remove('show');
-  else document.getElementById('miniCal').classList.remove('show');
-});
-// close the mini calendar when clicking anywhere else
-document.addEventListener('mousedown', (e)=>{
-  const cal = document.getElementById('miniCal');
-  if(cal.classList.contains('show') && !cal.contains(e.target) && e.target.id!=='calBtn') cal.classList.remove('show');
 });
 // keep the "now" line moving and follow midnight rollover while the app stays open
 let lastTodayKey = iso(new Date());
@@ -6830,13 +6816,6 @@ document.querySelectorAll('#recapScopeSwitch button').forEach(b=> b.onclick = ()
 document.getElementById('newChallengeBtn').onclick = openChallengeForm;
 document.getElementById('chCancel').onclick = ()=> document.getElementById('challengeForm').classList.remove('show');
 document.getElementById('chCreate').onclick = createChallengeFromForm;
-document.getElementById('calBtn').onclick = ()=>{ document.getElementById('miniCal').classList.toggle('show'); };
-document.getElementById('dateInput').addEventListener('change', (e)=>{
-  if(!e.target.value) return;
-  currentDate = new Date(e.target.value+'T12:00:00');
-  document.getElementById('miniCal').classList.remove('show');
-  render();
-});
 document.getElementById('saveTplBtn').onclick = saveTemplateFromToday;
 document.getElementById('copyYesterdayBtn').onclick = copyYesterday;
 document.getElementById('dayThemesBtn').onclick = openDayThemesModal;
