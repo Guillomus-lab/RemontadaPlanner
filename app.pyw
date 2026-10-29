@@ -178,6 +178,52 @@ class Api:
     def load(self):
         return _load_raw()
 
+    def get_category_recap(self, scope, ref_date):
+        """Aggregate planned/done minutes per category for a day or ISO week
+        (Monday-Sunday) around ref_date, for the camembert recap chart.
+        Read-only: never touches the saved data."""
+        data = _load_raw()
+        ref = datetime.date.fromisoformat(ref_date)
+        if scope == "week":
+            start = ref - datetime.timedelta(days=ref.weekday())
+            end = start + datetime.timedelta(days=6)
+        else:
+            start = end = ref
+
+        buckets = {}
+        total_minutes = 0
+        day = start
+        while day <= end:
+            for task in data.get("days", {}).get(day.isoformat(), []):
+                category = task.get("category", "")
+                duration = task.get("duration", 0) or 0
+                total_minutes += duration
+                bucket = buckets.setdefault(category, {"doneMinutes": 0, "plannedMinutes": 0})
+                if task.get("done"):
+                    bucket["doneMinutes"] += duration
+                else:
+                    bucket["plannedMinutes"] += duration
+            day += datetime.timedelta(days=1)
+
+        colors = data.get("categories", {})
+        categories = {}
+        for name, bucket in buckets.items():
+            cat_total = bucket["doneMinutes"] + bucket["plannedMinutes"]
+            categories[name] = {
+                "color": colors.get(name, "#6b7280"),
+                "doneMinutes": bucket["doneMinutes"],
+                "plannedMinutes": bucket["plannedMinutes"],
+                "percentDone": (bucket["doneMinutes"] / cat_total * 100) if cat_total else 0.0,
+                "percentOfTotal": (cat_total / total_minutes * 100) if total_minutes else 0.0,
+            }
+
+        return {
+            "scope": scope,
+            "range": {"from": start.isoformat(), "to": end.isoformat()},
+            "totalMinutes": total_minutes,
+            "categories": categories,
+        }
+
     def save(self, data):
         # Refuse obviously broken payloads instead of overwriting good data with them.
         if not isinstance(data, dict) or not isinstance(data.get("days"), dict):
