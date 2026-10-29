@@ -20,6 +20,32 @@ if not getattr(sys, "frozen", False) and os.path.isdir(_VENV_SITE) and _VENV_SIT
     import site
     site.addsitedir(_VENV_SITE)
 
+
+
+def _clean_child_env():
+    """Environment for launching another copy of the exe. A PyInstaller exe
+    started from a running one inherits its _PYI_* variables and reuses the
+    parent's temporary folder, which is deleted when the parent closes (that
+    broke the restart after the v1.3.0 update). PYINSTALLER_RESET_ENVIRONMENT
+    makes the child extract its own files like a normal launch."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("_PYI_") and k != "_MEIPASS2"}
+    env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+    return env
+
+
+# Restart after an update, launched by an older version that did not reset the
+# environment: relaunch ourselves cleanly right away, before using any of the
+# parent's (soon deleted) files.
+if getattr(sys, "frozen", False) and "--after-update" in sys.argv:
+    subprocess.Popen(
+        [sys.executable, "--after-update-clean"],
+        cwd=os.path.dirname(sys.executable),
+        env=_clean_child_env(),
+        creationflags=getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
+        close_fds=True,
+    )
+    sys.exit(0)
+
 import webview  # noqa: E402
 
 APP_DIR = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "DailyPlanner")
@@ -31,7 +57,7 @@ BACKUPS_TO_KEEP = 30
 SCHEMA_VERSION = 5
 
 # Bump this on every release alongside a matching GitHub tag (vX.Y.Z) / Release.
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.3.1"
 UPDATE_CHECK_URL = "https://api.github.com/repos/Guillomus-lab/RemontadaPlanner/releases/latest"
 RELEASES_PAGE_URL = "https://github.com/Guillomus-lab/RemontadaPlanner/releases/latest"
 
@@ -350,7 +376,8 @@ def _restart(exe):
     """Starts the new exe (it waits for this one to close, see
     _already_running) then closes this window."""
     flags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
-    subprocess.Popen([exe, "--after-update"], cwd=os.path.dirname(exe), creationflags=flags, close_fds=True)
+    subprocess.Popen([exe, "--after-update"], cwd=os.path.dirname(exe), creationflags=flags, close_fds=True,
+                     env=_clean_child_env())
 
     def _close():
         for w in list(webview.windows):
@@ -700,7 +727,7 @@ def _already_running():
     kernel32.CreateMutexW.restype = ctypes.c_void_p
     kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
     # right after an update, the old version is still closing: wait for it
-    tries = 40 if "--after-update" in sys.argv else 1
+    tries = 40 if any(a.startswith("--after-update") for a in sys.argv) else 1
     for i in range(tries):
         _mutex_handle = kernel32.CreateMutexW(None, False, "Global\\RemontadaPlannerSingleInstance")
         if ctypes.get_last_error() != 183:  # ERROR_ALREADY_EXISTS
