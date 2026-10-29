@@ -2,11 +2,13 @@ import datetime
 import glob
 import json
 import os
+import subprocess
 import sys
 import threading
 import urllib.error
 import urllib.request
 import webbrowser
+import xml.sax.saxutils
 
 # The launcher (.vbs) runs the BASE interpreter's pythonw.exe directly: the uv venv's
 # pythonw.exe is a trampoline that spawns console python.exe, which either shows a
@@ -25,7 +27,7 @@ DATA_FILE = os.path.join(APP_DIR, "plans.json")
 BACKUP_DIR = os.path.join(APP_DIR, "backups")
 BACKUPS_TO_KEEP = 30
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 # Bump this on every release alongside a matching GitHub tag (vX.Y.Z) / Release.
 APP_VERSION = "1.0.0"
@@ -50,9 +52,24 @@ DEFAULT_DATA = {
         "unlockedThemes": ["default"],
         "unlockedAvatars": ["🙂", "😎", "🦊", "🐱", "🐼", "🤖", "👾", "🌟"],
         "activeThemeId": "default",
+        # consumable streak protection: a missed day is forgiven automatically
+        "streakFreezes": 1,
+        "frozenDays": [],
     },
     "counters": {},      # free-form usage counters (remixUsed, tasksDeleted, konamiFound, ...)
-    "settings": {"theme": "dark", "zoom": 72, "view": "day"},  # UI prefs persisted across launches
+    "settings": {
+        "theme": "dark", "zoom": 72, "view": "day",
+        # realistic daily load target, in minutes (used by the charge indicator)
+        "dayCapacity": 480,
+        # Windows reminders + optional Discord weekly recap
+        "reminders": False, "reminderLead": 10,
+        "discordWebhook": "", "discordWeekly": False, "lastDiscordRecap": "",
+        "lastRolloverPrompt": "",
+    },  # UI prefs persisted across launches
+    # things captured but not scheduled yet: {id,title,duration,category,notes,url,createdAt}
+    "backlog": [],
+    # explicit end-of-day closes: { "2026-10-29": {closedAt, note, moved, backlogged, done, total} }
+    "closedDays": {},
     # recurring tasks: {id,title,start,duration,category,days:[0-6],from,until,skip:[dates]}
     "routines": [],
     # regularity challenges: {id,title,category,keywords,length,start,status,...}
@@ -224,6 +241,93 @@ def _fetch_latest_release():
     }
 
 
+def _notification_text(value, limit=220):
+    text = "".join(ch for ch in str(value or "") if ch in "\n\r\t" or ord(ch) >= 32)
+    return text.strip()[:limit]
+
+
+def _windows_toast(title, message):
+    """Best-effort Windows toast. Tries the optional `winotify` package first
+    (nicest result), then falls back to a WinRT toast through PowerShell, which
+    ships with Windows and needs no dependency. Returns quickly: the toast is
+    fire-and-forget, reminders must never block the UI thread."""
+    title = _notification_text(title) or "Remontada Planner"
+    message = _notification_text(message, 400)
+    try:
+        from winotify import Notification  # type: ignore
+
+        Notification(app_id="Remontada Planner", title=title, msg=message, duration="short").show()
+        return {"ok": True, "mode": "winotify"}
+    except Exception:
+        pass
+
+    if sys.platform != "win32":
+        return {"ok": False, "error": "notifications Windows uniquement"}
+
+    xml = (
+        '<toast><visual><binding template="ToastGeneric">'
+        f"<text>{xml.sax.saxutils.escape(title)}</text>"
+        f"<text>{xml.sax.saxutils.escape(message)}</text>"
+        "</binding></visual></toast>"
+    )
+    # PowerShell single-quoted literal: only ' needs escaping (as '').
+    xml_literal = xml.replace("'", "''")
+    script = (
+        "$ErrorActionPreference='Stop';"
+        "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null;"
+        "[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom, ContentType = WindowsRuntime] | Out-Null;"
+        "$xml = New-Object Windows.Data.Xml.Dom.XmlDocument;"
+        f"$xml.LoadXml('{xml_literal}');"
+        "$toast = New-Object Windows.UI.Notifications.ToastNotification $xml;"
+        "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Remontada Planner').Show($toast);"
+    )
+    try:
+        subprocess.Popen(
+            ["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", script],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        return {"ok": True, "mode": "powershell"}
+    except OSError as e:
+        return {"ok": False, "error": str(e)}
+
+
+def _post_discord(webhook_url, content):
+    """Posts a recap to a Discord webhook (Luron / any channel webhook). Only
+    Discord webhook hosts are accepted so this endpoint can't be repurposed as
+    a generic outbound POST from the app."""
+    allowed = (
+        "https://discord.com/api/webhooks/",
+        "https://discordapp.com/api/webhooks/",
+        "https://ptb.discord.com/api/webhooks/",
+        "https://canary.discord.com/api/webhooks/",
+    )
+    if not isinstance(webhook_url, str) or not webhook_url.startswith(allowed):
+        return {"ok": False, "error": "URL de webhook Discord invalide"}
+    payload = {
+        "content": _notification_text(content, 1900),
+        "username": "Remontada Planner",
+        "allowed_mentions": {"parse": []},
+    }
+    req = urllib.request.Request(
+        webhook_url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json", "User-Agent": "RemontadaPlanner"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            if 200 <= resp.status < 300:
+                return {"ok": True}
+            return {"ok": False, "error": f"Discord a répondu {resp.status}"}
+    except urllib.error.HTTPError as e:
+        return {"ok": False, "error": f"Discord a répondu {e.code}"}
+    except (urllib.error.URLError, TimeoutError, ValueError, OSError) as e:
+        return {"ok": False, "error": str(e)}
+
+
+
 class Api:
     def load(self):
         return _load_raw()
@@ -250,6 +354,14 @@ class Api:
         if isinstance(url, str) and url.startswith(("https://", "http://")):
             webbrowser.open(url)
         return {"ok": True}
+
+    def notify(self, title, message):
+        """Windows toast used by task reminders. Fire-and-forget."""
+        return _windows_toast(title, message)
+
+    def send_discord(self, webhook_url, content):
+        """Weekly recap to a Discord webhook (e.g. the Luron bot's channel)."""
+        return _post_discord(webhook_url, content)
 
     def get_category_recap(self, scope, ref_date):
         """Aggregate planned/done minutes per category for a day or ISO week
