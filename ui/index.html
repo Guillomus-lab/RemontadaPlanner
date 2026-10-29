@@ -205,6 +205,10 @@
   .spacer{flex:1 0 8px;min-width:8px;}
   #progressWrap{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text-dim);font-weight:600;flex-shrink:0;}
   #progressBarOuter{width:110px;height:7px;background:var(--surface3);border-radius:4px;overflow:hidden;}
+  /* medium windows: shorter progress bar so the header stays on one line */
+  @media (max-width: 1480px){ #progressBarOuter{width:56px;} header{gap:10px 10px;} }
+  @media (max-width: 1380px){ #progressBarOuter{display:none;} }
+  @media (max-width: 1300px){ header h1{display:none;} }
   #progressBarInner{height:100%;background:linear-gradient(90deg,var(--done),#5eead4);width:0%;transition:width .3s ease;border-radius:4px;}
   #dayBadge{font-size:17px;transition:transform .2s ease;}
   #dayBadge.pulse{animation:badgePulse .5s ease;}
@@ -502,6 +506,18 @@
   #themeToggle:hover,#sfxToggle:hover{transform:scale(1.08);}
   #sfxToggle.muted{opacity:.5;}
   #calBtn{position:relative;}
+  #moreBtn{font-size:17px;font-weight:800;line-height:1;}
+  #moreBtn.on{background:var(--accent-soft);}
+  #moreMenu{position:fixed;z-index:180;display:none;flex-direction:column;min-width:240px;background:var(--surface);
+      border:1px solid var(--border);border-radius:14px;padding:6px;box-shadow:0 18px 44px rgba(0,0,0,.45);}
+  #moreMenu.show{display:flex;animation:overlayIn .12s ease;}
+  .mmItem{background:none;border:none;color:var(--text);text-align:left;padding:9px 11px;border-radius:9px;font-size:12.5px;
+      font-weight:600;cursor:pointer;}
+  .mmItem:hover{background:var(--surface2);}
+  .mmSep{height:1px;background:var(--border);margin:5px 4px;}
+  .mmTools{display:flex;align-items:center;gap:4px;padding:4px 6px 4px 11px;}
+  .mmTools span{flex:1;font-size:10.5px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
+  .mmTools .navbtn{width:32px;height:32px;}
 
   #miniCal{position:absolute;top:54px;right:150px;background:var(--surface);border:1px solid var(--border);
             border-radius:var(--radius);padding:10px;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.45);display:none;}
@@ -542,6 +558,13 @@
   #sidebarDivider{height:1px;background:var(--border);margin:16px 0 4px;}
 
   #timelineWrap{flex:1;overflow-y:auto;position:relative;background:var(--bg);}
+  #zoomFloat{position:sticky;top:10px;z-index:30;height:0;display:flex;justify-content:flex-end;gap:4px;
+      padding-right:16px;pointer-events:none;opacity:0;transition:opacity .2s ease;}
+  #timelineWrap:hover #zoomFloat, #zoomFloat:focus-within{opacity:1;}
+  #zoomFloat button{pointer-events:auto;width:30px;height:30px;border-radius:9px;background:var(--surface);
+      border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:700;cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.25);}
+  #zoomFloat button:hover{border-color:var(--accent);color:var(--accent);}
   #quickAdd{display:flex;gap:8px;padding:12px 22px;border-bottom:1px solid var(--border);background:var(--surface);
             align-items:center;flex-shrink:0;}
   #openAddBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;
@@ -549,7 +572,15 @@
               transition:filter .15s ease, transform .12s ease;box-shadow:0 4px 14px rgba(139,92,246,.3);}
   #openAddBtn:hover{filter:brightness(1.1);transform:translateY(-1px) scale(1.01);}
   #openAddBtn:active{transform:scale(.97);}
-  #quickAdd .hint{font-size:11px;color:var(--text-faint);white-space:nowrap;}
+  #quickAdd .hint{font-size:11px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  #quickInputWrap{flex:1;min-width:180px;max-width:560px;position:relative;display:flex;align-items:center;}
+  #quickInput{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;
+      padding:9px 12px;font-size:12.5px;}
+  #quickInput:focus{outline:none;border-color:var(--accent);}
+  #quickInput::placeholder{color:var(--text-faint);}
+  #quickPreview{position:absolute;right:10px;font-size:10.5px;color:var(--text-dim);font-weight:700;pointer-events:none;
+      background:var(--surface2);padding-left:8px;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis;}
+  #quickPreview.bad{color:var(--danger);}
 
   #grid{position:relative;margin:4px 22px 40px 0;}
   .hourRow{display:flex;height:var(--hour-h);border-top:1px solid var(--border);}
@@ -1013,6 +1044,22 @@
   .prioHead b{color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:20px;
       padding:1px 7px;font-size:9.5px;letter-spacing:0;}
   #prioritySlots{display:flex;gap:6px;}
+  #weekGoals{display:none;margin-top:7px;font-size:11px;color:var(--text-dim);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #weekGoals.show{display:block;}
+  #weekGoals b{color:var(--text-faint);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:10px;margin-right:4px;}
+  #weekGoals:hover{color:var(--text);}
+  #weekReviewOverlay{position:fixed;inset:0;z-index:215;background:rgba(10,8,16,.62);backdrop-filter:blur(4px);
+      display:none;align-items:center;justify-content:center;}
+  #weekReviewOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #weekReviewCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;
+      width:540px;max-width:93vw;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5);
+      animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);}
+  #weekReviewCard h3{margin:0 0 3px;font-size:18px;font-weight:800;}
+  .wrGoalInput{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:9px;
+      padding:8px 10px;font-size:12px;margin-bottom:6px;}
+  .wrGoalInput:focus{outline:none;border-color:var(--accent);}
+  .wrHighlights{font-size:11.5px;color:var(--text-dim);line-height:1.6;}
+  .wrEmpty{font-size:11.5px;color:var(--text-faint);}
   .prioSlot{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:var(--surface2);
       border:1px dashed var(--border);border-radius:9px;padding:6px 8px;font-size:11px;cursor:pointer;
       color:var(--text-faint);transition:border-color .15s ease, background .15s ease, transform .1s ease;}
@@ -1105,16 +1152,16 @@
       border:1.5px solid var(--border);border-radius:9px;padding:8px 10px;font-size:11px;color:var(--text-dim);cursor:pointer;}
   .cdChoice label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--text);}
   .cdChoice input{accent-color:var(--accent);}
-  #cdNote{width:100%;min-height:64px;resize:vertical;background:var(--surface2);border:1px solid var(--border);
+  #cdNote, #wrNote{width:100%;min-height:64px;resize:vertical;background:var(--surface2);border:1px solid var(--border);
       color:var(--text);border-radius:9px;padding:9px 11px;font-size:12px;font-family:var(--font);}
-  #cdNote:focus{outline:none;border-color:var(--accent);}
+  #cdNote:focus, #wrNote:focus{outline:none;border-color:var(--accent);}
   .cdActions{display:flex;gap:9px;margin-top:18px;}
-  #cdCancel{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:9px;
+  #cdCancel, #wrCancel{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:9px;
       padding:10px;font-size:12.5px;font-weight:600;cursor:pointer;}
-  #cdCancel:hover{background:var(--surface3);}
-  #cdConfirm{flex:1.5;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+  #cdCancel:hover, #wrCancel:hover{background:var(--surface3);}
+  #cdConfirm, #wrSave{flex:1.5;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
       border-radius:9px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;}
-  #cdConfirm:hover{filter:brightness(1.1);}
+  #cdConfirm:hover, #wrSave:hover{filter:brightness(1.1);}
   .cdClosedBanner{font-size:11px;color:var(--done);background:color-mix(in srgb, var(--done) 10%, var(--surface2));
       border:1px solid color-mix(in srgb, var(--done) 30%, var(--border));border-radius:9px;padding:8px 10px;
       margin-bottom:14px;line-height:1.45;}
@@ -1159,6 +1206,40 @@
   #modalBacklog{display:none;flex:none;width:44px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
       cursor:pointer;font-size:14px;transition:all .15s ease;}
   #modalBacklog.show{display:block;}
+  #modalFocus{display:none;flex:none;width:44px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+      font-size:16px;cursor:pointer;}
+  #modalFocus.show{display:block;}
+  #modalFocus:hover{border-color:var(--accent);background:var(--accent-soft);}
+  /* --- Focus mode --- */
+  #focusOverlay{position:fixed;inset:0;z-index:217;background:rgba(10,8,16,.72);backdrop-filter:blur(6px);
+      display:none;align-items:center;justify-content:center;}
+  #focusOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #focusCard{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:26px 28px;
+      width:440px;max-width:93vw;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);}
+  #focusCard h3{margin:0 0 4px;font-size:17px;font-weight:800;}
+  #focusTask{font-size:12.5px;color:var(--text-dim);margin-bottom:14px;min-height:16px;}
+  #focusTime{font-size:64px;font-weight:800;letter-spacing:.02em;font-variant-numeric:tabular-nums;line-height:1.1;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  #focusBar{height:6px;border-radius:99px;background:var(--surface2);margin:14px 0 6px;overflow:hidden;}
+  #focusBarFill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .9s linear;}
+  #focusPhase{font-size:11px;color:var(--text-faint);font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+  .focusSetup select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:9px;
+      padding:8px 10px;font-size:12px;margin-bottom:10px;}
+  .focusDurations{display:flex;gap:6px;justify-content:center;margin-bottom:6px;flex-wrap:wrap;}
+  .focusDurations button{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:999px;
+      padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer;}
+  .focusDurations button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;}
+  .focusBtns{display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+  .focusBtns button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;
+      padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;}
+  .focusBtns button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;}
+  .focusBtns button:hover{filter:brightness(1.08);}
+  #focusPill{position:fixed;left:18px;bottom:18px;z-index:190;display:none;align-items:center;gap:8px;cursor:pointer;
+      background:var(--surface);border:1px solid var(--accent);border-radius:999px;padding:8px 14px;font-size:12px;font-weight:800;
+      box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:320px;}
+  #focusPill.show{display:flex;}
+  #focusPill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #focusPill b{font-variant-numeric:tabular-nums;}
   #modalBacklog:hover{border-color:var(--accent);background:var(--accent-soft);}
   .task .taskAux{font-size:9px;opacity:.8;cursor:pointer;flex-shrink:0;}
   .task .taskAux:hover{opacity:1;transform:scale(1.15);}
@@ -1207,6 +1288,25 @@
       padding:8px 12px;font-size:11.5px;font-weight:700;cursor:pointer;}
   .mealActions button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;margin-left:auto;}
   .mealActions button:hover{filter:brightness(1.08);}
+
+  #menuOverlay{position:fixed;inset:0;z-index:216;background:rgba(10,8,16,.62);backdrop-filter:blur(4px);
+      display:none;align-items:center;justify-content:center;}
+  #menuOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #menuCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px 24px;
+      width:640px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5);
+      animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);position:relative;}
+  #menuCard h3{margin:0 0 3px;font-size:18px;font-weight:800;}
+  #menuGrid{display:grid;grid-template-columns:64px minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:stretch;margin-top:6px;}
+  .mgHead{font-size:10px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;padding:2px 4px;}
+  .mgDay{font-size:11.5px;font-weight:800;color:var(--text-dim);display:flex;align-items:center;}
+  .mgDay.past{opacity:.5;}
+  .mgCell{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 8px;font-size:11.5px;
+      display:flex;align-items:center;gap:6px;min-height:34px;}
+  .mgCell .mgName{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+  .mgCell .mgName:hover{color:var(--accent);}
+  .mgCell.empty .mgName{color:var(--text-faint);font-style:italic;}
+  .mgCell button{background:none;border:none;cursor:pointer;font-size:12px;opacity:.65;padding:0 2px;color:var(--text);}
+  .mgCell button:hover{opacity:1;}
 
   /* --- Insights cards --- */
   #historyInsights{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:4px 0 18px;}
@@ -1257,17 +1357,31 @@
     <div id="progressWrap"><span id="dayBadge">🌱</span><span id="progressLabel">0/0</span><div id="progressBarOuter"><div id="progressBarInner"></div></div></div>
     <div class="toolGroup">
       <button id="searchBtn" class="navbtn" title="Rechercher (Ctrl+K)">🔍</button>
-      <button id="recapBtn" class="navbtn" title="Récap">🥧</button>
-      <button id="refreshBtn" class="navbtn" title="Rafraîchir les données">🔄</button>
-      <button id="zoomOutBtn" class="navbtn" title="Zoom -">−</button>
-      <button id="zoomInBtn" class="navbtn" title="Zoom +">+</button>
+      <button id="moreBtn" class="navbtn" title="Plus : bilan, concentration, menus, récap, affichage…">⋯</button>
     </div>
-    <button id="themeToggle" title="Mode clair/sombre">🌙</button>
-    <button id="sfxToggle" title="Activer/couper les sons">🔊</button>
   </header>
+  <!-- outside <header>: some themes clip the header (overflow:hidden) -->
+  <div id="moreMenu">
+    <button class="mmItem" data-act="review">📊 Bilan de la semaine</button>
+    <button class="mmItem" data-act="focus">🎯 Mode concentration</button>
+    <button class="mmItem mmMeal" data-act="menus">🗓️ Menus de la semaine</button>
+    <button class="mmItem mmMeal" data-act="meal">🍽️ Idée de repas</button>
+    <button class="mmItem" id="recapBtn">🥧 Récap du temps</button>
+    <button class="mmItem" data-act="settings">⚙️ Réglages</button>
+    <div class="mmSep"></div>
+    <div class="mmTools">
+      <span>Affichage</span>
+      <button id="themeToggle" title="Mode clair/sombre">🌙</button>
+      <button id="sfxToggle" title="Activer/couper les sons">🔊</button>
+    </div>
+  </div>
 
   <div id="quickAdd">
     <button id="openAddBtn">✨ Ajouter une tâche</button>
+    <div id="quickInputWrap">
+      <input id="quickInput" placeholder="Ajout rapide : « sport demain 18h 45min »  puis Entrée" maxlength="140" autocomplete="off" />
+      <span id="quickPreview"></span>
+    </div>
     <span class="hint" id="greeting">ou clique directement sur un créneau de la timeline</span>
   </div>
 
@@ -1275,6 +1389,7 @@
     <div id="priorityPanel">
       <div class="prioHead">🎯 Priorités du jour <b id="prioCount">0/3</b></div>
       <div id="prioritySlots"></div>
+      <div id="weekGoals" title="Tes priorités de la semaine — clique pour ouvrir le bilan"></div>
     </div>
     <div id="loadPanel" title="Charge planifiée vs capacité quotidienne — clique pour ajuster">
       <div class="loadHead"><span>Charge</span><span id="loadLabel">0h / 8h</span></div>
@@ -1314,6 +1429,11 @@
       </div>
     </div>
     <div id="timelineWrap">
+      <!-- zoom: top-right of the planning, visible on hover -->
+      <div id="zoomFloat">
+        <button id="zoomOutBtn" title="Dézoomer">−</button>
+        <button id="zoomInBtn" title="Zoomer">+</button>
+      </div>
       <div id="grid"></div>
     </div>
     <div id="planView"></div>
@@ -1449,6 +1569,14 @@
           <div class="settingsBtnRow">
             <button id="discordSaveBtn">Enregistrer le webhook</button>
             <button id="discordSendBtn" class="primary">Envoyer le récap maintenant</button>
+          </div>
+        </div>
+        <div class="settingsBlock">
+          <h4>💾 Sauvegarde de tes données</h4>
+          <div class="settingsHint">Crée un fichier avec tout ton planning, tes succès et ta progression. Garde-le sur une clé USB ou dans un dossier cloud : en cas de nouveau PC, « Restaurer » remet tout comme avant.</div>
+          <div class="settingsBtnRow">
+            <button id="exportDataBtn" class="primary">💾 Sauvegarder mes données</button>
+            <button id="importDataBtn">📂 Restaurer une sauvegarde</button>
           </div>
         </div>
         <div class="settingsBlock">
@@ -1642,6 +1770,90 @@
   </div>
 </div>
 
+<div id="menuOverlay">
+  <div id="menuCard">
+    <button id="menuClose" title="Fermer" style="position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text-faint);font-size:16px;cursor:pointer">✕</button>
+    <h3>🗓️ Menus de la semaine</h3>
+    <div class="cdSub" id="menuSub">—</div>
+    <div class="mealFilters" id="menuFilters">
+      <button data-f="">Tout</button>
+      <button data-f="proteine">💪 Protéiné</button>
+      <button data-f="leger">🥗 Léger</button>
+      <button data-f="vege">🌱 Végétarien</button>
+      <button data-f="rapide">⚡ Rapide</button>
+    </div>
+    <div id="menuGrid"></div>
+    <div class="settingsHint" style="margin-top:8px">🎲 change un repas · ✕ le retire · clique sur un nom pour voir la recette.</div>
+    <div class="mealActions">
+      <button id="menuFill">🎲 Compléter la semaine</button>
+      <button id="menuClear">Tout effacer</button>
+      <button id="menuShop">🛒 Liste de courses</button>
+      <button id="menuPlan" class="primary">📅 Ajouter au planning</button>
+    </div>
+  </div>
+</div>
+
+<div id="focusOverlay">
+  <div id="focusCard">
+    <h3>🎯 Mode concentration</h3>
+    <div id="focusTask"></div>
+    <div class="focusSetup" id="focusSetup">
+      <select id="focusTaskSelect"></select>
+      <div class="focusDurations" id="focusDurations">
+        <button data-min="15">15 min</button>
+        <button data-min="25">25 min</button>
+        <button data-min="45">45 min</button>
+        <button data-min="60">1h</button>
+      </div>
+      <div class="focusBtns">
+        <button id="focusCancel">Annuler</button>
+        <button id="focusStart" class="primary">▶ Démarrer</button>
+      </div>
+    </div>
+    <div id="focusRun" style="display:none">
+      <div id="focusPhase">Concentration</div>
+      <div id="focusTime">25:00</div>
+      <div id="focusBar"><div id="focusBarFill"></div></div>
+      <div class="focusBtns" id="focusRunBtns">
+        <button id="focusPause">⏸ Pause</button>
+        <button id="focusStop">■ Arrêter</button>
+        <button id="focusMinimize" class="primary">↘ Réduire</button>
+      </div>
+      <div class="focusBtns" id="focusEndBtns" style="display:none">
+        <button id="focusDone" class="primary">✅ Tâche terminée</button>
+        <button id="focusBreak">☕ Pause 5 min</button>
+        <button id="focusAgain">🔁 Encore une session</button>
+        <button id="focusClose">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="focusPill" title="Rouvrir le mode concentration">🎯 <b id="focusPillTime">25:00</b> <span id="focusPillTask"></span></div>
+
+<div id="weekReviewOverlay">
+  <div id="weekReviewCard">
+    <h3>📊 Bilan de la semaine</h3>
+    <div class="cdSub" id="wrSub">—</div>
+    <div class="cdStats" id="wrStats"></div>
+    <div class="wrHighlights" id="wrHighlights"></div>
+    <div id="wrPendingWrap">
+      <div class="cdSectionLabel">Pas terminé la semaine passée — à garder pour plus tard ?</div>
+      <div class="cdList" id="wrPending"></div>
+      <div class="settingsHint" style="margin-top:6px">Les tâches cochées partent dans « À planifier ». Les routines ne sont pas listées : elles reviennent toutes seules.</div>
+    </div>
+    <div class="cdSectionLabel">Tes 3 priorités pour la semaine du <span id="wrWeekLabel">—</span></div>
+    <input class="wrGoalInput" id="wrGoal0" maxlength="70" placeholder="Priorité n°1 — ex : finir le dossier, 3 séances de sport…" />
+    <input class="wrGoalInput" id="wrGoal1" maxlength="70" placeholder="Priorité n°2" />
+    <input class="wrGoalInput" id="wrGoal2" maxlength="70" placeholder="Priorité n°3" />
+    <div class="cdSectionLabel">Note <span style="text-transform:none;letter-spacing:0;font-weight:500">(optionnel)</span></div>
+    <textarea id="wrNote" placeholder="Ce que tu retiens de la semaine, ce que tu veux changer…"></textarea>
+    <div class="cdActions">
+      <button id="wrCancel">Annuler</button>
+      <button id="wrSave">Enregistrer le bilan</button>
+    </div>
+  </div>
+</div>
+
 <script src="recipes.js"></script>
 <div id="mealOverlay">
   <div id="mealCard">
@@ -1740,6 +1952,7 @@
     </div>
     <div class="modalActions">
       <button id="modalBacklog" title="Mettre dans le backlog (pas aujourd'hui)">📥</button>
+      <button id="modalFocus" title="Mode concentration sur cette tâche">🎯</button>
       <button id="modalDelete" title="Supprimer">🗑️</button>
       <button id="modalCancel">Annuler</button>
       <button id="modalSave">Ajouter la tâche</button>
@@ -1885,6 +2098,7 @@ async function loadState(){
     } else {
       setTimeout(maybeOfferRollover, 1600);
     }
+    maybeOfferWeekReview();
     setTimeout(checkTaskReminders, 2200);
     maybeSendWeeklyDiscord();
   }
@@ -1894,7 +2108,9 @@ async function loadState(){
 // meanwhile, exactly one more save of the LATEST state follows. Previously each
 // persist() fired its own concurrent call and an older snapshot could land last.
 let saveInFlight = false, savePending = false, lastSaveErrorAt = 0;
+let persistBlocked = false; // true while a backup is being restored
 async function persist(){
+  if(persistBlocked) return;
   if(saveInFlight){ savePending = true; return; }
   saveInFlight = true;
   try{
@@ -2715,7 +2931,7 @@ function computeGameStats(){
           themeToggles: getCounter('themeToggles'), zoomClicks: getCounter('zoomClicks'),
           konamiFound: getCounter('konamiFound'),
           templatesSaved: getCounter('templatesSaved'), copyYesterdayUsed: getCounter('copyYesterdayUsed'),
-          refreshClicks: getCounter('refreshClicks'),
+          backupsExported: getCounter('backupsExported'),
           questsDone: quest.done, questWeeksCleared: quest.weeksCleared,
           challengesWon: chal.won, bestChallengeWon: chal.best,
           challengesStarted: getCounter('challengesStarted'),
@@ -2887,8 +3103,8 @@ const ACHIEVEMENTS = [
    check:s=>s.templatesSaved>=5},
   {id:'lazybutsmart', icon:'🦥', name:'Flemmard malin', desc:'Copie la journée d\'hier 20 fois',
    check:s=>s.copyYesterdayUsed>=20},
-  {id:'paranoid', icon:'🔄', name:'Jamais trop prudent', desc:'Recharge les données depuis le disque 15 fois',
-   check:s=>s.refreshClicks>=15},
+  {id:'paranoid', icon:'💾', name:'Jamais trop prudent', desc:'Crée une sauvegarde de tes données (Profil → Réglages)',
+   check:s=>s.backupsExported>=1},
 
   // --- easter eggs secrets (noms/desc cachés tant que non débloqués) ---
   {id:'konami', icon:'🕹️', name:'Les vrais savent', desc:'Entre le code Konami : ↑ ↑ ↓ ↓ ← → ← → B A',
@@ -3769,6 +3985,8 @@ function ensureCollections(){
   // Daily-loop collections (inbox + explicit day closes)
   if(!Array.isArray(state.backlog)) state.backlog = [];
   if(!state.closedDays || typeof state.closedDays!=='object' || Array.isArray(state.closedDays)) state.closedDays = {};
+  if(!state.weekReviews || typeof state.weekReviews!=='object' || Array.isArray(state.weekReviews)) state.weekReviews = {};
+  if(!state.mealPlans || typeof state.mealPlans!=='object' || Array.isArray(state.mealPlans)) state.mealPlans = {};
   // Settings added with the daily-loop update: backfill old saves here too, so
   // the UI never depends on app.pyw having migrated the file first.
   if(!Number.isFinite(Number(state.settings.dayCapacity)) || Number(state.settings.dayCapacity) <= 0)
@@ -3777,6 +3995,8 @@ function ensureCollections(){
   if(!Number.isFinite(Number(state.settings.reminderLead))) state.settings.reminderLead = 10;
   if(typeof state.settings.reminderSound !== 'boolean') state.settings.reminderSound = true;
   if(typeof state.settings.mealIdeas !== 'boolean') state.settings.mealIdeas = true;
+  if(typeof state.settings.reminderPromptSeen !== 'boolean') state.settings.reminderPromptSeen = false;
+  if(typeof state.settings.lastWeekReviewPrompt !== 'string') state.settings.lastWeekReviewPrompt = '';
   if(typeof state.settings.discordWebhook !== 'string') state.settings.discordWebhook = '';
   if(typeof state.settings.discordWeekly !== 'boolean') state.settings.discordWeekly = false;
   if(typeof state.settings.lastDiscordRecap !== 'string') state.settings.lastDiscordRecap = '';
@@ -3816,6 +4036,7 @@ async function toggleTaskPriority(task, dayKey){
 function renderDayBar(){
   const slotsEl = document.getElementById('prioritySlots');
   if(!slotsEl) return;
+  renderWeekGoals();
   const key = iso(currentDate);
   const tasks = state.days[key] || [];
   const prios = topPriorities(key).slice(0,3);
@@ -3962,7 +4183,8 @@ let backlogDragId = null;
 
 function findFreeSlot(list, duration, preferredMinutes, dayKey){
   duration = Math.max(5, Number(duration) || 30);
-  let preferred = Number.isFinite(Number(preferredMinutes)) ? Number(preferredMinutes) : null;
+  // (null/undefined/'' = no preference; Number(null) would wrongly read as midnight)
+  let preferred = (preferredMinutes !== null && preferredMinutes !== undefined && preferredMinutes !== '' && Number.isFinite(Number(preferredMinutes))) ? Number(preferredMinutes) : null;
   if(preferred == null){
     if((dayKey || todayKey()) === todayKey()){
       const now = new Date();
@@ -4344,6 +4566,115 @@ function checkTaskReminders(){
   if(changed) persist();
 }
 
+// ================= Quick add: one sentence -> one task =================
+// "sport demain 18h 45min #santé !" -> Sport, tomorrow 18:00, 45 min, Santé, priority.
+const QA_WEEKDAYS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+
+function parseQuickAdd(text, baseKey){
+  const original = String(text || '').trim();
+  // Same-length, accent-free copy: matches are found in it and cut from the original.
+  let norm = original.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let work = norm.length === original.length ? original : norm;
+  const out = {dateKey: baseKey, start: null, duration: null, category: null, priority: false, dateLabel: ''};
+  const cut = (re, fn)=>{
+    const m = re.exec(norm);
+    if(!m) return false;
+    if(fn(m) === false) return false;
+    const a = m.index, b = m.index + m[0].length;
+    norm = norm.slice(0, a) + ' '.repeat(b - a) + norm.slice(b);
+    work = work.slice(0, a) + ' '.repeat(b - a) + work.slice(b);
+    return true;
+  };
+  const tk = todayKey();
+  cut(/(^|\s)(!|⭐)(?=\s|$)/, ()=>{ out.priority = true; });
+  cut(/(^|\s)#([a-z0-9_-]+)/, m=>{
+    const name = Object.keys(state.categories).find(c=> normTxt(c).startsWith(m[2]));
+    if(!name) return false;
+    out.category = name;
+  });
+  if(!cut(/(^|\s)apres[- ]demain(?=\s|$)/, ()=>{ out.dateKey = addDaysKey(tk, 2); out.dateLabel = 'après-demain'; }))
+  if(!cut(/(^|\s)demain(?=\s|$)/, ()=>{ out.dateKey = addDaysKey(tk, 1); out.dateLabel = 'demain'; }))
+  if(!cut(/(^|\s)(aujourd'?\s?hui|auj)(?=\s|$)/, ()=>{ out.dateKey = tk; out.dateLabel = "aujourd'hui"; }))
+  if(!cut(new RegExp('(^|\\s)(?:ce |le )?(' + QA_WEEKDAYS.join('|') + ')(?: prochain)?(?=\\s|$)'), m=>{
+    const target = QA_WEEKDAYS.indexOf(m[2]);
+    let diff = (target - dowOfKey(tk) + 7) % 7;
+    if(diff === 0) diff = 7; // "lundi" said on a Monday = next Monday
+    out.dateKey = addDaysKey(tk, diff); out.dateLabel = m[2];
+  }))
+  cut(/(^|\s)(?:le )?(\d{1,2})\/(\d{1,2})(?=\s|$)/, m=>{
+    const d = Number(m[2]), mo = Number(m[3]);
+    if(d < 1 || d > 31 || mo < 1 || mo > 12) return false;
+    const now = new Date();
+    let y = now.getFullYear();
+    let key = `${y}-${pad(mo)}-${pad(d)}`;
+    if(key < tk) key = `${y+1}-${pad(mo)}-${pad(d)}`;
+    out.dateKey = key; out.dateLabel = `${pad(d)}/${pad(mo)}`;
+  });
+  // explicit durations first: "45min", "pendant 1h30", "pendant 2h"
+  cut(/(^|\s)(?:pendant |durant )?(\d{1,3})\s?(?:min|mn|minutes?)(?=\s|$)/, m=>{ out.duration = Number(m[2]); });
+  if(out.duration == null) cut(/(^|\s)(?:pendant|durant) (\d{1,2})\s?h\s?(\d{2})?(?=\s|$)/, m=>{ out.duration = Number(m[2])*60 + Number(m[3]||0); });
+  // times: "18h", "18h30", "18:30", "à 9h", "midi"
+  const timeRe = /(^|\s)(?:a |vers |des )?(\d{1,2})\s?(?:h|:)\s?(\d{2})?(?=\s|$)/;
+  cut(timeRe, m=>{
+    const h = Number(m[2]), mi = Number(m[3]||0);
+    if(h > 23 || mi > 59) return false;
+    out.start = h*60 + mi;
+  });
+  if(out.start == null) cut(/(^|\s)(?:a )?midi(?=\s|$)/, ()=>{ out.start = 12*60; });
+  // a second "1h30" after the start time reads as a duration ("réunion 14h 1h30")
+  if(out.duration == null && out.start != null) cut(timeRe, m=>{ out.duration = Number(m[2])*60 + Number(m[3]||0); });
+  let title = work.replace(/\s+/g, ' ').trim().replace(/^[,;:.\-–—\s]+|[,;:.\-–—\s]+$/g, '');
+  if(title) title = title.charAt(0).toUpperCase() + title.slice(1);
+  out.title = title.slice(0, 90);
+  if(!out.duration || out.duration < 5) out.duration = out.duration ? 5 : 30;
+  out.duration = Math.min(out.duration, 12*60);
+  return out;
+}
+
+function quickAddBaseKey(){ return viewMode === 'day' ? iso(currentDate) : todayKey(); }
+
+function describeQuickAdd(p){
+  const when = p.dateLabel || (p.dateKey === todayKey() ? "aujourd'hui" : fmtShort(keyToDate(p.dateKey)));
+  const at = p.start != null ? minutesToHHMM(p.start) : 'prochain créneau libre';
+  return [p.priority ? '⭐' : '', `📅 ${when}`, at, fmtDur(p.duration), p.category ? `#${p.category}` : ''].filter(Boolean).join(' · ');
+}
+
+function updateQuickPreview(){
+  const input = document.getElementById('quickInput');
+  const prev = document.getElementById('quickPreview');
+  const greet = document.getElementById('greeting');
+  const v = input.value.trim();
+  if(!v){ prev.textContent = ''; greet.style.visibility = ''; return; }
+  greet.style.visibility = 'hidden';
+  const p = parseQuickAdd(v, quickAddBaseKey());
+  prev.classList.toggle('bad', !p.title);
+  prev.textContent = p.title ? describeQuickAdd(p) : 'Ajoute un titre';
+}
+
+function submitQuickAdd(){
+  const input = document.getElementById('quickInput');
+  const p = parseQuickAdd(input.value, quickAddBaseKey());
+  if(!p.title){ input.focus(); return; }
+  const list = ensureDay(p.dateKey);
+  let start = p.start != null ? p.start : findFreeSlot(list, p.duration, null, p.dateKey);
+  if(start < START_HOUR*60 || start >= END_HOUR*60){
+    showToast({icon:'🕒', text:'Heure hors planning', sub:`La timeline va de ${pad(START_HOUR)}:00 à minuit.`});
+    return;
+  }
+  const duration = Math.min(p.duration, END_HOUR*60 - start);
+  const priority = p.priority && list.filter(t=>t.priority).length < 3;
+  const category = p.category || (state.categories[activeCategory] ? activeCategory : Object.keys(state.categories)[0]);
+  const task = {id:uid(), title:p.title, start:minutesToHHMM(start), duration, category, done:false, notes:'', url:'', priority};
+  list.push(task);
+  bumpCounter('quickAdds');
+  input.value = '';
+  updateQuickPreview();
+  persist(); render();
+  showToast({icon:'⚡', text:`Ajoutée : ${task.title}`, sub:describeQuickAdd({...p, start, duration, category, priority})
+    + (p.priority && !priority ? ' · Top 3 déjà complet' : '')});
+  maybeSuggestReminders(task, p.dateKey);
+}
+
 // ================= Meal ideas (bonus, recipes in recipes.js) =================
 const MEAL_LABELS = {pd:'Petit-déjeuner', dej:'Déjeuner', din:'Dîner', col:'Collation'};
 const MEAL_TAG_LABELS = {proteine:'💪 protéiné', leger:'🥗 léger', vege:'🌱 végétarien', rapide:'⚡ rapide'};
@@ -4461,6 +4792,422 @@ function addMealToShopping(){
   showToast({icon:'🛒', text:'Ajouté à « À planifier »', sub:`Courses : ${r.n} — ${r.i.length} ingrédients`});
 }
 
+// ================= Focus mode (Pomodoro-style timer) =================
+// Time is computed from timestamps, not by counting ticks: a throttled
+// background window can't make the timer drift.
+let focus = null;          // {taskId, dayKey, title, phase:'work'|'break', minutes, endAt, pausedLeft, ended}
+let focusTimer = null, focusSetupMinutes = 25;
+
+function focusCandidates(){
+  const key = todayKey();
+  const nowMin = new Date().getHours()*60 + new Date().getMinutes();
+  return (state.days[key] || []).filter(t=> !t.done)
+    .map(t=> ({t, key, dist: Math.abs(hhmmToMinutes(t.start) - nowMin)}))
+    .sort((a,b)=> a.dist - b.dist);
+}
+
+function openFocusSetup(task, dayKey){
+  if(focus && !focus.ended){ showFocusOverlay(); return; }
+  const sel = document.getElementById('focusTaskSelect');
+  sel.innerHTML = '';
+  const add = (value, label)=>{ const o = document.createElement('option'); o.value = value; o.textContent = label; sel.appendChild(o); };
+  if(task) add(`${dayKey}|${task.id}`, `${task.start} · ${task.title}`);
+  focusCandidates().forEach(c=>{ if(!task || c.t.id !== task.id) add(`${c.key}|${c.t.id}`, `${c.t.start} · ${c.t.title}`); });
+  add('', 'Sans tâche (juste me concentrer)');
+  sel.selectedIndex = 0;
+  if(task) focusSetupMinutes = Math.min(60, Math.max(15, [15,25,45,60].reduce((a,b)=> Math.abs(b - task.duration) < Math.abs(a - task.duration) ? b : a)));
+  renderFocusDurations();
+  document.getElementById('focusTask').textContent = 'Choisis une tâche et une durée, puis lance-toi.';
+  document.getElementById('focusSetup').style.display = '';
+  document.getElementById('focusRun').style.display = 'none';
+  document.getElementById('focusOverlay').classList.add('show');
+}
+function renderFocusDurations(){
+  document.querySelectorAll('#focusDurations button').forEach(b=> b.classList.toggle('on', Number(b.dataset.min) === focusSetupMinutes));
+}
+
+function startFocus(phase, minutes, taskRef){
+  focus = {taskId: taskRef ? taskRef.taskId : null, dayKey: taskRef ? taskRef.dayKey : null, title: taskRef ? taskRef.title : '',
+    phase, minutes, endAt: Date.now() + minutes*60000, pausedLeft: null, ended: false};
+  document.getElementById('focusSetup').style.display = 'none';
+  document.getElementById('focusRun').style.display = '';
+  document.getElementById('focusRunBtns').style.display = '';
+  document.getElementById('focusEndBtns').style.display = 'none';
+  document.getElementById('focusPause').textContent = '⏸ Pause';
+  document.getElementById('focusTask').textContent = focus.title ? `Sur : ${focus.title}` : 'Session libre';
+  document.getElementById('focusPhase').textContent = phase === 'work' ? 'Concentration' : 'Pause';
+  clearInterval(focusTimer);
+  focusTimer = setInterval(tickFocus, 1000);
+  tickFocus();
+  showFocusOverlay();
+}
+
+function focusLeftMs(){
+  if(!focus) return 0;
+  return Math.max(0, focus.pausedLeft != null ? focus.pausedLeft : focus.endAt - Date.now());
+}
+function fmtClock(ms){ const s = Math.ceil(ms/1000); return `${pad(Math.floor(s/60))}:${pad(s%60)}`; }
+
+function tickFocus(){
+  if(!focus) return;
+  const left = focusLeftMs();
+  const txt = fmtClock(left);
+  document.getElementById('focusTime').textContent = txt;
+  document.getElementById('focusPillTime').textContent = txt;
+  document.getElementById('focusPillTask').textContent = focus.phase === 'break' ? 'Pause' : (focus.title || 'Concentration');
+  document.getElementById('focusBarFill').style.width = `${100 - left / (focus.minutes*60000) * 100}%`;
+  if(left <= 0 && !focus.ended) endFocus();
+}
+
+function endFocus(){
+  focus.ended = true;
+  clearInterval(focusTimer);
+  const wasWork = focus.phase === 'work';
+  const sound = state.settings.reminderSound !== false;
+  if(sound) playReminderSound();
+  const api = window.pywebview && window.pywebview.api;
+  const msg = wasWork ? `${focus.minutes} min de concentration${focus.title ? ' sur « ' + focus.title + ' »' : ''}. Bravo !` : 'La pause est finie, on y retourne ?';
+  if(api && api.notify) try{ api.notify(wasWork ? '🎯 Session terminée' : '☕ Pause terminée', msg, false).catch(()=>{}); }catch(e){}
+  if(wasWork){
+    bumpCounter('focusSessions');
+    bumpCounter('focusMinutes', focus.minutes);
+  }
+  document.getElementById('focusPhase').textContent = wasWork ? 'Session terminée 🎉' : 'Pause terminée';
+  document.getElementById('focusTime').textContent = '00:00';
+  document.getElementById('focusTask').textContent = msg;
+  document.getElementById('focusRunBtns').style.display = 'none';
+  document.getElementById('focusEndBtns').style.display = '';
+  const t = focusTaskObj();
+  document.getElementById('focusDone').style.display = (wasWork && t && !t.done && focus.dayKey <= todayKey()) ? '' : 'none';
+  document.getElementById('focusBreak').style.display = wasWork ? '' : 'none';
+  document.getElementById('focusPill').classList.remove('show');
+  showFocusOverlay();
+  persist();
+}
+
+function focusTaskObj(){
+  if(!focus || !focus.taskId) return null;
+  return (state.days[focus.dayKey] || []).find(x=> x.id === focus.taskId) || null;
+}
+function showFocusOverlay(){
+  document.getElementById('focusOverlay').classList.add('show');
+  document.getElementById('focusPill').classList.remove('show');
+}
+function minimizeFocus(){
+  document.getElementById('focusOverlay').classList.remove('show');
+  if(focus && !focus.ended) document.getElementById('focusPill').classList.add('show');
+}
+function stopFocus(){
+  clearInterval(focusTimer);
+  focus = null;
+  document.getElementById('focusOverlay').classList.remove('show');
+  document.getElementById('focusPill').classList.remove('show');
+}
+function closeFocusOverlay(){
+  // Escape / click outside: a running session keeps going in the corner pill
+  if(focus && !focus.ended) minimizeFocus(); else stopFocus();
+}
+function toggleFocusPause(){
+  if(!focus || focus.ended) return;
+  if(focus.pausedLeft != null){
+    focus.endAt = Date.now() + focus.pausedLeft;
+    focus.pausedLeft = null;
+    document.getElementById('focusPause').textContent = '⏸ Pause';
+  } else {
+    focus.pausedLeft = focusLeftMs();
+    document.getElementById('focusPause').textContent = '▶ Reprendre';
+  }
+  tickFocus();
+}
+
+// ================= Weekly review =================
+// The review is "for" a week (key = its Monday): on Sunday it prepares the
+// coming week, any other day it's about the current one.
+function reviewTargetWeek(){
+  const tk = todayKey();
+  return dowOfKey(tk) === 0 ? weekKeyOf(addDaysKey(tk, 1)) : weekKeyOf(tk);
+}
+
+function weekReviewData(targetWeek){
+  const tk = todayKey();
+  const prevWeek = addDaysKey(targetWeek, -7);
+  const keys = weekKeys(prevWeek).filter(k=> k <= tk);
+  const all = keys.flatMap(k=> (state.days[k] || []).map(t=> ({t, k})));
+  const done = all.filter(x=> x.t.done);
+  const perfect = keys.filter(k=> (state.days[k] || []).length && (state.days[k] || []).every(t=>t.done)).length;
+  const minutes = done.reduce((a, x)=> a + (Number(x.t.duration) || 0), 0);
+  const byCat = {};
+  done.forEach(x=>{ byCat[x.t.category] = (byCat[x.t.category] || 0) + (Number(x.t.duration) || 0); });
+  const topCat = Object.entries(byCat).sort((a,b)=> b[1]-a[1])[0];
+  const best = keys.map(k=> [k, (state.days[k] || []).filter(t=>t.done).length]).sort((a,b)=> b[1]-a[1])[0];
+  // unfinished one-off tasks of past days (today's are still doable, routines come back by themselves)
+  const pending = all.filter(x=> !x.t.done && !x.t.recurId && x.k < tk);
+  const prevGoals = ((state.weekReviews[prevWeek] || {}).priorities || []).filter(Boolean);
+  return {prevWeek, keys, total: all.length, done: done.length, perfect, minutes, topCat, best, pending, prevGoals};
+}
+
+function openWeekReview(){
+  const target = reviewTargetWeek();
+  const d = weekReviewData(target);
+  const existing = state.weekReviews[target] || {};
+  weekReviewTarget = target;
+  const startD = keyToDate(d.prevWeek), endD = keyToDate(addDaysKey(d.prevWeek, 6));
+  document.getElementById('wrSub').textContent = `Semaine du ${fmtShort(startD)} au ${fmtShort(endD)}`;
+  document.getElementById('wrWeekLabel').textContent = fmtShort(keyToDate(target));
+  const rate = d.total ? Math.round(d.done / d.total * 100) : 0;
+  document.getElementById('wrStats').innerHTML =
+    `<div class="cdStat"><b>${d.done}/${d.total}</b><span>tâches faites</span></div>`
+    + `<div class="cdStat"><b>${rate}%</b><span>complétion</span></div>`
+    + `<div class="cdStat"><b>${d.perfect}</b><span>journée${d.perfect>1?'s':''} parfaite${d.perfect>1?'s':''}</span></div>`;
+  const hl = [];
+  if(d.minutes) hl.push(`⏱️ ${fmtDur(d.minutes)} de tâches terminées.`);
+  if(d.topCat) hl.push(`🏷️ Catégorie la plus avancée : ${d.topCat[0]} (${fmtDur(d.topCat[1])}).`);
+  if(d.best && d.best[1] > 0) hl.push(`🏆 Meilleure journée : ${fmtLabel(keyToDate(d.best[0]))} (${d.best[1]} tâche${d.best[1]>1?'s':''}).`);
+  if(d.prevGoals.length) hl.push(`🎯 Tes priorités étaient : ${d.prevGoals.join(' · ')}.`);
+  if(!d.total) hl.push('Pas de tâche la semaine passée : c\'est le moment de repartir sur de bonnes bases.');
+  const hlEl = document.getElementById('wrHighlights');
+  hlEl.innerHTML = '';
+  hl.forEach(line=>{ const div = document.createElement('div'); div.textContent = line; hlEl.appendChild(div); });
+  const list = document.getElementById('wrPending');
+  list.innerHTML = '';
+  document.getElementById('wrPendingWrap').style.display = d.pending.length ? '' : 'none';
+  d.pending.forEach(x=>{
+    const row = document.createElement('label');
+    row.className = 'cdItem';
+    row.innerHTML = `<input type="checkbox" checked /><span class="cdTitle"></span><span class="cdMeta"></span>`;
+    row.querySelector('input').dataset.key = x.k;
+    row.querySelector('input').dataset.id = x.t.id;
+    row.querySelector('.cdTitle').textContent = x.t.title;
+    row.querySelector('.cdMeta').textContent = fmtShort(keyToDate(x.k));
+    list.appendChild(row);
+  });
+  for(let i=0; i<3; i++) document.getElementById('wrGoal'+i).value = (existing.priorities || [])[i] || '';
+  document.getElementById('wrNote').value = existing.note || '';
+  document.getElementById('weekReviewOverlay').classList.add('show');
+  setTimeout(()=> document.getElementById('wrGoal0').focus(), 80);
+}
+let weekReviewTarget = null;
+function closeWeekReview(){ document.getElementById('weekReviewOverlay').classList.remove('show'); weekReviewTarget = null; }
+
+function saveWeekReview(){
+  const target = weekReviewTarget || reviewTargetWeek();
+  let moved = 0;
+  document.querySelectorAll('#wrPending input[type=checkbox]').forEach(cb=>{
+    if(!cb.checked) return;
+    const t = (state.days[cb.dataset.key] || []).find(x=> x.id === cb.dataset.id);
+    if(!t) return;
+    carryTaskToDay(t, cb.dataset.key, null, 'backlog');
+    removeTaskById(cb.dataset.key, t.id);
+    moved++;
+  });
+  const priorities = [0,1,2].map(i=> document.getElementById('wrGoal'+i).value.trim().slice(0, 70));
+  state.weekReviews[target] = {priorities, note: document.getElementById('wrNote').value.trim().slice(0, 1000), at: new Date().toISOString()};
+  bumpCounter('weekReviews');
+  closeWeekReview();
+  persist(); render();
+  showToast({icon:'📊', text:'Bilan enregistré', sub: (priorities.some(Boolean) ? 'Tes priorités de la semaine sont affichées en haut.' : 'Bonne semaine !')
+    + (moved ? ` · ${moved} tâche(s) dans « À planifier »` : '')});
+}
+
+function renderWeekGoals(){
+  const el = document.getElementById('weekGoals');
+  if(!el) return;
+  const review = state.weekReviews && state.weekReviews[weekKeyOf(iso(currentDate))];
+  const goals = review ? (review.priorities || []).filter(Boolean) : [];
+  el.classList.toggle('show', goals.length > 0);
+  el.innerHTML = goals.length ? '<b>Semaine</b>' : '';
+  if(goals.length) el.appendChild(document.createTextNode('🎯 ' + goals.join(' · ')));
+}
+
+// Offered on Sunday evening and on Monday, once per week, if there was something to review.
+let weekReviewPrompted = false;
+function maybeOfferWeekReview(){
+  if(weekReviewPrompted || !state.onboardingSeen) return;
+  const now = new Date();
+  const dow = now.getDay();
+  if(!((dow === 0 && now.getHours() >= 17) || dow === 1)) return;
+  const target = reviewTargetWeek();
+  if(state.weekReviews[target] || state.settings.lastWeekReviewPrompt === target) return;
+  if(weekReviewData(target).total < 3) return;
+  weekReviewPrompted = true;
+  const ask = async (tries)=>{
+    // never stack on top of another popup (rollover, reminders...)
+    const busy = document.querySelector('#confirmOverlay.show, #modalOverlay.show, #closeDayOverlay.show, #onboardingOverlay.show');
+    if(busy){ if(tries < 20) setTimeout(()=> ask(tries + 1), 3000); return; }
+    state.settings.lastWeekReviewPrompt = target;
+    persist();
+    const ok = await showConfirm({icon:'📊', title: dow === 0 ? 'Prêt pour la semaine qui arrive ?' : 'Nouvelle semaine !',
+      msg:'Deux minutes pour faire le bilan de la semaine passée et choisir tes 3 priorités ?',
+      okLabel:'Faire le bilan', cancelLabel:'Pas maintenant'});
+    if(ok) openWeekReview();
+  };
+  setTimeout(()=> ask(0), 4500);
+}
+
+// Reminders are opt-in and live deep in Settings: offer them once, the first
+// time a task gets a time (that's exactly when a reminder would be useful).
+let reminderPromptOpen = false;
+function maybeSuggestReminders(task, dayKey){
+  if(!state.settings || state.settings.reminders || state.settings.reminderPromptSeen || reminderPromptOpen) return;
+  if(!state.onboardingSeen || !window.pywebview || !task || !task.start) return;
+  if(dayKey && dayKey < todayKey()) return;
+  state.settings.reminderPromptSeen = true;
+  persist();
+  reminderPromptOpen = true;
+  setTimeout(async ()=>{
+    try{
+      const lead = Number(state.settings.reminderLead) || 10;
+      const ok = await showConfirm({icon:'⏰', title:'Être prévenu avant tes tâches ?',
+        msg:`Remontada peut t'envoyer une notification Windows ${lead} minutes avant chaque tâche, avec un petit son. Tu pourras la reporter avec « Plus tard ». Réglable à tout moment dans Profil → Réglages.`,
+        okLabel:'Activer les rappels', cancelLabel:'Non merci'});
+      if(!ok) return;
+      state.settings.reminders = true;
+      persist();
+      renderSettingsTab();
+      checkTaskReminders();
+      showToast({icon:'⏰', text:'Rappels activés', sub:`${lead} min avant chaque tâche, tant que l'app est ouverte.`});
+    } finally { reminderPromptOpen = false; }
+  }, 700);
+}
+
+// ================= Weekly menus (lunch + dinner for 7 days) =================
+const MENU_DAYS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const MENU_SLOTS = [['dej','Déjeuner','12:30'], ['din','Dîner','19:30']];
+let menuWeek = null, menuFilter = '';
+
+function recipeByName(name){ return (typeof RECIPES !== 'undefined' ? RECIPES : []).find(r=> r.n === name) || null; }
+function menuPlan(){ return state.mealPlans[menuWeek] || (state.mealPlans[menuWeek] = {}); }
+
+function pickMenuRecipe(kind, exclude){
+  let pool = RECIPES.filter(r=> r.m.includes(kind) && (!menuFilter || r.tags.includes(menuFilter)));
+  if(!pool.length) pool = RECIPES.filter(r=> r.m.includes(kind));
+  const fresh = pool.filter(r=> !exclude.has(r.n));
+  const from = fresh.length ? fresh : pool;
+  return from[Math.floor(Math.random() * from.length)];
+}
+
+function openMenus(){
+  if(!mealIdeasAvailable()) return;
+  menuWeek = weekKeyOf(viewMode === 'day' ? iso(currentDate) : todayKey());
+  renderMenus();
+  document.getElementById('menuOverlay').classList.add('show');
+}
+function closeMenus(){ document.getElementById('menuOverlay').classList.remove('show'); }
+
+function renderMenus(){
+  const plan = menuPlan();
+  const start = keyToDate(menuWeek), end = keyToDate(addDaysKey(menuWeek, 6));
+  const count = Object.values(plan).filter(Boolean).length;
+  document.getElementById('menuSub').textContent = `Semaine du ${fmtShort(start)} au ${fmtShort(end)} · ${count}/14 repas prévus`;
+  document.querySelectorAll('#menuFilters button').forEach(b=> b.classList.toggle('on', b.dataset.f === menuFilter));
+  const grid = document.getElementById('menuGrid');
+  grid.innerHTML = '<div></div><div class="mgHead">Déjeuner</div><div class="mgHead">Dîner</div>';
+  const tk = todayKey();
+  MENU_DAYS.forEach((label, i)=>{
+    const key = addDaysKey(menuWeek, i);
+    const day = document.createElement('div');
+    day.className = 'mgDay' + (key < tk ? ' past' : '');
+    day.textContent = `${label} ${keyToDate(key).getDate()}`;
+    grid.appendChild(day);
+    MENU_SLOTS.forEach(([kind])=>{
+      const slot = `${i}-${kind}`;
+      const r = recipeByName(plan[slot]);
+      const cell = document.createElement('div');
+      cell.className = 'mgCell' + (r ? '' : ' empty');
+      cell.innerHTML = '<span class="mgName"></span><button class="mgRoll" title="Une autre idée">🎲</button>'
+        + (r ? '<button class="mgDel" title="Retirer">✕</button>' : '');
+      cell.querySelector('.mgName').textContent = r ? `${r.e} ${r.n}` : 'À choisir';
+      cell.querySelector('.mgName').onclick = ()=>{
+        if(!r){ rollMenuSlot(slot, kind); return; }
+        mealState = {kind, filter:'', current:r, seen:new Set([r.n]), fromModal:false};
+        renderMealCard();
+        document.getElementById('mealOverlay').classList.add('show');
+      };
+      cell.querySelector('.mgRoll').onclick = ()=> rollMenuSlot(slot, kind);
+      const del = cell.querySelector('.mgDel');
+      if(del) del.onclick = ()=>{ delete plan[slot]; persist(); renderMenus(); };
+      grid.appendChild(cell);
+    });
+  });
+}
+
+function rollMenuSlot(slot, kind){
+  const plan = menuPlan();
+  const used = new Set(Object.values(plan));
+  plan[slot] = pickMenuRecipe(kind, used).n;
+  persist(); renderMenus();
+}
+
+function fillMenus(){
+  const plan = menuPlan();
+  const used = new Set(Object.values(plan));
+  MENU_DAYS.forEach((_, i)=> MENU_SLOTS.forEach(([kind])=>{
+    const slot = `${i}-${kind}`;
+    if(plan[slot] && recipeByName(plan[slot])) return;
+    const r = pickMenuRecipe(kind, used);
+    plan[slot] = r.n; used.add(r.n);
+  }));
+  bumpCounter('menusGenerated');
+  persist(); renderMenus();
+}
+
+function plannedMenuRecipes(){
+  const plan = menuPlan();
+  return Object.keys(plan).sort().map(k=> recipeByName(plan[k])).filter(Boolean);
+}
+
+// Same ingredient line in several recipes -> "×2"; split in chunks that fit a note.
+function menuShoppingLines(){
+  const counts = new Map();
+  plannedMenuRecipes().forEach(r=> r.i.forEach(x=> counts.set(x, (counts.get(x) || 0) + 1)));
+  return [...counts.entries()].sort((a,b)=> a[0].localeCompare(b[0], 'fr'))
+    .map(([x, n])=> '• ' + x + (n > 1 ? ` (×${n})` : ''));
+}
+
+function addMenuShopping(){
+  const lines = menuShoppingLines();
+  if(!lines.length){ showToast({icon:'🛒', text:'Aucun repas prévu', sub:'Complète d\'abord la semaine.'}); return; }
+  const chunks = [];
+  let cur = '';
+  lines.forEach(l=>{
+    if(cur && (cur.length + l.length + 1) > 1000){ chunks.push(cur); cur = ''; }
+    cur += (cur ? '\n' : '') + l;
+  });
+  if(cur) chunks.push(cur);
+  const category = state.categories['Courses'] ? 'Courses' : Object.keys(state.categories)[0];
+  const label = `Courses de la semaine du ${fmtShort(keyToDate(menuWeek))}`;
+  chunks.forEach((notes, i)=> state.backlog.push({
+    id: uid(), title: (chunks.length > 1 ? `${label} (${i+1}/${chunks.length})` : label).slice(0, 90),
+    duration: 45, category, notes, url: '', createdAt: new Date().toISOString()
+  }));
+  persist(); renderBacklog();
+  showToast({icon:'🛒', text:'Liste de courses ajoutée', sub:`${lines.length} ingrédients dans « À planifier »`});
+}
+
+function addMenusToPlanning(){
+  const plan = menuPlan();
+  const tk = todayKey();
+  const category = state.categories['Santé'] ? 'Santé' : (state.categories['Personnel'] ? 'Personnel' : Object.keys(state.categories)[0]);
+  let added = 0;
+  MENU_DAYS.forEach((_, i)=>{
+    const key = addDaysKey(menuWeek, i);
+    if(key < tk) return;
+    MENU_SLOTS.forEach(([kind, label, time])=>{
+      const r = recipeByName(plan[`${i}-${kind}`]);
+      if(!r) return;
+      const title = `${label} : ${r.n}`.slice(0, 90);
+      const list = ensureDay(key);
+      if(list.some(t=> t.title === title)) return;
+      const start = findFreeSlot(list, 30, hhmmToMinutes(time), key);
+      list.push({id:uid(), title, start:minutesToHHMM(start), duration:30, category, done:false, notes:mealAsNote(r).slice(0, 1000), url:''});
+      added++;
+    });
+  });
+  persist(); render();
+  showToast({icon:'📅', text: added ? `${added} repas ajoutés au planning` : 'Rien à ajouter',
+    sub: added ? 'Chaque tâche contient la recette dans sa note.' : 'Les repas de cette semaine sont déjà planifiés (ou passés).'});
+}
+
 // --- Discord weekly recap (webhook, e.g. the Luron bot) ---
 function buildWeeklyRecap(weekKeyStr){
   const keys = weekKeys(weekKeyStr);
@@ -4567,7 +5314,10 @@ function buildSearchGroups(query){
     {icon:'🎯', title:'Ouvrir les quêtes & défis', sub:'Objectifs de la semaine et défis de régularité', run:()=> openQuestModal()},
     {icon:'👤', title:'Ouvrir mon profil', sub:'Succès, boutique, historique', run:()=> openProfileModal()},
     {icon:'⚙️', title:'Ouvrir les réglages', sub:'Rappels, charge quotidienne, Discord', run:()=> openProfileSettings()},
-    ...(mealIdeasAvailable() ? [{icon:'🍽️', title:'Idée de repas', sub:'Une recette healthy au hasard', run:()=> openMealIdea(null)}] : []),
+    {icon:'🎯', title:'Mode concentration', sub:'Minuteur 25 min sur une tâche (Pomodoro)', run:()=> openFocusSetup(null, null)},
+    {icon:'📊', title:'Bilan de la semaine', sub:'Stats de la semaine passée et 3 priorités', run:()=> openWeekReview()},
+    ...(mealIdeasAvailable() ? [{icon:'🍽️', title:'Idée de repas', sub:'Une recette healthy au hasard', run:()=> openMealIdea(null)},
+      {icon:'🗓️', title:'Menus de la semaine', sub:'Déjeuners et dîners + liste de courses', run:()=> openMenus()}] : []),
   ];
   const actionItems = actions.filter(a=> matches(a.title + ' ' + a.sub))
     .map(a=> ({...a, tag:'Action'}));
@@ -5595,6 +6345,7 @@ function openTaskModal(presetMinutes, task, opts){
   document.getElementById('modalRepeatScope').checked = true;
   document.getElementById('modalDelete').classList.toggle('show', !!src);
   document.getElementById('modalBacklog').classList.toggle('show', !!task && !routine && !backlog);
+  document.getElementById('modalFocus').classList.toggle('show', !!task && !routine && !backlog && !task.done);
   renderModalCategories();
   renderRepeatUI();
   updateMealButton();
@@ -5747,10 +6498,12 @@ async function saveModalTask(){
       notes, url, priority:priorityWanted, ...(parallel ? {parallel:true} : {})});
     if(viewMode==='day' && dateKey!==iso(currentDate)) toast = {icon:'📅', text:`Ajoutée au ${fmtLabel(keyToDate(dateKey))}`};
   }
+  const wasNew = !isBacklog && !editingTaskId && !editingRoutineId;
   closeTaskModal();
   persist(); render();
   if(toast) showToast(toast);
   if(trimmed) showToast({icon:'✂️', text:`Durée ajustée à ${duration} min`, sub:'La tâche ne peut pas dépasser minuit.'});
+  if(wasNew) maybeSuggestReminders({start}, dateKey);
 }
 
 function deleteFromModal(){
@@ -5804,7 +6557,11 @@ document.getElementById('modalOverlay').addEventListener('click', (e)=>{
 document.getElementById('modalTitle').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.defaultPrevented) saveModalTask(); });
 document.addEventListener('keydown', (e)=>{
   if(e.key!=='Escape' || e.defaultPrevented) return; // already consumed by the confirm popup
-  if(document.getElementById('mealOverlay').classList.contains('show')) closeMealIdea();
+  if(document.getElementById('moreMenu').classList.contains('show')) closeMoreMenu();
+  else if(document.getElementById('mealOverlay').classList.contains('show')) closeMealIdea();
+  else if(document.getElementById('menuOverlay').classList.contains('show')) closeMenus();
+  else if(document.getElementById('weekReviewOverlay').classList.contains('show')) closeWeekReview();
+  else if(document.getElementById('focusOverlay').classList.contains('show')) closeFocusOverlay();
   else if(document.getElementById('searchOverlay').classList.contains('show')) closeSearch();
   else if(document.getElementById('closeDayOverlay').classList.contains('show')) closeCloseDayModal();
   else if(document.getElementById('modalOverlay').classList.contains('show')) closeTaskModal();
@@ -5832,7 +6589,9 @@ setInterval(()=>{
     if(wasOnToday) currentDate = new Date();
     render(); // new day: routines, quests (on Monday) and challenges all roll over
     rolloverPrompted = false;
+    weekReviewPrompted = false;
     setTimeout(maybeOfferRollover, 1600);
+    maybeOfferWeekReview();
     return;
   }
   if(viewMode==='day') renderNowLine();
@@ -5884,6 +6643,69 @@ document.querySelectorAll('#repeatPresets button').forEach(b=> b.onclick = ()=>{
 });
 document.getElementById('modalDelete').onclick = deleteFromModal;
 document.getElementById('modalBacklog').onclick = moveEditingTaskToBacklog;
+document.getElementById('menuClose').onclick = closeMenus;
+document.getElementById('menuFill').onclick = fillMenus;
+document.getElementById('menuShop').onclick = addMenuShopping;
+document.getElementById('menuPlan').onclick = addMenusToPlanning;
+document.getElementById('menuClear').onclick = async ()=>{
+  const ok = await showConfirm({icon:'🗓️', title:'Effacer les menus de cette semaine ?', msg:'Les tâches déjà ajoutées au planning ne sont pas supprimées.', okLabel:'Effacer', danger:true});
+  if(!ok) return;
+  state.mealPlans[menuWeek] = {};
+  persist(); renderMenus();
+};
+document.getElementById('menuFilters').addEventListener('click', (e)=>{
+  const b = e.target.closest('button'); if(!b) return;
+  menuFilter = b.dataset.f; renderMenus();
+});
+document.getElementById('menuOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'menuOverlay') closeMenus(); });
+document.getElementById('focusDurations').addEventListener('click', (e)=>{
+  const b = e.target.closest('button'); if(!b) return;
+  focusSetupMinutes = Number(b.dataset.min); renderFocusDurations();
+});
+document.getElementById('focusCancel').onclick = stopFocus;
+document.getElementById('focusStart').onclick = ()=>{
+  const v = document.getElementById('focusTaskSelect').value;
+  let ref = null;
+  if(v){
+    const [dayKey, id] = v.split('|');
+    const t = (state.days[dayKey] || []).find(x=> x.id === id);
+    if(t) ref = {dayKey, taskId: id, title: t.title};
+  }
+  startFocus('work', focusSetupMinutes, ref);
+};
+document.getElementById('focusPause').onclick = toggleFocusPause;
+document.getElementById('focusStop').onclick = stopFocus;
+document.getElementById('focusMinimize').onclick = minimizeFocus;
+document.getElementById('focusPill').onclick = showFocusOverlay;
+document.getElementById('focusClose').onclick = stopFocus;
+document.getElementById('focusBreak').onclick = ()=>{
+  const ref = focus && focus.taskId ? {dayKey: focus.dayKey, taskId: focus.taskId, title: focus.title} : null;
+  startFocus('break', 5, ref);
+};
+document.getElementById('focusAgain').onclick = ()=>{
+  const ref = focus && focus.taskId ? {dayKey: focus.dayKey, taskId: focus.taskId, title: focus.title} : null;
+  startFocus('work', focus ? (focus.phase === 'work' ? focus.minutes : focusSetupMinutes) : focusSetupMinutes, ref);
+};
+document.getElementById('focusDone').onclick = ()=>{
+  const t = focusTaskObj();
+  if(t && !t.done) onTaskChecked(t, focus.dayKey, true, null);
+  stopFocus();
+};
+document.getElementById('focusOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'focusOverlay') closeFocusOverlay(); });
+document.getElementById('modalFocus').onclick = ()=>{
+  const key = editingDayKey, t = (state.days[key] || []).find(x=> x.id === editingTaskId);
+  closeTaskModal();
+  if(t) openFocusSetup(t, key);
+};
+document.getElementById('wrCancel').onclick = closeWeekReview;
+document.getElementById('wrSave').onclick = saveWeekReview;
+document.getElementById('weekGoals').onclick = openWeekReview;
+document.getElementById('weekReviewOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'weekReviewOverlay') closeWeekReview(); });
+document.getElementById('quickInput').addEventListener('input', updateQuickPreview);
+document.getElementById('quickInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); submitQuickAdd(); }
+  else if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); e.target.value = ''; updateQuickPreview(); e.target.blur(); }
+});
 document.getElementById('modalTitle').addEventListener('input', updateMealButton);
 document.getElementById('modalStart').addEventListener('change', updateMealButton);
 document.getElementById('modalMealBtn').onclick = ()=> openMealIdea({
@@ -5900,6 +6722,38 @@ document.getElementById('mealFilters').addEventListener('click', (e)=>{
   mealState.current = null;
   pickMeal();
 });
+// --- Backup: export / restore (Settings) ---
+document.getElementById('exportDataBtn').onclick = async ()=>{
+  const api = window.pywebview && window.pywebview.api;
+  if(!api || !api.export_data) return;
+  const res = await api.export_data(state).catch(err=> ({ok:false, error:String(err)}));
+  if(res && res.ok){
+    bumpCounter('backupsExported');
+    showToast({icon:'💾', text:'Sauvegarde créée', sub:res.path});
+    updateGamification(); // may unlock "Jamais trop prudent"
+    persist();
+  } else if(res && !res.cancelled){
+    showToast({icon:'⚠️', text:'Sauvegarde impossible', sub:(res && res.error) || 'Erreur inconnue'});
+  }
+};
+document.getElementById('importDataBtn').onclick = async ()=>{
+  const api = window.pywebview && window.pywebview.api;
+  if(!api || !api.import_data) return;
+  const ok = await showConfirm({icon:'📂', title:'Restaurer une sauvegarde ?',
+    msg:'Tes données actuelles seront remplacées par celles du fichier choisi. Une copie de tes données actuelles est gardée au cas où.',
+    okLabel:'Choisir le fichier', cancelLabel:'Annuler'});
+  if(!ok) return;
+  persistBlocked = true; // an old save landing after the restore would undo it
+  try{
+    const res = await api.import_data().catch(err=> ({ok:false, error:String(err)}));
+    if(res && res.ok){
+      await loadState();
+      showToast({icon:'✅', text:'Sauvegarde restaurée', sub:'Ton planning et ta progression sont de retour.'});
+    } else if(res && !res.cancelled){
+      showToast({icon:'⚠️', text:'Restauration impossible', sub:(res && res.error) || 'Erreur inconnue'});
+    }
+  } finally { persistBlocked = false; }
+};
 document.getElementById('mealIdeasToggle').onchange = (e)=>{
   state.settings.mealIdeas = e.target.checked;
   persist();
@@ -5935,7 +6789,41 @@ document.getElementById('questPill').onclick = openQuestModal;
 document.getElementById('questsBtn').onclick = openQuestModal;
 document.getElementById('questClose').onclick = closeQuestModal;
 document.getElementById('questOverlay').addEventListener('click', (e)=>{ if(e.target.id==='questOverlay') closeQuestModal(); });
-document.getElementById('recapBtn').onclick = openRecapModal;
+document.getElementById('recapBtn').onclick = ()=>{ closeMoreMenu(); openRecapModal(); };
+
+// --- "⋯" menu ---
+function openMoreMenu(){
+  const menu = document.getElementById('moreMenu');
+  const r = document.getElementById('moreBtn').getBoundingClientRect();
+  menu.querySelectorAll('.mmMeal').forEach(b=> b.style.display = mealIdeasAvailable() ? '' : 'none');
+  menu.classList.add('show');
+  const w = menu.offsetWidth;
+  menu.style.top = `${Math.round(r.bottom + 6)}px`;
+  menu.style.left = `${Math.round(Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w)))}px`;
+  document.getElementById('moreBtn').classList.add('on');
+}
+function closeMoreMenu(){
+  document.getElementById('moreMenu').classList.remove('show');
+  document.getElementById('moreBtn').classList.remove('on');
+}
+document.getElementById('moreBtn').onclick = (e)=>{
+  e.stopPropagation();
+  if(document.getElementById('moreMenu').classList.contains('show')) closeMoreMenu(); else openMoreMenu();
+};
+document.getElementById('moreMenu').addEventListener('click', (e)=>{
+  e.stopPropagation(); // the display tools (zoom, theme...) keep the menu open
+  const item = e.target.closest('.mmItem[data-act]');
+  if(!item) return;
+  closeMoreMenu();
+  const act = item.dataset.act;
+  if(act === 'review') openWeekReview();
+  else if(act === 'focus') openFocusSetup(null, null);
+  else if(act === 'menus') openMenus();
+  else if(act === 'meal') openMealIdea(null);
+  else if(act === 'settings') openProfileSettings();
+});
+document.addEventListener('click', ()=> closeMoreMenu());
+window.addEventListener('resize', ()=> closeMoreMenu());
 document.getElementById('recapClose').onclick = closeRecapModal;
 document.getElementById('recapOverlay').addEventListener('click', (e)=>{ if(e.target.id==='recapOverlay') closeRecapModal(); });
 document.querySelectorAll('#recapScopeSwitch button').forEach(b=> b.onclick = ()=> setRecapScope(b.dataset.scope));
@@ -5957,11 +6845,6 @@ document.getElementById('dayThemesClose').onclick = closeDayThemesModal;
 document.getElementById('dayThemesOverlay').addEventListener('click', (e)=>{
   if(e.target.id==='dayThemesOverlay') closeDayThemesModal();
 });
-document.getElementById('refreshBtn').onclick = async ()=>{
-  bumpCounter('refreshClicks');
-  await loadState();
-  showToast({icon:'🔄', text:'Données rechargées depuis le disque'});
-};
 function setZoom(h){
   HOUR_H = h;
   state.settings = state.settings || {};
@@ -6172,7 +7055,7 @@ setTimeout(hideSplash, 6000);
 
 // Fades the launch splash out once the first real render has happened.
 // Idempotent (checks it's not already hidden) so later loadState() calls
-// (e.g. the refresh button) never re-trigger it.
+// (e.g. after restoring a backup) never re-trigger it.
 let splashHidden = false;
 function hideSplash(){
   if(splashHidden) return;
@@ -6219,7 +7102,8 @@ const ONBOARDING_STEPS = [
   // safe fix is to stop depending on that element's bounding box at all.
   {target:null, text:"Coche une tâche quand elle est terminée pour gagner de l'XP et quelques pièces 🪙 au passage !"},
   {target:'#levelPill', text:"Ton profil : niveau, succès débloqués, boutique et avatar — tout se trouve ici."},
-  {target:'#recapBtn', text:"Le récap 🥧 affiche un camembert de la répartition de ton temps par catégorie."},
+  {target:'#quickInputWrap', text:"Encore plus rapide : écris « sport demain 18h 45min » ici puis Entrée, la tâche se crée toute seule."},
+  {target:'#moreBtn', text:"Le menu ⋯ regroupe le bilan de la semaine, le mode concentration, les menus, le récap 🥧 et l'affichage (zoom, thème, sons)."},
   {target:null, text:"Et voilà, tu es prêt(e) ! Amuse-toi à planifier tes journées et à monter de niveau. 🚀", final:true},
 ];
 let onboardingStep = 0, onboardingHighlighted = null;

@@ -106,15 +106,25 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
 ## Fonctionnalités notables
 
 - Vue jour / semaine / mois, routines récurrentes, modèles de journée.
+- Ajout rapide en une phrase : « sport demain 18h 45min #santé ! » crée la tâche
+  (date, heure, durée, catégorie, priorité) sans ouvrir de fenêtre.
 - Top 3 priorités par journée et jauge de charge avec capacité quotidienne.
+- Bilan de la semaine (proposé le dimanche soir et le lundi) : stats de la
+  semaine passée, tâches non finies à garder pour plus tard, et 3 priorités de
+  la semaine affichées sous les priorités du jour.
+- Mode concentration (menu ⋯ ou 🎯 dans une tâche) : minuteur 15 à 60 min,
+  pause, pastille réduite dans un coin, pause café de 5 min, et la tâche se
+  coche à la fin.
 - Backlog « à planifier » : capture rapide, édition, planification en un clic
   ou par glisser-déposer sur la timeline.
 - Recherche globale (Ctrl+K) sur les tâches, notes, liens, catégories, backlog,
   routines, modèles et actions.
 - Notes et URL sur chaque tâche, affichées dans la timeline et la vue semaine.
 - Rappels Windows optionnels (toast système + toast dans l'app) tant que l'app
-  est ouverte, avec le son « Rappel » de Windows (désactivable dans les réglages)
-  et une notification qui reste affichée jusqu'à ce que tu cliques OK. Le bouton « Tester la notification » (Profil → Réglages) vérifie
+  est ouverte, avec le son « Rappel » de Windows (désactivable dans les réglages),
+  une notification qui reste affichée jusqu'à « OK » et un bouton « Plus tard »
+  (5, 10 ou 15 min). L'app propose de les activer à la première tâche avec une
+  heure. Le bouton « Tester la notification » (Profil → Réglages) vérifie
   qu'elles s'affichent ; si rien n'apparaît, regarde le mode Ne pas déranger.
 - Récap hebdomadaire Discord via webhook (par exemple le salon de Luron) :
   envoi manuel, ou automatique le lundi si activé. Aucun ping.
@@ -123,6 +133,12 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
   healthy parmi plus de 100 (`ui/recipes.js`), avec filtres protéiné / léger /
   végétarien / rapide. On peut garder la recette dans la note de la tâche ou
   envoyer ses ingrédients dans « À planifier » comme liste de courses.
+  **Menus de la semaine** (menu ⋯) : déjeuners et dîners des 7 jours, une
+  liste de courses regroupée, et l'ajout des repas au planning.
+- Sauvegarde de tes données (Profil → Réglages) : export dans un fichier et
+  restauration, avec une copie de sécurité gardée avant chaque restauration.
+- Barre du haut allégée : bilan, concentration, menus, récap, thème et sons
+  sont dans le menu ⋯ ; le zoom apparaît en haut à droite du planning au survol.
 - Insights locaux sur les 30 derniers jours : taux de complétion, charge vs
   capacité, meilleur créneau, catégorie la plus fiable, priorités tenues,
   reports et journées parfaites.
@@ -132,7 +148,7 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
 - Tutoriel de prise en main au tout premier lancement (rejouable depuis
   Profil → onglet Pseudo → "Revoir le tutoriel").
 - Sons synthétisés (pas de fichiers audio à bundler) pour les actions clés ;
-  réglables via l'icône 🔊 dans la barre d'outils.
+  réglables via l'icône 🔊 du menu ⋯.
 - Interface en glassmorphism (panneaux et modales translucides avec flou)
   et animations sur les interactions.
 - Sauvegarde automatique + 30 jours de backups locaux, récupération auto
