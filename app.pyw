@@ -103,6 +103,8 @@ DEFAULT_DATA = {
     "weekReviews": {},
     # weekly menus: { "2026-11-02": {"0-dej": "<recipe name>", "0-din": ..., ...} } (0 = Monday)
     "mealPlans": {},
+    # "quit" sidequests: [{id, kind, label, start, perDay, unitCost, reasons, lapses, cravings, seenMilestones}]
+    "quits": [],
     # recurring tasks: {id,title,start,duration,category,days:[0-6],from,until,skip:[dates]}
     "routines": [],
     # regularity challenges: {id,title,category,keywords,length,start,status,...}

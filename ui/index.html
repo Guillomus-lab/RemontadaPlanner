@@ -1325,6 +1325,80 @@
   .mealActions button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;margin-left:auto;}
   .mealActions button:hover{filter:brightness(1.08);}
 
+  /* --- Quit sidequest --- */
+  #quitOverlay{position:fixed;inset:0;z-index:216;background:rgba(10,8,16,.62);backdrop-filter:blur(4px);
+      display:none;align-items:center;justify-content:center;}
+  #quitOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #quitCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px 24px;position:relative;
+      width:620px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);}
+  #quitCard h3{margin:4px 0 10px;font-size:19px;font-weight:800;}
+  .qtTabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .qtTabs button{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:999px;padding:5px 12px;
+      font-size:11.5px;font-weight:700;cursor:pointer;}
+  .qtTabs button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;}
+  .qtHero{text-align:center;padding:16px 10px 12px;border-radius:16px;background:linear-gradient(135deg,
+      color-mix(in srgb,var(--accent) 16%,var(--surface2)),color-mix(in srgb,var(--accent2) 12%,var(--surface2)));border:1px solid var(--border);}
+  .qtHero .qtSince{font-size:11px;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;}
+  .qtHero .qtBig{font-size:40px;font-weight:800;line-height:1.15;margin:4px 0;font-variant-numeric:tabular-nums;}
+  .qtHero .qtSub{font-size:11.5px;color:var(--text-dim);}
+  .qtStats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;}
+  .qtStat{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:9px 6px;text-align:center;}
+  .qtStat b{display:block;font-size:17px;font-weight:800;}
+  .qtStat span{font-size:9.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+  .qtPhrase{font-size:13px;font-style:italic;color:var(--text);text-align:center;padding:10px 14px;margin:4px 0 12px;
+      border-left:3px solid var(--accent);background:var(--surface2);border-radius:8px;}
+  .qtActions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .qtActions button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 12px;
+      font-size:12px;font-weight:700;cursor:pointer;}
+  .qtActions button.sos{flex:1;min-width:180px;background:linear-gradient(135deg,#0ea5e9,var(--accent));border:none;color:#fff;font-size:13.5px;padding:11px;}
+  .qtActions button:hover{filter:brightness(1.08);}
+  .qtSection{font-size:10.5px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 7px;}
+  .qtReasons{margin:0;padding-left:18px;font-size:12.5px;line-height:1.7;}
+  .qtNext{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;}
+  .qtNext b{font-size:12.5px;}
+  .qtNext p{margin:4px 0 8px;font-size:11.5px;color:var(--text-dim);line-height:1.5;}
+  .qtBar{height:6px;border-radius:99px;background:var(--surface3);overflow:hidden;}
+  .qtBar div{height:100%;background:linear-gradient(90deg,var(--done),#5eead4);border-radius:99px;}
+  .qtMiles{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
+  .qtMile{display:flex;gap:8px;font-size:11.5px;color:var(--text-faint);line-height:1.45;}
+  .qtMile.ok{color:var(--text);}
+  .qtMile b{flex-shrink:0;width:86px;}
+  .qtTool{background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;}
+  .qtTool summary{cursor:pointer;padding:9px 12px;font-size:12.5px;font-weight:700;}
+  .qtTool ul{margin:0 0 10px;padding:0 14px 0 30px;font-size:12px;line-height:1.6;color:var(--text-dim);}
+  .qtTool li{margin-bottom:4px;}
+  .qtForm label{display:block;font-size:11px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 5px;}
+  .qtForm input, .qtForm textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);
+      border-radius:9px;padding:8px 10px;font-size:12.5px;}
+  .qtForm textarea{min-height:80px;resize:vertical;}
+  .qtForm .qtRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .qtHint{font-size:11px;color:var(--text-faint);margin-top:4px;}
+  .qtWarn{background:color-mix(in srgb,var(--warn) 14%,var(--surface2));border:1px solid color-mix(in srgb,var(--warn) 45%,var(--border));
+      border-radius:11px;padding:10px 12px;font-size:12px;line-height:1.55;margin-top:10px;}
+  .qtChecks label{display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:12px;font-weight:600;color:var(--text-dim);margin:6px 0;}
+  .qtChecks input{width:auto;}
+  #quitLine{display:none;margin-top:4px;font-size:11px;color:var(--text-dim);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #quitLine.show{display:block;}
+  #quitLine:hover{color:var(--text);}
+  /* craving SOS */
+  #cravingOverlay{position:fixed;inset:0;z-index:218;background:rgba(6,10,20,.78);backdrop-filter:blur(8px);
+      display:none;align-items:center;justify-content:center;}
+  #cravingOverlay.show{display:flex;animation:overlayIn .2s ease;}
+  #cravingCard{width:460px;max-width:94vw;max-height:92vh;overflow-y:auto;background:var(--surface);border:1px solid var(--border);
+      border-radius:22px;padding:24px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+  #cravingCard h3{margin:0 0 4px;font-size:18px;font-weight:800;}
+  .crSub{font-size:12px;color:var(--text-dim);margin-bottom:10px;}
+  .crBreath{width:150px;height:150px;margin:14px auto 6px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      background:radial-gradient(circle,color-mix(in srgb,#0ea5e9 55%,transparent),color-mix(in srgb,var(--accent) 25%,transparent));
+      font-weight:800;font-size:14px;color:#fff;transform:scale(.62);transition:transform 5s ease-in-out;}
+  .crBreath.in{transform:scale(1);}
+  #crTime{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;margin:6px 0 2px;}
+  .crBox{text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:12px;line-height:1.55;}
+  .crBox b{display:block;font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+  .crBox ul{margin:0;padding-left:18px;}
+  .crBtns{display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+  .crBtns button{border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:800;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text);}
+  .crBtns button.primary{background:linear-gradient(135deg,var(--done),#0ea5e9);border:none;color:#fff;}
   #workoutOverlay{position:fixed;inset:0;z-index:216;background:rgba(10,8,16,.62);backdrop-filter:blur(4px);
       display:none;align-items:center;justify-content:center;}
   #workoutOverlay.show{display:flex;animation:overlayIn .15s ease;}
@@ -1437,6 +1511,7 @@
     <button class="mmItem" data-act="review">📊 Bilan de la semaine</button>
     <button class="mmItem" data-act="focus">🎯 Minuteur de concentration</button>
     <button class="mmItem mmWorkout" data-act="workout">🏋️ Séance de sport</button>
+    <button class="mmItem" data-act="quit">🚭 Arrêter (tabac, alcool…)</button>
     <button class="mmItem mmMeal" data-act="menus">🗓️ Menus de la semaine</button>
     <button class="mmItem mmMeal" data-act="meal">🍽️ Idée de repas</button>
     <button class="mmItem" id="recapBtn">🥧 Récap du temps</button>
@@ -1463,6 +1538,7 @@
       <div class="prioHead">🎯 Priorités du jour <b id="prioCount">0/3</b></div>
       <div id="prioritySlots"></div>
       <div id="weekGoals" title="Tes priorités de la semaine — clique pour ouvrir le bilan"></div>
+      <div id="quitLine" title="Ton défi en cours — clique pour l'ouvrir"></div>
     </div>
     <div id="loadPanel" title="Charge planifiée vs capacité quotidienne — clique pour ajuster">
       <div class="loadHead"><span>Charge</span><span id="loadLabel">0h / 8h</span></div>
@@ -1852,6 +1928,30 @@
   </div>
 </div>
 
+<div id="quitOverlay">
+  <div id="quitCard">
+    <button id="quitClose" title="Fermer" class="wkClose">✕</button>
+    <div class="mealKicker">🎯 Sidequest · arrêter</div>
+    <div id="quitBody"></div>
+  </div>
+</div>
+<div id="cravingOverlay">
+  <div id="cravingCard">
+    <h3>🌊 Respire, ça va passer</h3>
+    <div class="crSub">Une envie monte, culmine, puis redescend. Tiens jusqu'à la fin du minuteur.</div>
+    <div class="crBreath" id="crBreath">Inspire…</div>
+    <div id="crTime">3:00</div>
+    <div class="crSub">Inspire 5 secondes en suivant le cercle, expire 5 secondes.</div>
+    <div class="crBox" id="crReason"></div>
+    <div class="crBox"><b>Pour changer d'idée, tout de suite</b><ul id="crIdeas"></ul></div>
+    <div class="qtPhrase" id="crPhrase" style="margin-top:12px"></div>
+    <div class="crBtns">
+      <button id="crLapse">😬 J'ai craqué</button>
+      <button id="crDone" class="primary">💪 C'est passé !</button>
+    </div>
+  </div>
+</div>
+
 <div id="workoutOverlay">
   <div id="workoutCard">
     <button id="workoutClose" title="Fermer" class="wkClose">✕</button>
@@ -1961,6 +2061,7 @@
 <script src="recipes.js"></script>
 <script src="recipes_world.js"></script>
 <script src="workouts.js"></script>
+<script src="quit.js"></script>
 <div id="mealOverlay">
   <div id="mealCard">
     <button id="mealClose" title="Fermer">✕</button>
@@ -4101,6 +4202,7 @@ function ensureCollections(){
   if(!state.closedDays || typeof state.closedDays!=='object' || Array.isArray(state.closedDays)) state.closedDays = {};
   if(!state.weekReviews || typeof state.weekReviews!=='object' || Array.isArray(state.weekReviews)) state.weekReviews = {};
   if(!state.mealPlans || typeof state.mealPlans!=='object' || Array.isArray(state.mealPlans)) state.mealPlans = {};
+  if(!Array.isArray(state.quits)) state.quits = [];
   // Settings added with the daily-loop update: backfill old saves here too, so
   // the UI never depends on app.pyw having migrated the file first.
   if(!Number.isFinite(Number(state.settings.dayCapacity)) || Number(state.settings.dayCapacity) <= 0)
@@ -4154,6 +4256,7 @@ function renderDayBar(){
   const slotsEl = document.getElementById('prioritySlots');
   if(!slotsEl) return;
   renderWeekGoals();
+  renderQuitLine();
   renderNowFocus();
   const key = iso(currentDate);
   const tasks = state.days[key] || [];
@@ -5258,6 +5361,307 @@ function maybeSuggestReminders(task, dayKey){
   }, 700);
 }
 
+// ================= Quit sidequest (content in quit.js) =================
+let quitSel = null, quitView = 'dash', quitTicker = null, quitEditing = null, quitFormKind = 'tabac';
+
+function quitById(id){ return (state.quits || []).find(q=> q.id === id) || null; }
+function quitName(q){ return q.kind === 'autre' ? (q.label || 'Mon habitude') : QUIT_KINDS[q.kind].label; }
+function quitSinceLabel(q){
+  return q.kind === 'tabac' ? 'Sans fumer depuis' : q.kind === 'alcool' ? 'Sans alcool depuis' : `Sans « ${quitName(q)} » depuis`;
+}
+function fmtEuro(v){ return v.toLocaleString('fr-FR', {minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2}) + ' €'; }
+function toLocalInput(d){ const p2 = n=> String(n).padStart(2, '0'); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`; }
+
+function openQuit(id){
+  const list = state.quits || [];
+  quitSel = id || (quitById(quitSel) ? quitSel : (list[0] && list[0].id));
+  quitView = list.length ? 'dash' : 'form';
+  quitEditing = null;
+  renderQuit();
+  document.getElementById('quitOverlay').classList.add('show');
+  clearInterval(quitTicker);
+  quitTicker = setInterval(()=>{ if(quitView === 'dash') renderQuit(true); }, 30000);
+}
+function closeQuit(){
+  document.getElementById('quitOverlay').classList.remove('show');
+  clearInterval(quitTicker);
+}
+
+function renderQuit(keepScroll){
+  const card = document.getElementById('quitCard');
+  const scroll = card.scrollTop;
+  const body = document.getElementById('quitBody');
+  body.innerHTML = '';
+  const tabs = document.createElement('div');
+  tabs.className = 'qtTabs';
+  (state.quits || []).forEach(q=>{
+    const b = document.createElement('button');
+    b.textContent = `${QUIT_KINDS[q.kind].icon} ${quitName(q)}`;
+    b.classList.toggle('on', quitView !== 'form' && q.id === quitSel);
+    b.onclick = ()=>{ quitSel = q.id; quitView = 'dash'; renderQuit(); };
+    tabs.appendChild(b);
+  });
+  const add = document.createElement('button');
+  add.textContent = '＋ Nouveau défi';
+  add.classList.toggle('on', quitView === 'form');
+  add.onclick = ()=>{ quitView = 'form'; renderQuit(); };
+  tabs.appendChild(add);
+  body.appendChild(tabs);
+  const q = quitById(quitSel);
+  if(quitView === 'edit' && q) renderQuitForm(body, q);
+  else if(quitView === 'form' || !q) renderQuitForm(body, null);
+  else renderQuitDash(body, q);
+  if(keepScroll) card.scrollTop = scroll;
+}
+
+function renderQuitForm(body, q){
+  quitEditing = q;
+  const kind = q ? q.kind : quitFormKind;
+  const K = QUIT_KINDS[kind];
+  const f = document.createElement('div');
+  f.className = 'qtForm';
+  f.innerHTML = `<h3></h3>
+    <div class="qtTabs" id="qtKind"></div>
+    <div id="qtLabelWrap"><label>Ce que tu arrêtes</label><input id="qtLabel" maxlength="40" placeholder="ex : sucre, réseaux sociaux le soir, jeux d'argent…" /></div>
+    <div class="qtRow">
+      <div><label>Date et heure d'arrêt</label><input id="qtStart" type="datetime-local" /></div>
+      <div><label class="qtPerLabel"></label><input id="qtPerDay" type="number" min="0" max="200" step="1" /></div>
+    </div>
+    <label class="qtCostLabel"></label><input id="qtCost" type="number" min="0" max="500" step="0.01" />
+    <label>Tes raisons d'arrêter (une par ligne)</label>
+    <textarea id="qtReasons" maxlength="600" placeholder="Retrouver mon souffle au foot&#10;Économiser pour un voyage&#10;Être fier de moi"></textarea>
+    <div class="qtHint">Tes propres raisons sont ta meilleure motivation : elles s'afficheront quand une envie arrive.</div>
+    <div id="qtAlcoholCheck"></div>
+    <div class="crBtns" style="justify-content:flex-end">
+      ${q ? '<button id="qtCancel">Annuler</button>' : ''}
+      <button id="qtSave" class="primary"></button>
+    </div>`;
+  body.appendChild(f);
+  f.querySelector('h3').textContent = q ? `Modifier : ${quitName(q)}` : 'Nouveau défi';
+  f.querySelector('#qtSave').textContent = q ? 'Enregistrer' : '🚀 Je commence';
+  const kindEl = f.querySelector('#qtKind');
+  Object.entries(QUIT_KINDS).forEach(([k, v])=>{
+    const b = document.createElement('button');
+    b.textContent = `${v.icon} ${v.label}`;
+    b.classList.toggle('on', k === kind);
+    b.disabled = !!q;
+    b.onclick = ()=>{ quitFormKind = k; quitView = 'form'; renderQuit(); };
+    kindEl.appendChild(b);
+  });
+  f.querySelector('#qtLabelWrap').style.display = kind === 'autre' ? '' : 'none';
+  f.querySelector('#qtLabel').value = q ? (q.label || '') : '';
+  f.querySelector('.qtPerLabel').textContent = K.perDayLabel;
+  f.querySelector('.qtCostLabel').textContent = K.costLabel;
+  f.querySelector('#qtStart').value = toLocalInput(q ? new Date(q.start) : new Date());
+  f.querySelector('#qtPerDay').value = q ? q.perDay : K.perDay;
+  f.querySelector('#qtCost').value = q ? q.unitCost : K.unitCost;
+  f.querySelector('#qtReasons').value = q ? (q.reasons || []).join('\n') : '';
+  if(kind === 'alcool' && !q){
+    const box = f.querySelector('#qtAlcoholCheck');
+    box.innerHTML = `<label>Avant de commencer : coche ce qui te concerne</label>
+      <div class="qtChecks">
+        <label><input type="checkbox" class="qtRisk" /> Je bois tous les jours, souvent plus de 4 ou 5 verres</label>
+        <label><input type="checkbox" class="qtRisk" /> J'ai déjà eu des tremblements, des sueurs ou des nausées en arrêtant</label>
+        <label><input type="checkbox" class="qtRisk" /> Il m'arrive de boire le matin pour me sentir mieux</label>
+      </div>
+      <div class="qtWarn" id="qtRiskWarn" style="display:none">⚠️ <b>Parles-en à un médecin avant d'arrêter complètement.</b> Chez les personnes qui boivent beaucoup chaque jour, un arrêt brutal peut provoquer un sevrage dangereux (convulsions, delirium tremens). Un sevrage accompagné est sûr et efficace. En attendant, tu peux commencer par réduire et suivre ton défi ici. Alcool Info Service : 0 980 980 930 (anonyme, 7 j/7).</div>`;
+    box.querySelectorAll('.qtRisk').forEach(cb=> cb.onchange = ()=>{
+      box.querySelector('#qtRiskWarn').style.display = [...box.querySelectorAll('.qtRisk')].some(x=> x.checked) ? '' : 'none';
+    });
+  }
+  const cancel = f.querySelector('#qtCancel');
+  if(cancel) cancel.onclick = ()=>{ quitView = 'dash'; renderQuit(); };
+  f.querySelector('#qtSave').onclick = ()=> saveQuitForm(kind);
+}
+
+function saveQuitForm(kind){
+  const v = id=> document.getElementById(id).value;
+  const startD = new Date(v('qtStart'));
+  if(isNaN(startD.getTime())){ showToast({icon:'📅', text:'Choisis une date d\'arrêt'}); return; }
+  if(kind === 'autre' && !v('qtLabel').trim()){ document.getElementById('qtLabel').focus(); return; }
+  const fields = {
+    label: kind === 'autre' ? v('qtLabel').trim().slice(0, 40) : '',
+    start: startD.toISOString(),
+    perDay: Math.max(0, Math.min(200, Number(v('qtPerDay')) || 0)),
+    unitCost: Math.max(0, Math.min(500, Number(String(v('qtCost')).replace(',', '.')) || 0)),
+    reasons: v('qtReasons').split('\n').map(x=> x.trim()).filter(Boolean).slice(0, 8).map(x=> x.slice(0, 120)),
+  };
+  if(quitEditing){
+    Object.assign(quitEditing, fields);
+    quitEditing.seenMilestones = quitMilestones(quitEditing).reached.length;
+    showToast({icon:'✅', text:'Défi mis à jour'});
+  } else {
+    const q = {id: 'q' + uid(), kind, lapses: [], cravings: 0, createdAt: new Date().toISOString(), ...fields};
+    q.seenMilestones = quitMilestones(q).reached.length; // a past start date doesn't replay old milestones
+    state.quits.push(q);
+    quitSel = q.id;
+    bumpCounter('quitsStarted');
+    showToast({icon: QUIT_KINDS[kind].icon, text:'C\'est parti !', sub:'Chaque heure compte. Le bouton « J\'ai une envie » est là quand il faut.'});
+  }
+  quitView = 'dash';
+  quitEditing = null;
+  persist(); renderQuit(); renderQuitLine();
+}
+
+function renderQuitDash(body, q){
+  const s = quitStats(q);
+  const ms = quitMilestones(q);
+  const K = QUIT_KINDS[q.kind];
+  const d = document.createElement('div');
+  d.innerHTML = `<div class="qtHero"><div class="qtSince"></div><div class="qtBig"></div><div class="qtSub"></div></div>
+    <div class="qtStats">
+      <div class="qtStat"><b class="qsSaved"></b><span>économisés</span></div>
+      <div class="qtStat"><b class="qsAvoided"></b><span class="qsAvoidedL"></span></div>
+      <div class="qtStat"><b class="qsCravings"></b><span>envies surmontées</span></div>
+      <div class="qtStat"><b class="qsStreak"></b><span>série actuelle</span></div>
+    </div>
+    <div class="qtPhrase"></div>
+    <div class="qtActions">
+      <button class="sos">🌊 J'ai une envie</button>
+      <button class="lapse">😬 Noter un écart</button>
+      <button class="edit">✏️ Modifier</button>
+      <button class="del" title="Supprimer ce défi">🗑️</button>
+    </div>
+    <div class="qtSection">Prochaine étape</div><div class="qtNext"></div>
+    <div class="qtReasonsWrap"><div class="qtSection">Mes raisons</div><ul class="qtReasons"></ul></div>
+    <div class="qtSection">Toutes les étapes</div><div class="qtMiles"></div>
+    <div class="qtSection">Boîte à outils</div><div class="qtTools"></div>`;
+  d.querySelector('.qtSince').textContent = quitSinceLabel(q);
+  d.querySelector('.qtBig').textContent = fmtQuitDuration(s.elapsedMs);
+  d.querySelector('.qtSub').textContent = s.lapses
+    ? `${s.lapses} écart${s.lapses > 1 ? 's' : ''} noté${s.lapses > 1 ? 's' : ''} · série actuelle : ${fmtQuitDuration(s.streakMs)}. Les écarts ne t'enlèvent pas ce que tu as construit.`
+    : `Depuis le ${new Date(q.start).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})}`;
+  d.querySelector('.qsSaved').textContent = fmtEuro(s.saved);
+  d.querySelector('.qsAvoided').textContent = String(s.avoided);
+  d.querySelector('.qsAvoidedL').textContent = `${K.units} évité${q.kind === 'tabac' ? 'es' : 's'}`;
+  d.querySelector('.qsCravings').textContent = String(s.cravings);
+  d.querySelector('.qsStreak').textContent = s.streakDays >= 1 ? `${s.streakDays} j` : fmtQuitDuration(s.streakMs);
+  d.querySelector('.qtPhrase').textContent = '« ' + quitPhraseOfDay(todayKey(), q.id) + ' »';
+  const next = d.querySelector('.qtNext');
+  if(ms.next){
+    next.innerHTML = '<b></b><p></p><div class="qtBar"><div></div></div>';
+    next.querySelector('b').textContent = `Dans ${fmtQuitDuration(ms.next.h * 3600000 - s.streakMs)} : ${ms.next.t}`;
+    next.querySelector('p').textContent = ms.next.d;
+    next.querySelector('.qtBar div').style.width = Math.round(ms.progress * 100) + '%';
+  } else next.textContent = '🏆 Toutes les étapes sont franchies. Bravo, vraiment.';
+  const reasons = d.querySelector('.qtReasons');
+  (q.reasons || []).forEach(r=>{ const li = document.createElement('li'); li.textContent = r; reasons.appendChild(li); });
+  if(!(q.reasons || []).length) d.querySelector('.qtReasonsWrap').style.display = 'none';
+  const miles = d.querySelector('.qtMiles');
+  ms.list.forEach(m=>{
+    const row = document.createElement('div');
+    row.className = 'qtMile' + (s.streakHours >= m.h ? ' ok' : '');
+    row.innerHTML = '<b></b><span></span>';
+    row.querySelector('b').textContent = (s.streakHours >= m.h ? '✅ ' : '⏳ ') + m.t;
+    row.querySelector('span').textContent = m.d;
+    miles.appendChild(row);
+  });
+  const tools = d.querySelector('.qtTools');
+  QUIT_TOOLBOX.filter(t=> t.k.includes(q.kind)).forEach(t=>{
+    const det = document.createElement('details');
+    det.className = 'qtTool';
+    det.innerHTML = '<summary></summary><ul></ul>';
+    det.querySelector('summary').textContent = t.title;
+    t.items.forEach(it=>{ const li = document.createElement('li'); li.textContent = it; det.querySelector('ul').appendChild(li); });
+    tools.appendChild(det);
+  });
+  d.querySelector('.sos').onclick = ()=> openCraving(q.id);
+  d.querySelector('.lapse').onclick = ()=> noteLapse(q);
+  d.querySelector('.edit').onclick = ()=>{ quitView = 'edit'; renderQuit(); };
+  d.querySelector('.del').onclick = async ()=>{
+    const ok = await showConfirm({icon:'🗑️', title:`Arrêter le suivi « ${quitName(q)} » ?`, msg:'Le compteur, les économies et l\'historique de ce défi seront supprimés.', okLabel:'Supprimer', danger:true});
+    if(!ok) return;
+    state.quits = state.quits.filter(x=> x.id !== q.id);
+    quitSel = state.quits[0] ? state.quits[0].id : null;
+    quitView = state.quits.length ? 'dash' : 'form';
+    persist(); renderQuit(); renderQuitLine();
+  };
+  body.appendChild(d);
+}
+
+async function noteLapse(q){
+  const s = quitStats(q);
+  const ok = await showConfirm({icon:'🤝', title:'Un écart, ça arrive',
+    msg:`Tes ${s.days} jour${s.days > 1 ? 's' : ''} et tes ${fmtEuro(s.saved)} économisés ne disparaissent pas. On note l'écart et on repart tout de suite ? Repense à ce qui l'a déclenché : c'est ta meilleure leçon pour la prochaine fois.`,
+    okLabel:'Noter et repartir', cancelLabel:'Annuler'});
+  if(!ok) return;
+  q.lapses = q.lapses || [];
+  q.lapses.push({at: new Date().toISOString()});
+  q.seenMilestones = 0;
+  bumpCounter('quitLapses');
+  persist();
+  if(document.getElementById('quitOverlay').classList.contains('show')) renderQuit();
+  renderQuitLine();
+  showToast({icon:'🌱', text:'On repart', sub: quitPhraseOfDay(todayKey(), 'lapse' + q.lapses.length)});
+}
+
+// ---- craving SOS: 3-minute timer + guided breathing (5 s in / 5 s out) ----
+let cravingQuit = null, cravingTimer = null, cravingEnd = 0, cravingBreathIn = null;
+function openCraving(id){
+  const q = quitById(id) || (state.quits || [])[0];
+  if(!q) return;
+  cravingQuit = q;
+  const reasons = q.reasons || [];
+  const reasonBox = document.getElementById('crReason');
+  reasonBox.style.display = reasons.length ? '' : 'none';
+  reasonBox.innerHTML = '<b>Ta raison</b><span></span>';
+  if(reasons.length) reasonBox.querySelector('span').textContent = reasons[Math.floor(Math.random() * reasons.length)];
+  const ideas = document.getElementById('crIdeas');
+  ideas.innerHTML = '';
+  [...QUIT_DISTRACTIONS].sort(()=> Math.random() - 0.5).slice(0, 3).forEach(t=>{ const li = document.createElement('li'); li.textContent = t; ideas.appendChild(li); });
+  document.getElementById('crPhrase').textContent = '« ' + QUIT_PHRASES[Math.floor(Math.random() * QUIT_PHRASES.length)] + ' »';
+  cravingEnd = Date.now() + 180000;
+  cravingBreathIn = null;
+  clearInterval(cravingTimer);
+  const breath = document.getElementById('crBreath');
+  breath.classList.remove('in');
+  const tick = ()=>{
+    const left = Math.max(0, cravingEnd - Date.now());
+    const sec = Math.ceil(left / 1000);
+    document.getElementById('crTime').textContent = left ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : 'Bravo 💪';
+    const phaseIn = left > 0 && Math.floor((180000 - left) / 5000) % 2 === 0;
+    if(phaseIn !== cravingBreathIn){
+      cravingBreathIn = phaseIn;
+      breath.classList.toggle('in', phaseIn);
+      breath.textContent = left ? (phaseIn ? 'Inspire…' : 'Expire…') : 'Tenu !';
+    }
+    if(!left) clearInterval(cravingTimer);
+  };
+  document.getElementById('cravingOverlay').classList.add('show');
+  setTimeout(tick, 60); // let the circle render small first so the first "inspire" animates
+  cravingTimer = setInterval(tick, 250);
+}
+function closeCraving(){
+  clearInterval(cravingTimer);
+  document.getElementById('cravingOverlay').classList.remove('show');
+}
+
+function renderQuitLine(){
+  const el = document.getElementById('quitLine');
+  if(!el) return;
+  const list = state.quits || [];
+  el.classList.toggle('show', list.length > 0);
+  if(!list.length){ el.textContent = ''; return; }
+  el.textContent = list.slice(0, 2).map(q=>{
+    const s = quitStats(q);
+    const what = q.kind === 'tabac' ? 'sans tabac' : q.kind === 'alcool' ? 'sans alcool' : `sans ${quitName(q).toLowerCase()}`;
+    // total days first (a slip-up must not look like starting from zero), current streak after
+    const total = s.days >= 1 ? 'J+' + s.days : fmtQuitDuration(s.elapsedMs);
+    const streak = s.lapses ? ` (série : ${s.streakDays >= 1 ? s.streakDays + ' j' : fmtQuitDuration(s.streakMs)})` : '';
+    return `${QUIT_KINDS[q.kind].icon} ${total} ${what}${streak}${s.saved >= 1 ? ' · ' + fmtEuro(Math.floor(s.saved)) + ' économisés' : ''}`;
+  }).join('   ·   ');
+  // celebrate each newly reached milestone once
+  list.forEach(q=>{
+    const reached = quitMilestones(q).reached;
+    if(reached.length > (q.seenMilestones || 0)){
+      const m = reached[reached.length - 1];
+      q.seenMilestones = reached.length;
+      persist();
+      showToast({icon:'🎉', text:`${m.t} ${q.kind === 'tabac' ? 'sans fumer' : q.kind === 'alcool' ? 'sans alcool' : 'tenu'} !`, sub: m.d, cls:'loot'});
+    }
+  });
+}
+
 // ================= Workout ideas (generator in workouts.js) =================
 let workoutState = {minutes:45, zone:'full', current:null, fromModal:false, taskRef:null};
 const WK_DURATIONS = [15, 20, 30, 45, 60, 90];
@@ -5616,6 +6020,8 @@ function buildSearchGroups(query){
     {icon:'⚙️', title:'Ouvrir les réglages', sub:'Rappels, charge quotidienne, Discord', run:()=> openProfileSettings()},
     {icon:'🎯', title:'Mode concentration', sub:'Minuteur 25 min sur une tâche (Pomodoro)', run:()=> openFocusSetup(null, null)},
     ...(workoutIdeasAvailable() ? [{icon:'🏋️', title:'Séance de sport', sub:'Une séance complète selon ton temps et ton niveau', run:()=> openWorkout(null)}] : []),
+    {icon:'🚭', title:'Arrêter : tabac, alcool…', sub:'Ton suivi, tes économies, ta boîte à outils', run:()=> openQuit()},
+    ...((state.quits || []).length ? [{icon:'🌊', title:'J\'ai une envie', sub:'Minuteur, respiration et motivation', run:()=> openCraving(state.quits[0].id)}] : []),
     {icon:'📊', title:'Bilan de la semaine', sub:'Stats de la semaine passée et 3 priorités', run:()=> openWeekReview()},
     ...(mealIdeasAvailable() ? [{icon:'🍽️', title:'Idée de repas', sub:'Une recette healthy au hasard', run:()=> openMealIdea(null)},
       {icon:'🗓️', title:'Menus de la semaine', sub:'Déjeuners et dîners + liste de courses', run:()=> openMenus()}] : []),
@@ -6860,6 +7266,8 @@ document.getElementById('modalTitle').addEventListener('keydown', (e)=>{ if(e.ke
 document.addEventListener('keydown', (e)=>{
   if(e.key!=='Escape' || e.defaultPrevented) return; // already consumed by the confirm popup
   if(document.getElementById('moreMenu').classList.contains('show')) closeMoreMenu();
+  else if(document.getElementById('cravingOverlay').classList.contains('show')) closeCraving();
+  else if(document.getElementById('quitOverlay').classList.contains('show')) closeQuit();
   else if(document.getElementById('mealOverlay').classList.contains('show')) closeMealIdea();
   else if(document.getElementById('workoutOverlay').classList.contains('show')) closeWorkout();
   else if(document.getElementById('menuOverlay').classList.contains('show')) closeMenus();
@@ -6893,6 +7301,7 @@ setInterval(()=>{
   }
   if(viewMode==='day') renderNowLine();
   renderNowFocus();
+  renderQuitLine();
   checkTaskReminders();
 }, 60000);
 document.getElementById('prevDay').onclick = ()=> shiftPeriod(-1);
@@ -7016,6 +7425,17 @@ document.getElementById('modalWorkoutBtn').onclick = ()=> openWorkout({
   title: document.getElementById('modalTitle').value,
   minutes: Number(document.getElementById('modalDurSelect').value) || 45 });
 document.getElementById('workoutClose').onclick = closeWorkout;
+document.getElementById('quitClose').onclick = closeQuit;
+document.getElementById('quitLine').onclick = ()=> openQuit();
+document.getElementById('quitOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'quitOverlay') closeQuit(); });
+document.getElementById('crDone').onclick = ()=>{
+  if(cravingQuit){ cravingQuit.cravings = (Number(cravingQuit.cravings) || 0) + 1; persist(); }
+  bumpCounter('cravingsBeaten');
+  closeCraving();
+  showToast({icon:'💪', text:'Envie surmontée !', sub:`${cravingQuit ? cravingQuit.cravings : 1} au compteur. Chacune rend la suivante plus faible.`});
+  if(document.getElementById('quitOverlay').classList.contains('show')) renderQuit(true);
+};
+document.getElementById('crLapse').onclick = ()=>{ const q = cravingQuit; closeCraving(); if(q) noteLapse(q); };
 document.getElementById('workoutNext').onclick = rollWorkout;
 document.getElementById('workoutKeep').onclick = keepWorkoutInNote;
 document.getElementById('workoutTimer').onclick = startWorkoutTimer;
@@ -7144,6 +7564,7 @@ document.getElementById('moreMenu').addEventListener('click', (e)=>{
   else if(act === 'focus') openFocusSetup(null, null);
   else if(act === 'menus') openMenus();
   else if(act === 'workout') openWorkout(null);
+  else if(act === 'quit') openQuit();
   else if(act === 'meal') openMealIdea(null);
   else if(act === 'settings') openProfileSettings();
 });
