@@ -303,24 +303,26 @@ def _windows_toast(title, message, wait=False, sound=True):
         '<actions><action content="OK" arguments="dismiss" activationType="system"/></actions>'
         f"{audio_tag}</toast>"
     )
-    # PowerShell single-quoted literal: only ' needs escaping (as '').
-    xml_literal = toast_xml.replace("'", "''")
+    # The XML goes through an environment variable, never into the script
+    # text: PowerShell also treats typographic quotes (’ ‘) as string
+    # delimiters, so a title like "l’école" would break (or inject into) it.
     script = (
         "$ErrorActionPreference='Stop';"
         "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null;"
         "[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom, ContentType = WindowsRuntime] | Out-Null;"
         "$xml = New-Object Windows.Data.Xml.Dom.XmlDocument;"
-        f"$xml.LoadXml('{xml_literal}');"
+        "$xml.LoadXml($env:RP_TOAST_XML);"
         "$toast = New-Object Windows.UI.Notifications.ToastNotification $xml;"
         f"[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('{TOAST_APP_ID}').Show($toast);"
     )
     cmd = ["powershell", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", script]
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    env = dict(os.environ, RP_TOAST_XML=toast_xml)
     try:
         if not wait:
-            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags)
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags, env=env)
             return {"ok": True, "mode": "powershell"}
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=20, creationflags=flags)
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=20, creationflags=flags, env=env)
         if res.returncode != 0:
             err = (res.stderr or res.stdout or "").strip().splitlines()
             return {"ok": False, "error": err[0][:200] if err else f"code {res.returncode}"}
@@ -387,7 +389,7 @@ class Api:
     def open_url(self, url):
         """Opens a link (e.g. the release page) in the user's default
         browser — pywebview windows don't navigate external links on click."""
-        if isinstance(url, str) and url.startswith(("https://", "http://")):
+        if isinstance(url, str) and url.lower().startswith(("https://", "http://")):
             webbrowser.open(url)
         return {"ok": True}
 
