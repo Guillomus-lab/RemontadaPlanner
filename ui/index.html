@@ -666,6 +666,12 @@
                 align-items:center;justify-content:center;background:rgba(0,0,0,.15);}
   .task .delBtn:hover{color:#fff;background:var(--danger);transform:scale(1.15) rotate(90deg);}
   .task:hover .delBtn{display:flex;}
+  .task .focusBtn{position:absolute;top:5px;right:30px;display:none;align-items:center;gap:4px;height:18px;padding:0 7px;
+      border-radius:5px;font-size:10.5px;font-weight:800;cursor:pointer;color:#fff;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 2px 8px rgba(139,92,246,.35);}
+  .task:hover .focusBtn{display:flex;}
+  .task .focusBtn:hover{filter:brightness(1.12);}
+  .task.compact .focusBtn{top:50%;transform:translateY(-50%);}
 
   ::-webkit-scrollbar{width:10px;height:10px;}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
@@ -1109,6 +1115,14 @@
   #loadPanel.over #loadFill{background:linear-gradient(90deg,var(--danger),#fb7185);}
   #loadPanel.over #loadLabel{color:var(--danger);}
   #loadPanel .loadHint{font-size:9px;color:var(--text-faint);font-weight:600;}
+  #nowFocus{display:none;flex-direction:column;gap:4px;min-width:0;max-width:220px;}
+  #nowFocus.show{display:flex;}
+  #nowFocus .nfLabel{font-size:10px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
+  #nowFocus .nfRow{display:flex;align-items:center;gap:7px;min-width:0;}
+  #nowFocus .nfTitle{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  #nowFocus button{flex-shrink:0;border:none;border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:800;cursor:pointer;
+      color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 3px 10px rgba(139,92,246,.3);}
+  #nowFocus button:hover{filter:brightness(1.1);}
   #closeDayBtn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:9px;
       padding:8px 13px;font-size:11.5px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;
       transition:all .15s ease;}
@@ -1301,6 +1315,8 @@
   .mealFilters button{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:999px;
       padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;}
   .mealFilters button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;}
+  .mealFilters select{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:999px;
+      padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;max-width:170px;}
   #mealCard h4{margin:12px 0 6px;font-size:11px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
   #mealIngredients, #mealSteps{margin:0;padding-left:20px;font-size:12.5px;line-height:1.6;color:var(--text);}
   .mealActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
@@ -1397,7 +1413,7 @@
   <!-- outside <header>: some themes clip the header (overflow:hidden) -->
   <div id="moreMenu">
     <button class="mmItem" data-act="review">📊 Bilan de la semaine</button>
-    <button class="mmItem" data-act="focus">🎯 Mode concentration</button>
+    <button class="mmItem" data-act="focus">🎯 Minuteur de concentration</button>
     <button class="mmItem mmMeal" data-act="menus">🗓️ Menus de la semaine</button>
     <button class="mmItem mmMeal" data-act="meal">🍽️ Idée de repas</button>
     <button class="mmItem" id="recapBtn">🥧 Récap du temps</button>
@@ -1430,6 +1446,7 @@
       <div id="loadBar"><div id="loadFill"></div></div>
       <div class="loadHint" id="loadHint">Clique pour ajuster ta capacité</div>
     </div>
+    <div id="nowFocus"></div>
     <button id="closeDayBtn">🌙 Clôturer la journée</button>
   </div>
 
@@ -1532,7 +1549,7 @@
     <div id="profileTabs">
       <button class="profileTabBtn active" data-tab="ach">🏅 Succès</button>
       <button class="profileTabBtn" data-tab="shop">🛍️ Boutique</button>
-      <button class="profileTabBtn" data-tab="identity">✏️ Pseudo</button>
+      <button class="profileTabBtn" data-tab="identity">👤 Profil</button>
       <button class="profileTabBtn" data-tab="settings">⚙️ Réglages</button>
       <button class="profileTabBtn" data-tab="history">📈 Historique</button>
     </div>
@@ -1616,7 +1633,7 @@
         </div>
         <div class="settingsBlock">
           <h4>🍽️ Idées de repas</h4>
-          <div class="settingsHint">Quand une tâche parle de repas (déjeuner, dîner, petit-déj…), un bouton propose une recette healthy avec ses ingrédients. Plus de 100 recettes, sans internet.</div>
+          <div class="settingsHint">Quand une tâche parle de repas (déjeuner, dîner, petit-déj…), un bouton propose une recette avec ses ingrédients : 1000 recettes du monde entier (dont 10 % de cheat meals), sans internet.</div>
           <div class="settingsRow">
             <label><input type="checkbox" id="mealIdeasToggle" /> Proposer des idées de repas</label>
           </div>
@@ -1852,6 +1869,7 @@
       <div class="focusBtns" id="focusRunBtns">
         <button id="focusPause">⏸ Pause</button>
         <button id="focusStop">■ Arrêter</button>
+        <button id="focusMore" title="Prolonger de 5 minutes">+5 min</button>
         <button id="focusMinimize" class="primary">↘ Réduire</button>
       </div>
       <div class="focusBtns" id="focusEndBtns" style="display:none">
@@ -1890,6 +1908,7 @@
 </div>
 
 <script src="recipes.js"></script>
+<script src="recipes_world.js"></script>
 <div id="mealOverlay">
   <div id="mealCard">
     <button id="mealClose" title="Fermer">✕</button>
@@ -1902,6 +1921,8 @@
       <button data-f="leger">🥗 Léger</button>
       <button data-f="vege">🌱 Végétarien</button>
       <button data-f="rapide">⚡ Rapide</button>
+      <button data-f="cheat">🍔 Cheat meal</button>
+      <select id="mealCuisine" title="Cuisine"></select>
     </div>
     <h4>Ingrédients · 1 personne</h4>
     <ul id="mealIngredients"></ul>
@@ -2635,6 +2656,7 @@ function renderTasks(opts){
     if(t.notes) div.title = t.notes;
     div.innerHTML = `
       <span class="delBtn" title="Supprimer">✕</span>
+      ${!t.done && iso(currentDate) === todayKey() ? '<span class="focusBtn" title="Lancer un minuteur de concentration sur cette tâche">▶ Focus</span>' : ''}
       <div class="title"><input type="checkbox" ${t.done?'checked':''}/> ${t.priority?'<span class="taskAux" title="Priorité du jour">⭐</span> ':''}${t.recurId?'<span title="Routine" style="opacity:.75">🔁</span> ':''}${t.parallel?'<span title="Activité en parallèle" style="opacity:.75">🔀</span> ':''}${t.notes?'<span class="taskAux" title="Note">📝</span> ':''}${t.url?'<span class="taskAux taskUrl" title="Ouvrir le lien">🔗</span> ':''}${escapeHtml(t.title)}</div>
       <div class="time">${t.start} · ${fmtDur(t.duration)}</div>
       <div class="resizeHandle"></div>
@@ -2655,6 +2677,8 @@ function renderTasks(opts){
       e.stopPropagation();
       deleteTask(t, dayKey);
     });
+    const focusBtn = div.querySelector('.focusBtn');
+    if(focusBtn) focusBtn.addEventListener('click', (e)=>{ e.stopPropagation(); quickFocus(t, dayKey); });
     attachDrag(div, t);
     grid.appendChild(div);
   });
@@ -2669,12 +2693,12 @@ function escapeHtml(s){
 function attachDrag(div, task){
   let mode = null, startY=0, origStart=0, origDuration=0, moved=false;
   div.addEventListener('dblclick', (e)=>{
-    if(e.target.tagName==='INPUT' || e.target.classList.contains('delBtn') || e.target.classList.contains('taskAux')) return;
+    if(e.target.tagName==='INPUT' || e.target.classList.contains('delBtn') || e.target.classList.contains('taskAux') || e.target.classList.contains('focusBtn')) return;
     openTaskModal(null, task);
   });
   div.addEventListener('mousedown', (e)=>{
     if(e.button !== 0) return;
-    if(e.target.tagName==='INPUT' || e.target.classList.contains('delBtn') || e.target.classList.contains('taskAux')) return;
+    if(e.target.tagName==='INPUT' || e.target.classList.contains('delBtn') || e.target.classList.contains('taskAux') || e.target.classList.contains('focusBtn')) return;
     if(e.target.classList.contains('resizeHandle')) mode='resize'; else mode='move';
     startY = e.clientY;
     origStart = hhmmToMinutes(task.start);
@@ -3494,7 +3518,7 @@ function buyAvatar(icon){
   const item = SHOP_AVATARS.find(a=>a.icon===icon);
   if(!item) return;
   if(state.economy.unlockedAvatars.includes(icon)){
-    showToast({icon, text:'Déjà débloqué — choisis-le dans l\'onglet Pseudo.'});
+    showToast({icon, text:'Déjà débloqué — choisis-le dans l\'onglet Profil.'});
     return;
   }
   const balance = getCoinBalance();
@@ -4074,6 +4098,7 @@ function renderDayBar(){
   const slotsEl = document.getElementById('prioritySlots');
   if(!slotsEl) return;
   renderWeekGoals();
+  renderNowFocus();
   const key = iso(currentDate);
   const tasks = state.days[key] || [];
   const prios = topPriorities(key).slice(0,3);
@@ -4714,8 +4739,9 @@ function submitQuickAdd(){
 
 // ================= Meal ideas (bonus, recipes in recipes.js) =================
 const MEAL_LABELS = {pd:'Petit-déjeuner', dej:'Déjeuner', din:'Dîner', col:'Collation'};
-const MEAL_TAG_LABELS = {proteine:'💪 protéiné', leger:'🥗 léger', vege:'🌱 végétarien', rapide:'⚡ rapide'};
-let mealState = {kind:null, filter:'', current:null, seen:new Set(), fromModal:false};
+const MEAL_TAG_LABELS = {proteine:'💪 protéiné', leger:'🥗 léger', vege:'🌱 végétarien', rapide:'⚡ rapide', cheat:'🍔 cheat meal'};
+let mealState = {kind:null, filter:'', cuisine:'', current:null, seen:new Set(), fromModal:false};
+const MENU_MAX_CHEAT = 2; // a weekly menu keeps at most 2 cheat meals
 
 function mealIdeasAvailable(){
   return typeof RECIPES !== 'undefined' && Array.isArray(RECIPES) && RECIPES.length > 0
@@ -4730,7 +4756,7 @@ function mealKindFromTask(title, start){
   if(/gouter|collation|snack|en-cas|encas/.test(t)) return 'col';
   if(/dejeuner|lunch/.test(t)) return 'dej';
   if(/diner|souper/.test(t)) return 'din';
-  if(/repas|manger|recette|cuisiner|\bplat\b/.test(t)){
+  if(/repas|manger|recette|cuisiner|\bplat\b|cheat/.test(t)){
     const m = start ? hhmmToMinutes(start) : 12*60;
     if(m < 10*60+30) return 'pd';
     if(m < 15*60) return 'dej';
@@ -4745,6 +4771,7 @@ function mealFilterFromTitle(title){
   const t = normTxt(title);
   if(/prot|sport|muscu/.test(t)) return 'proteine';
   if(/vege|vegan/.test(t)) return 'vege';
+  if(/cheat|plaisir|craquage/.test(t)) return 'cheat';
   if(/leger|sain|healthy|equilibr|detox/.test(t)) return 'leger';
   if(/rapide|express|vite/.test(t)) return 'rapide';
   return '';
@@ -4758,11 +4785,14 @@ function updateMealButton(){
 }
 
 function mealPool(){
-  return RECIPES.filter(r=> (!mealState.kind || r.m.includes(mealState.kind)) && (!mealState.filter || r.tags.includes(mealState.filter)));
+  return RECIPES.filter(r=> (!mealState.kind || r.m.includes(mealState.kind))
+    && (!mealState.filter || r.tags.includes(mealState.filter))
+    && (!mealState.cuisine || r.c === mealState.cuisine));
 }
 
 function pickMeal(){
   let pool = mealPool();
+  if(!pool.length){ mealState.cuisine = ''; pool = mealPool(); }  // e.g. no Peruvian breakfast
   if(!pool.length){ mealState.filter = ''; pool = mealPool(); } // e.g. no "léger" snack: fall back to all
   let fresh = pool.filter(r=> !mealState.seen.has(r.n) && r !== mealState.current);
   if(!fresh.length){ mealState.seen.clear(); fresh = pool.filter(r=> r !== mealState.current); }
@@ -4778,7 +4808,8 @@ function renderMealCard(){
   if(!r) return;
   document.getElementById('mealKicker').textContent = '🍽️ Idée de repas' + (mealState.kind ? ' · ' + MEAL_LABELS[mealState.kind] : '');
   document.getElementById('mealName').textContent = `${r.e} ${r.n}`;
-  document.getElementById('mealMeta').textContent = [`⏱️ ${fmtDur(r.t)}`, ...r.tags.map(t=> MEAL_TAG_LABELS[t]).filter(Boolean)].join(' · ');
+  document.getElementById('mealMeta').textContent = [`⏱️ ${fmtDur(r.t)}`, r.c ? `🌍 ${r.c}` : '', ...r.tags.map(t=> MEAL_TAG_LABELS[t]).filter(Boolean)].filter(Boolean).join(' · ');
+  renderMealCuisineSelect();
   const ing = document.getElementById('mealIngredients');
   ing.innerHTML = '';
   r.i.forEach(x=>{ const li = document.createElement('li'); li.textContent = x; ing.appendChild(li); });
@@ -4789,12 +4820,24 @@ function renderMealCard(){
   document.getElementById('mealKeep').style.display = mealState.fromModal ? '' : 'none';
 }
 
+function renderMealCuisineSelect(){
+  const sel = document.getElementById('mealCuisine');
+  const cuisines = [...new Set(RECIPES.filter(r=> (!mealState.kind || r.m.includes(mealState.kind)) && r.c).map(r=> r.c))]
+    .sort((a,b)=> a.localeCompare(b, 'fr'));
+  sel.innerHTML = '';
+  const add = (v, label)=>{ const o = document.createElement('option'); o.value = v; o.textContent = label; sel.appendChild(o); };
+  add('', '🌍 Toutes les cuisines');
+  cuisines.forEach(c=> add(c, c));
+  sel.value = mealState.cuisine;
+}
+
 // task: {title, start} from the open task modal, or null from the search palette
 function openMealIdea(task){
   if(!mealIdeasAvailable()) return;
   mealState.fromModal = !!task;
   mealState.kind = task ? mealKindFromTask(task.title, task.start) : null;
   mealState.filter = task ? mealFilterFromTitle(task.title) : '';
+  mealState.cuisine = '';
   mealState.current = null;
   pickMeal();
   document.getElementById('mealOverlay').classList.add('show');
@@ -4877,6 +4920,7 @@ function startFocus(phase, minutes, taskRef){
   focusTimer = setInterval(tickFocus, 1000);
   tickFocus();
   showFocusOverlay();
+  renderNowFocus();
 }
 
 function focusLeftMs(){
@@ -4919,6 +4963,7 @@ function endFocus(){
   document.getElementById('focusBreak').style.display = wasWork ? '' : 'none';
   document.getElementById('focusPill').classList.remove('show');
   showFocusOverlay();
+  renderNowFocus();
   persist();
 }
 
@@ -4937,6 +4982,7 @@ function minimizeFocus(){
 function stopFocus(){
   clearInterval(focusTimer);
   focus = null;
+  setTimeout(renderNowFocus, 0);
   document.getElementById('focusOverlay').classList.remove('show');
   document.getElementById('focusPill').classList.remove('show');
 }
@@ -4955,6 +5001,53 @@ function toggleFocusPause(){
     document.getElementById('focusPause').textContent = '▶ Reprendre';
   }
   tickFocus();
+}
+
+// One click from a task (▶ Focus on the card, or "Maintenant" in the day bar):
+// no setup screen, the session takes the task's duration (10 to 60 min).
+function quickFocus(t, dayKey){
+  if(focus && !focus.ended){
+    showFocusOverlay();
+    if(focus.taskId !== t.id) showToast({icon:'🎯', text:'Un focus est déjà en cours', sub:'Arrête-le avant d\'en lancer un autre.'});
+    return;
+  }
+  const minutes = Math.max(10, Math.min(60, Number(t.duration) || 25));
+  startFocus('work', minutes, {dayKey, taskId: t.id, title: t.title});
+  bumpCounter('quickFocus');
+}
+
+// The task happening now (or starting within 10 min) on today's view.
+function currentTaskNow(){
+  if(viewMode !== 'day' || iso(currentDate) !== todayKey()) return null;
+  const now = new Date(), m = now.getHours()*60 + now.getMinutes();
+  const list = (state.days[todayKey()] || []).filter(t=> !t.done && !t.parallel && t.start);
+  const live = list.find(t=>{ const s = hhmmToMinutes(t.start); return m >= s && m < s + (Number(t.duration)||0); });
+  if(live) return {t: live, label: 'En ce moment'};
+  const soon = list.filter(t=>{ const s = hhmmToMinutes(t.start); return s > m && s - m <= 10; })
+    .sort((a,b)=> hhmmToMinutes(a.start) - hhmmToMinutes(b.start))[0];
+  return soon ? {t: soon, label: `Dans ${hhmmToMinutes(soon.start) - m} min`} : null;
+}
+
+function renderNowFocus(){
+  const el = document.getElementById('nowFocus');
+  if(!el) return;
+  const running = focus && !focus.ended;
+  const cur = currentTaskNow();
+  if(!cur && !running){ el.classList.remove('show'); return; }
+  el.classList.add('show');
+  el.innerHTML = '<div class="nfLabel"></div><div class="nfRow"><span class="nfTitle"></span><button></button></div>';
+  if(running){
+    el.querySelector('.nfLabel').textContent = focus.phase === 'break' ? 'Pause en cours' : 'Focus en cours';
+    el.querySelector('.nfTitle').textContent = focus.title || 'Session libre';
+    el.querySelector('button').textContent = '⏱ Voir';
+    el.querySelector('button').onclick = showFocusOverlay;
+  } else {
+    el.querySelector('.nfLabel').textContent = '🎯 ' + cur.label;
+    el.querySelector('.nfTitle').textContent = cur.t.title;
+    el.querySelector('button').textContent = '▶ Focus';
+    el.querySelector('button').title = `Minuteur de ${Math.max(10, Math.min(60, Number(cur.t.duration)||25))} min sur cette tâche`;
+    el.querySelector('button').onclick = ()=> quickFocus(cur.t, todayKey());
+  }
 }
 
 // ================= Weekly review =================
@@ -5116,8 +5209,10 @@ function recipeByName(name){ return (typeof RECIPES !== 'undefined' ? RECIPES : 
 function menuPlan(){ return state.mealPlans[menuWeek] || (state.mealPlans[menuWeek] = {}); }
 
 function pickMenuRecipe(kind, exclude){
-  let pool = RECIPES.filter(r=> r.m.includes(kind) && (!menuFilter || r.tags.includes(menuFilter)));
-  if(!pool.length) pool = RECIPES.filter(r=> r.m.includes(kind));
+  const cheatCount = Object.values(menuPlan()).filter(n=>{ const r = recipeByName(n); return r && r.tags.includes('cheat'); }).length;
+  const okCheat = r=> !r.tags.includes('cheat') || cheatCount < MENU_MAX_CHEAT;
+  let pool = RECIPES.filter(r=> r.m.includes(kind) && (!menuFilter || r.tags.includes(menuFilter)) && okCheat(r));
+  if(!pool.length) pool = RECIPES.filter(r=> r.m.includes(kind) && okCheat(r));
   const fresh = pool.filter(r=> !exclude.has(r.n));
   const from = fresh.length ? fresh : pool;
   return from[Math.floor(Math.random() * from.length)];
@@ -6626,6 +6721,7 @@ setInterval(()=>{
     return;
   }
   if(viewMode==='day') renderNowLine();
+  renderNowFocus();
   checkTaskReminders();
 }, 60000);
 document.getElementById('prevDay').onclick = ()=> shiftPeriod(-1);
@@ -6705,6 +6801,12 @@ document.getElementById('focusStart').onclick = ()=>{
   startFocus('work', focusSetupMinutes, ref);
 };
 document.getElementById('focusPause').onclick = toggleFocusPause;
+document.getElementById('focusMore').onclick = ()=>{
+  if(!focus || focus.ended) return;
+  if(focus.pausedLeft != null) focus.pausedLeft += 5*60000; else focus.endAt += 5*60000;
+  focus.minutes += 5;
+  tickFocus();
+};
 document.getElementById('focusStop').onclick = stopFocus;
 document.getElementById('focusMinimize').onclick = minimizeFocus;
 document.getElementById('focusPill').onclick = showFocusOverlay;
@@ -6746,6 +6848,11 @@ document.getElementById('mealNext').onclick = pickMeal;
 document.getElementById('mealKeep').onclick = keepMealInNote;
 document.getElementById('mealShop').onclick = addMealToShopping;
 document.getElementById('mealOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'mealOverlay') closeMealIdea(); });
+document.getElementById('mealCuisine').addEventListener('change', (e)=>{
+  mealState.cuisine = e.target.value;
+  mealState.current = null;
+  pickMeal();
+});
 document.getElementById('mealFilters').addEventListener('click', (e)=>{
   const b = e.target.closest('button');
   if(!b) return;
@@ -7276,7 +7383,7 @@ function endOnboarding(){
 document.getElementById('onboardingNext').addEventListener('click', onboardingNext);
 document.getElementById('onboardingPrev').addEventListener('click', onboardingPrev);
 document.getElementById('onboardingSkip').addEventListener('click', endOnboarding);
-// Replay entry point (profile > Pseudo tab button): never touches
+// Replay entry point (profile > Profil tab button): never touches
 // onboardingSeen, so replaying never confuses the first-run detection.
 </script>
 </body>
