@@ -31,7 +31,7 @@ BACKUPS_TO_KEEP = 30
 SCHEMA_VERSION = 5
 
 # Bump this on every release alongside a matching GitHub tag (vX.Y.Z) / Release.
-APP_VERSION = "1.2.1"
+APP_VERSION = "1.3.0"
 UPDATE_CHECK_URL = "https://api.github.com/repos/Guillomus-lab/RemontadaPlanner/releases/latest"
 RELEASES_PAGE_URL = "https://github.com/Guillomus-lab/RemontadaPlanner/releases/latest"
 
@@ -65,6 +65,7 @@ DEFAULT_DATA = {
         # Windows reminders + optional Discord weekly recap
         "reminders": False, "reminderLead": 10, "reminderSound": True,
         "mealIdeas": True, "reminderPromptSeen": False, "lastWeekReviewPrompt": "",
+        "workoutIdeas": True, "workoutLevel": 1, "workoutEquip": "none",
         "discordWebhook": "", "discordWeekly": False, "lastDiscordRecap": "",
         "lastRolloverPrompt": "",
     },  # UI prefs persisted across launches

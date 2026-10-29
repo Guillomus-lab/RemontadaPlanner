@@ -132,11 +132,23 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
   envoi manuel, ou automatique le lundi si activé. Aucun ping.
 - Idées de repas (bonus, désactivable) : dans une tâche de repas (déjeuner,
   dîner, petit-déj, goûter…), le bouton « 🍽️ Idée de repas » propose une recette
-  healthy parmi plus de 100 (`ui/recipes.js`), avec filtres protéiné / léger /
-  végétarien / rapide. On peut garder la recette dans la note de la tâche ou
+  parmi 1000 recettes de 47 cuisines, dont ~10 % de cheat meals : 104 écrites à
+  la main (`ui/recipes.js`) et 896 générées par `scripts/build_recipes.py`
+  (`ui/recipes_world.js`, ne pas modifier à la main). Filtres protéiné / léger /
+  végétarien / rapide / cheat meal, et choix de la cuisine. On peut garder la recette dans la note de la tâche ou
   envoyer ses ingrédients dans « À planifier » comme liste de courses.
   **Menus de la semaine** (menu ⋯) : déjeuners et dîners des 7 jours, une
   liste de courses regroupée, et l'ajout des repas au planning.
+- Séances de sport suggérées (bonus, désactivable) : dans une tâche de sport
+  (sport, muscu, séance, course, yoga…), le bouton « 🏋️ Séance suggérée » propose
+  une séance complète selon la durée de la tâche, la zone (tout le corps, haut,
+  bas, abdos, cardio/HIIT, mobilité, course à pied), le niveau et le matériel :
+  échauffement, exercices avec séries, répétitions, repos et consigne technique
+  (supersets pour les séances longues), retour au calme et conseils. Générées par
+  `ui/workouts.js` (bibliothèque d'exercices + générateur). On peut garder la
+  séance dans la note de la tâche ou lancer le minuteur.
+- Concentration : bouton « ▶ Focus » au survol de chaque tâche du jour, et zone
+  « En ce moment » dans la barre du jour pour la tâche en cours.
 - Sauvegarde de tes données (Profil → Réglages) : export dans un fichier et
   restauration, avec une copie de sécurité gardée avant chaque restauration.
 - Barre du haut allégée : bilan, concentration, menus, récap, thème et sons
@@ -148,7 +160,7 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
   d'avatars et de gels de série) : la série continue dès qu'une tâche est
   faite dans la journée, et un gel peut pardonner un jour manqué.
 - Tutoriel de prise en main au tout premier lancement (rejouable depuis
-  Profil → onglet Pseudo → "Revoir le tutoriel").
+  Profil → onglet Profil → "Revoir le tutoriel").
 - Sons synthétisés (pas de fichiers audio à bundler) pour les actions clés ;
   réglables via l'icône 🔊 du menu ⋯.
 - Interface en glassmorphism (panneaux et modales translucides avec flou)
