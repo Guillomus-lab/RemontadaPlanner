@@ -18,14 +18,41 @@
     --accent:#7c3aed; --accent2:#db2777; --accent-soft:rgba(124,58,237,.12);
   }
 
-  /* --- Purchasable color themes: override --accent/--accent2 only, keep dark/light logic intact --- */
+  /* --- Purchasable color themes: override --accent/--accent2 + a distinct #timelineWrap backdrop --- */
   [data-color-theme="ocean"]{ --accent:#06b6d4; --accent2:#3b82f6; --accent-soft:rgba(6,182,212,.16); }
+  [data-color-theme="ocean"] #timelineWrap{
+      background:
+        repeating-linear-gradient(180deg, rgba(59,130,246,.10) 0px, rgba(59,130,246,.10) 2px, transparent 2px, transparent 48px),
+        linear-gradient(170deg, rgba(6,182,212,.14), rgba(59,130,246,.06) 45%, var(--bg) 85%);}
   [data-color-theme="sunset"]{ --accent:#f97316; --accent2:#ec4899; --accent-soft:rgba(249,115,22,.16); }
+  [data-color-theme="sunset"] #timelineWrap{
+      background:linear-gradient(180deg, rgba(249,115,22,.16), rgba(236,72,153,.1) 40%, var(--bg) 80%);}
   [data-color-theme="forest"]{ --accent:#22c55e; --accent2:#0ea5e9; --accent-soft:rgba(34,197,94,.16); }
+  [data-color-theme="forest"] #timelineWrap{
+      background:
+        repeating-linear-gradient(90deg, rgba(34,197,94,.08) 0px, rgba(34,197,94,.08) 3px, transparent 3px, transparent 36px),
+        linear-gradient(180deg, rgba(34,197,94,.1), var(--bg) 70%);}
   [data-color-theme="candy"]{ --accent:#f472b6; --accent2:#a78bfa; --accent-soft:rgba(244,114,182,.16); }
+  [data-color-theme="candy"] #timelineWrap{
+      background:
+        radial-gradient(circle at 10px 10px, rgba(244,114,182,.18) 3px, transparent 4px),
+        radial-gradient(circle at 34px 34px, rgba(167,139,250,.16) 3px, transparent 4px),
+        var(--bg);
+      background-size:48px 48px, 48px 48px;}
   [data-color-theme="gold"]{ --accent:#eab308; --accent2:#f97316; --accent-soft:rgba(234,179,8,.16); }
+  [data-color-theme="gold"] #timelineWrap{
+      background:linear-gradient(115deg, var(--bg) 0%, rgba(234,179,8,.14) 48%, var(--bg) 100%);
+      background-size:220% 220%;animation:goldShimmer 9s ease-in-out infinite;}
+  @keyframes goldShimmer{0%{background-position:0% 50%;}100%{background-position:100% 50%;}}
   [data-color-theme="mono"]{ --accent:#64748b; --accent2:#334155; --accent-soft:rgba(100,116,139,.16); }
+  [data-color-theme="mono"] #timelineWrap{background:linear-gradient(180deg, rgba(148,163,184,.08), var(--bg) 70%);filter:saturate(0);}
+  [data-color-theme="mono"] #timelineWrap *{filter:saturate(0);}
   [data-color-theme="neon"]{ --accent:#a3e635; --accent2:#22d3ee; --accent-soft:rgba(163,230,53,.16); }
+  [data-color-theme="neon"] #timelineWrap{
+      background:
+        repeating-linear-gradient(0deg, rgba(163,230,53,.12) 0px, rgba(163,230,53,.12) 1px, transparent 1px, transparent 32px),
+        repeating-linear-gradient(90deg, rgba(34,211,238,.12) 0px, rgba(34,211,238,.12) 1px, transparent 1px, transparent 32px),
+        #0b0f10;}
 
   /* --- Troll themes: deliberately chaotic/"buggy-looking" cosmetics, pure fun --- */
   [data-color-theme="glitch"]{ --accent:#ff003c; --accent2:#00ff9d; --accent-soft:rgba(255,0,60,.18); }
@@ -34,30 +61,62 @@
     89%{transform:translate(-2px,1px);filter:hue-rotate(15deg);}
     91%{transform:translate(2px,-1px);filter:hue-rotate(-20deg);}
     93%{transform:translate(-1px,0);filter:none;}}
+  [data-color-theme="glitch"] #timelineWrap{
+      background:
+        repeating-linear-gradient(0deg, rgba(255,0,60,.1) 0px, rgba(255,0,60,.1) 2px, transparent 2px, transparent 5px),
+        repeating-linear-gradient(90deg, rgba(0,255,157,.08) 0px, transparent 1px, transparent 7px, rgba(0,255,157,.08) 8px),
+        var(--bg);background-size:100% 11px, 60px 100%;animation:glitchBgShift .6s steps(3) infinite;}
+  @keyframes glitchBgShift{0%,70%{background-position:0 0, 0 0;}71%{background-position:0 2px, 4px 0;}100%{background-position:0 0, 0 0;}}
   [data-color-theme="invert"]{ --accent:#111; --accent2:#333; --accent-soft:rgba(0,0,0,.12); }
   [data-color-theme="invert"] #app{filter:invert(0.92) hue-rotate(180deg);}
+  [data-color-theme="invert"] #timelineWrap{
+      background:repeating-linear-gradient(45deg, #000 0px, #000 18px, #fff 18px, #fff 36px);}
   [data-color-theme="clown"]{ --accent:#ff00ff; --accent2:#ffea00; --accent-soft:rgba(255,0,255,.2); }
   [data-color-theme="clown"] #app{animation:clownHue 3s linear infinite;}
   @keyframes clownHue{0%{filter:hue-rotate(0deg) saturate(1.6);}100%{filter:hue-rotate(360deg) saturate(1.6);}}
+  [data-color-theme="clown"] #timelineWrap{
+      background:repeating-linear-gradient(45deg, #ff00ff 0px, #ff00ff 24px, #ffea00 24px, #ffea00 48px,
+        #00e5ff 48px, #00e5ff 72px, #ff4d4d 72px, #ff4d4d 96px);
+      background-size:136px 136px;animation:clownStripeScroll 4s linear infinite;}
+  @keyframes clownStripeScroll{0%{background-position:0 0;}100%{background-position:136px 0;}}
   [data-color-theme="vhs"]{ --accent:#ff0080; --accent2:#00e5ff; --accent-soft:rgba(255,0,128,.18); }
   [data-color-theme="vhs"] #app{position:relative;}
   [data-color-theme="vhs"] #app::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;
       background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0px,rgba(255,255,255,.05) 1px,transparent 1px,transparent 3px);
       mix-blend-mode:overlay;animation:vhsRoll 6s linear infinite;}
   @keyframes vhsRoll{0%{background-position-y:0;}100%{background-position-y:300px;}}
+  [data-color-theme="vhs"] #timelineWrap{
+      background:repeating-linear-gradient(0deg, rgba(255,0,128,.1) 0px, rgba(255,0,128,.1) 2px, transparent 2px, transparent 6px), var(--bg);}
   [data-color-theme="crt"]{ --accent:#39ff14; --accent2:#0d7a0d; --accent-soft:rgba(57,255,20,.16); }
   [data-color-theme="crt"] #app{filter:grayscale(.3) brightness(.92) sepia(.15) hue-rotate(60deg);animation:crtFlicker 4s infinite;}
   @keyframes crtFlicker{0%,96%,100%{opacity:1;}97%{opacity:.85;}98%{opacity:1;}}
+  [data-color-theme="crt"] #timelineWrap{
+      background:
+        repeating-linear-gradient(0deg, rgba(57,255,20,.14) 0px, rgba(57,255,20,.14) 1px, transparent 1px, transparent 4px),
+        radial-gradient(ellipse at center, rgba(57,255,20,.08), #001400 90%);}
   [data-color-theme="blind"]{ --accent:#ff0000; --accent2:#008000; --accent-soft:rgba(255,0,0,.16); }
+  [data-color-theme="blind"] #timelineWrap{
+      background:repeating-linear-gradient(90deg, rgba(255,0,0,.2) 0px, rgba(255,0,0,.2) 20px, rgba(0,128,0,.2) 20px, rgba(0,128,0,.2) 40px), var(--bg);}
   [data-color-theme="nightmare"]{ --accent:#8b0000; --accent2:#1a0000; --accent-soft:rgba(139,0,0,.2); }
   [data-color-theme="nightmare"] header{animation:nmShake 5s infinite;}
   @keyframes nmShake{0%,97%,100%{transform:translateX(0);}97.5%{transform:translateX(-1.5px);}98.5%{transform:translateX(1.5px);}}
+  [data-color-theme="nightmare"] #timelineWrap{
+      background:radial-gradient(ellipse at center, rgba(139,0,0,.35), #0a0000 75%);}
   [data-color-theme="comicsans"]{ --accent:#ff69b4; --accent2:#1e90ff; --accent-soft:rgba(255,105,180,.18); }
   [data-color-theme="comicsans"] *{font-family:"Comic Sans MS","Comic Sans",cursive!important;}
+  [data-color-theme="comicsans"] #timelineWrap{background:linear-gradient(180deg, rgba(255,105,180,.14), rgba(30,144,255,.08) 60%, var(--bg));}
   [data-color-theme="matrix"]{ --accent:#00ff41; --accent2:#003b00; --accent-soft:rgba(0,255,65,.18); }
   [data-color-theme="matrix"] *{font-family:"Consolas",monospace!important;}
   [data-color-theme="matrix"] #app{background:#000;}
+  [data-color-theme="matrix"] #timelineWrap{
+      background:repeating-linear-gradient(90deg, rgba(0,255,65,.14) 0px, rgba(0,255,65,.14) 1px, transparent 1px, transparent 22px), #000;
+      background-size:22px 100%;animation:matrixDrip 3s linear infinite;}
+  @keyframes matrixDrip{0%{background-position-y:0;}100%{background-position-y:44px;}}
   [data-color-theme="y2k"]{ --accent:#c0c0c0; --accent2:#000080; --accent-soft:rgba(192,192,192,.2); }
+  [data-color-theme="y2k"] #timelineWrap{
+      background:linear-gradient(180deg, #d9e4f5 0%, #a9c0e0 35%, #7596c4 100%);}
+  [data-theme="light"][data-color-theme="y2k"] #timelineWrap{
+      background:linear-gradient(180deg, #ece9f1 0%, #c7d3ec 45%, #9fb6dd 100%);}
 
   /* --- Bastinos: the ultimate legendary theme, rose/peach, extra polish --- */
   [data-color-theme="bastinos"]{
@@ -81,6 +140,35 @@
       background:linear-gradient(120deg,var(--accent),var(--accent2),var(--accent));
       background-size:220% 100%;animation:bastinosShimmer 3.2s linear infinite;}
   @keyframes bastinosShimmer{0%{background-position:0% 0;}100%{background-position:220% 0;}}
+  /* Bastinos glow-up: Pontoise cathedral backdrop under a legible pink/peach overlay */
+  [data-color-theme="bastinos"] #timelineWrap{
+      background-image:
+        linear-gradient(165deg, rgba(31,19,25,.86), rgba(42,24,33,.78) 45%, rgba(255,111,165,.22) 100%),
+        url("assets/bastinos/pontoise-cathedrale.jpg");
+      background-size:cover, cover;
+      background-position:center, center 30%;
+      background-attachment:fixed, fixed;
+      background-repeat:no-repeat, no-repeat;}
+  [data-theme="light"][data-color-theme="bastinos"] #timelineWrap{
+      background-image:
+        linear-gradient(165deg, rgba(255,243,238,.88), rgba(255,233,224,.8) 45%, rgba(255,179,124,.28) 100%),
+        url("assets/bastinos/pontoise-cathedrale.jpg");
+      background-size:cover, cover;
+      background-position:center, center 30%;
+      background-attachment:fixed, fixed;
+      background-repeat:no-repeat, no-repeat;}
+  /* Small Pontoise nod badge, tucked near the header peach watermark */
+  [data-color-theme="bastinos"] header::after{content:"Capitale du Vexin 🍑👑";position:absolute;right:12px;bottom:4px;
+      font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--accent);opacity:.55;pointer-events:none;
+      text-shadow:0 1px 2px rgba(0,0,0,.25);}
+  /* Peach cosplay polaroid easter-eggs, fixed corners, non-blocking */
+  #bastinosPolaroids{position:fixed;inset:0;pointer-events:none;z-index:0;display:none;}
+  [data-color-theme="bastinos"] #bastinosPolaroids{display:block;}
+  #bastinosPolaroids .polaroid{position:absolute;width:92px;padding:6px 6px 16px;background:#fdf8f5;
+      border-radius:4px;box-shadow:0 10px 24px -6px rgba(0,0,0,.45);opacity:.5;}
+  #bastinosPolaroids .polaroid img{width:100%;height:76px;object-fit:cover;border-radius:2px;display:block;}
+  #bastinosPolaroids .polaroid.p1{left:10px;bottom:14px;transform:rotate(-7deg);}
+  #bastinosPolaroids .polaroid.p2{right:10px;bottom:22px;transform:rotate(6deg);}
   #bastinosBg{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;display:none;}
   #bastinosBg.show{display:block;}
   .bastinosPeach{position:absolute;bottom:-40px;font-size:20px;opacity:.16;will-change:transform,opacity;
@@ -824,6 +912,10 @@
 
 <div id="celebration"></div>
 <div id="bastinosBg"></div>
+<div id="bastinosPolaroids">
+  <div class="polaroid p1"><img src="assets/bastinos/peach-cosplay-1.jpg" alt="Peach cosplay" /></div>
+  <div class="polaroid p2"><img src="assets/bastinos/peach-cosplay-2.jpg" alt="Peach cosplay" /></div>
+</div>
 <div id="celebrateMsg"></div>
 <div id="levelUpOverlay">
   <div id="levelUpCard">
