@@ -585,7 +585,7 @@
   #dayThemesClose:hover{background:var(--surface3);}
 
   /* --- Custom confirm/alert/prompt modal (replaces native popups) --- */
-  #confirmOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:300;
+  #confirmOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:2000;
       display:none;align-items:center;justify-content:center;}
   #confirmOverlay.show{display:flex;animation:overlayIn .15s ease;}
   #confirmCard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;
@@ -2335,23 +2335,33 @@ function buyAvatar(icon){
 async function resetAllProgress(){
   const ok = await showConfirm({
     icon:'⚠️', title:'Réinitialiser toute ta progression ?',
-    msg:`Ceci remet à zéro tes <b>succès</b>, <b>pièces</b>, <b>thèmes et avatars achetés</b>, <b>défis</b> et <b>quêtes</b>.<br><br>Cette action est <b>définitive et irréversible</b>.<br><br>⚠️ Tes <b>tâches et journées planifiées ne sont PAS affectées</b> — ton calendrier reste intact.`,
+    msg:`Ceci remet <b>tout</b> à zéro, comme une réinstallation complète : <b>succès</b>, <b>pièces</b>, <b>thèmes et avatars achetés</b>, <b>défis</b>, <b>quêtes</b>, <b>ton pseudo et ton avatar</b>, et <b>TOUTES tes tâches et journées planifiées</b> (ton calendrier sera vidé).<br><br>⚠️ Cette action est <b>définitive et irréversible</b>. Il n'y a aucun moyen de récupérer tes données après ça.`,
     okLabel:'Oui, tout réinitialiser', cancelLabel:'Annuler', danger:true
   });
   if(!ok) return;
+  // true factory reset: achievements are recomputed live from actual task history
+  // (streaks, totals...), so merely clearing the gamification layer isn't enough —
+  // the very next render would instantly re-detect "10 tasks done" etc. and re-award
+  // everything. A real "back to zero" has to wipe the planning data too.
+  state.days = {};
+  state.templates = {};
+  state.routines = [];
+  state.profile = {name:'', avatar:'🙂'};
   state.unlockedAchievements = [];
   state.counters = {};
   state.challenges = [];
   state.quests = {claimed:{}};
   state.economy = {coinsSpent:0, unlockedThemes:['default'], unlockedAvatars:['🙂','😎','🦊','🐱','🐼','🤖','👾','🌟'], activeThemeId:'default'};
   unlockedAchIds = new Set();
+  lastCelebratedDay = null;
   if(typeof applyColorTheme === 'function') applyColorTheme('default');
   persist();
-  updateGamification();
+  render();
+  updateProfileHeader();
   renderAchievements(computeGameStats());
   renderShopTab();
   renderIdentityAvatars();
-  showToast({icon:'🔄', text:'Progression réinitialisée', sub:'Tu repars de zéro !'});
+  showToast({icon:'🔄', text:'Progression réinitialisée', sub:'Retour à zéro complet : planning, succès, pseudo, tout !'});
 }
 
 function showToast({icon, text, sub, cls}){
