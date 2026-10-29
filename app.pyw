@@ -30,7 +30,7 @@ BACKUPS_TO_KEEP = 30
 SCHEMA_VERSION = 5
 
 # Bump this on every release alongside a matching GitHub tag (vX.Y.Z) / Release.
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 UPDATE_CHECK_URL = "https://api.github.com/repos/Guillomus-lab/RemontadaPlanner/releases/latest"
 RELEASES_PAGE_URL = "https://github.com/Guillomus-lab/RemontadaPlanner/releases/latest"
 
@@ -63,7 +63,7 @@ DEFAULT_DATA = {
         "dayCapacity": 480,
         # Windows reminders + optional Discord weekly recap
         "reminders": False, "reminderLead": 10, "reminderSound": True,
-        "mealIdeas": True,
+        "mealIdeas": True, "reminderPromptSeen": False, "lastWeekReviewPrompt": "",
         "discordWebhook": "", "discordWeekly": False, "lastDiscordRecap": "",
         "lastRolloverPrompt": "",
     },  # UI prefs persisted across launches
@@ -71,6 +71,10 @@ DEFAULT_DATA = {
     "backlog": [],
     # explicit end-of-day closes: { "2026-10-29": {closedAt, note, moved, backlogged, done, total} }
     "closedDays": {},
+    # weekly reviews: { "2026-11-02": {priorities:[...], note, at} } (key = Monday)
+    "weekReviews": {},
+    # weekly menus: { "2026-11-02": {"0-dej": "<recipe name>", "0-din": ..., ...} } (0 = Monday)
+    "mealPlans": {},
     # recurring tasks: {id,title,start,duration,category,days:[0-6],from,until,skip:[dates]}
     "routines": [],
     # regularity challenges: {id,title,category,keywords,length,start,status,...}
@@ -296,12 +300,22 @@ def _windows_toast(title, message, wait=False, sound=True):
     )
     # scenario="reminder" keeps the toast on screen until dismissed (instead of
     # sliding away after a few seconds); Windows requires a button for it.
+    # The snooze/dismiss buttons are handled by Windows itself (system
+    # activation): "Plus tard" brings the same toast back after the chosen delay.
     toast_xml = (
         '<toast scenario="reminder"><visual><binding template="ToastGeneric">'
         f"<text>{xml.sax.saxutils.escape(title)}</text>"
         f"<text>{xml.sax.saxutils.escape(message)}</text>"
         "</binding></visual>"
-        '<actions><action content="OK" arguments="dismiss" activationType="system"/></actions>'
+        "<actions>"
+        '<input id="snoozeTime" type="selection" defaultInput="10">'
+        '<selection id="5" content="Dans 5 minutes"/>'
+        '<selection id="10" content="Dans 10 minutes"/>'
+        '<selection id="15" content="Dans 15 minutes"/>'
+        "</input>"
+        '<action activationType="system" arguments="snooze" hint-inputId="snoozeTime" content="Plus tard"/>'
+        '<action activationType="system" arguments="dismiss" content="OK"/>'
+        "</actions>"
         f"{audio_tag}</toast>"
     )
     # The XML goes through an environment variable, never into the script
@@ -367,9 +381,76 @@ def _post_discord(webhook_url, content):
 
 
 
+# pywebview dialog types (stable numeric values: FileDialog.OPEN / .SAVE)
+_DIALOG_OPEN, _DIALOG_SAVE = 10, 30
+_BACKUP_FILE_TYPES = ("Sauvegarde Remontada (*.json)", "Tous les fichiers (*.*)")
+
+
+def _file_dialog(dialog_type, **kwargs):
+    """Native open/save dialog. Returns one path, or None if cancelled."""
+    if not webview.windows:
+        return None
+    result = webview.windows[0].create_file_dialog(dialog_type, **kwargs)
+    if not result:
+        return None
+    return result if isinstance(result, str) else result[0]
+
+
+def _looks_like_save(data):
+    return isinstance(data, dict) and isinstance(data.get("days"), dict) and (
+        "schemaVersion" in data or "economy" in data or "categories" in data
+    )
+
+
 class Api:
     def load(self):
         return _load_raw()
+
+    def export_data(self, data):
+        """'Sauvegarder mes données' in Settings: writes the current state to
+        a JSON file the user picks (USB key, cloud folder, new PC...)."""
+        if not _looks_like_save(data):
+            return {"ok": False, "error": "données invalides"}
+        name = f"remontada-sauvegarde-{datetime.date.today().isoformat()}.json"
+        try:
+            path = _file_dialog(_DIALOG_SAVE, save_filename=name, file_types=_BACKUP_FILE_TYPES)
+            if not path:
+                return {"ok": False, "cancelled": True}
+            if not path.lower().endswith(".json"):
+                path += ".json"
+            _atomic_write(path, data)
+        except Exception as e:  # dialog or disk error: report, never crash the UI
+            return {"ok": False, "error": str(e)}
+        return {"ok": True, "path": path}
+
+    def import_data(self):
+        """'Restaurer une sauvegarde': validates the chosen file, keeps a copy
+        of the current data next to it, then replaces plans.json."""
+        try:
+            path = _file_dialog(_DIALOG_OPEN, allow_multiple=False, file_types=_BACKUP_FILE_TYPES)
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+        if not path:
+            return {"ok": False, "cancelled": True}
+        try:
+            raw = _read_json(path)
+            if not _looks_like_save(raw):
+                raise ValueError("not a save")
+            data = _normalize(raw)
+            data["onboardingSeen"] = True
+        except (OSError, ValueError, TypeError, AttributeError):
+            return {"ok": False, "error": "Ce fichier n'est pas une sauvegarde Remontada valide."}
+        stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        try:
+            with _save_lock:
+                if os.path.exists(DATA_FILE):
+                    import shutil
+
+                    shutil.copyfile(DATA_FILE, f"{DATA_FILE}.avant-import-{stamp}")
+                _atomic_write(DATA_FILE, data)
+        except OSError as e:
+            return {"ok": False, "error": str(e)}
+        return {"ok": True}
 
     def check_update(self):
         """Called once at launch by the UI. Runs on pywebview's own call
