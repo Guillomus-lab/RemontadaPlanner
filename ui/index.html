@@ -1377,6 +1377,26 @@
       border-radius:11px;padding:10px 12px;font-size:12px;line-height:1.55;margin-top:10px;}
   .qtChecks label{display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:12px;font-weight:600;color:var(--text-dim);margin:6px 0;}
   .qtChecks input{width:auto;}
+  .qtPlan{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.55;}
+  .qtPlan p{margin:0 0 8px;color:var(--text-dim);}
+  .qtPlanRow{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-top:1px solid var(--border);}
+  .qtPlanRow:first-of-type{border-top:none;}
+  .qtPlanRow input{margin-top:3px;accent-color:var(--accent);}
+  .qtPlanRow .qtWhen{margin-left:auto;flex-shrink:0;font-size:11px;font-weight:700;color:var(--text-faint);white-space:nowrap;}
+  .qtPlanAsk{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 10px;}
+  .qtPlanAsk input[type=time]{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 8px;font-size:12px;}
+  .qtDays{display:flex;gap:4px;}
+  .qtDays button{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);
+      font-size:11px;font-weight:800;cursor:pointer;}
+  .qtDays button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;}
+  .qtPlanBtns{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap;}
+  .qtPlanBtns button{border-radius:9px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);}
+  .qtPlanBtns button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;}
+  .cdQuitRow{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:7px 9px;font-size:12px;margin-bottom:5px;}
+  .cdQuitRow span{flex:1;font-weight:600;}
+  .cdQuitRow button{border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);}
+  .cdQuitRow button.on{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--done),#0ea5e9);}
+  .cdQuitRow button.on.bad{background:linear-gradient(135deg,var(--warn),var(--danger));}
   #quitLine{display:none;margin-top:4px;font-size:11px;color:var(--text-dim);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #quitLine.show{display:block;}
   #quitLine:hover{color:var(--text);}
@@ -1907,6 +1927,7 @@
         <label><input type="radio" name="cdMode" value="backlog" /> 📥 Dans « À planifier »</label>
       </div>
     </div>
+    <div id="cdQuitWrap"></div>
     <div class="cdSectionLabel">Note du soir <span style="text-transform:none;letter-spacing:0;font-weight:500">(optionnel)</span></div>
     <textarea id="cdNote" placeholder="Ce qui a marché, ce qui bloque, une idée pour demain…"></textarea>
     <div class="cdActions">
@@ -4527,6 +4548,7 @@ function openCloseDayModal(dayKey){
   }
 
   document.getElementById('cdNote').value = closed ? (closed.note || '') : '';
+  renderCloseDayQuits(dayKey);
   const mode = document.querySelector('input[name="cdMode"]:checked');
   if(mode) mode.checked = true;
   document.getElementById('cdConfirm').textContent = pending.length ? 'Clôturer et reporter' : 'Clôturer la journée';
@@ -4559,6 +4581,7 @@ function confirmCloseDay(){
     removeTaskById(dayKey, t.id);
   });
 
+  applyCloseDayQuits(dayKey);
   state.closedDays[dayKey] = {
     closedAt: new Date().toISOString(),
     note,
@@ -4572,7 +4595,7 @@ function confirmCloseDay(){
 
   const parts = [];
   if(moved) parts.push(`${moved} reportée(s) à demain`);
-  if(backlogged) parts.push(`${backlogged} dans le backlog`);
+  if(backlogged) parts.push(`${backlogged} dans « À planifier »`);
   if(absorbed) parts.push(`${absorbed} déjà couverte(s) par une routine`);
   if(!parts.length) parts.push('bilan enregistré');
   showToast({icon:'🌙', text:'Journée clôturée', sub:parts.join(' · ')});
@@ -5526,6 +5549,7 @@ function renderQuitDash(body, q){
       <button class="del" title="Supprimer ce défi">🗑️</button>
     </div>
     <div class="qtSection">Prochaine étape</div><div class="qtNext"></div>
+    <div class="qtSection">📅 Mon plan dans le planning</div><div class="qtPlanWrap"></div>
     <div class="qtReasonsWrap"><div class="qtSection">Mes raisons</div><ul class="qtReasons"></ul></div>
     <div class="qtSection">Toutes les étapes</div><div class="qtMiles"></div>
     <div class="qtSection">Boîte à outils</div><div class="qtTools"></div>`;
@@ -5547,6 +5571,7 @@ function renderQuitDash(body, q){
     next.querySelector('p').textContent = ms.next.d;
     next.querySelector('.qtBar div').style.width = Math.round(ms.progress * 100) + '%';
   } else next.textContent = '🏆 Toutes les étapes sont franchies. Bravo, vraiment.';
+  renderQuitPlan(d.querySelector('.qtPlanWrap'), q);
   const reasons = d.querySelector('.qtReasons');
   (q.reasons || []).forEach(r=>{ const li = document.createElement('li'); li.textContent = r; reasons.appendChild(li); });
   if(!(q.reasons || []).length) d.querySelector('.qtReasonsWrap').style.display = 'none';
@@ -5574,14 +5599,184 @@ function renderQuitDash(body, q){
   d.querySelector('.lapse').onclick = ()=> noteLapse(q);
   d.querySelector('.edit').onclick = ()=>{ quitView = 'edit'; renderQuit(); };
   d.querySelector('.del').onclick = async ()=>{
-    const ok = await showConfirm({icon:'🗑️', title:`Arrêter le suivi « ${quitName(q)} » ?`, msg:'Le compteur, les économies et l\'historique de ce défi seront supprimés.', okLabel:'Supprimer', danger:true});
+    const ok = await showConfirm({icon:'🗑️', title:`Arrêter le suivi « ${quitName(q)} » ?`, msg:'Le compteur, les économies et l\'historique de ce défi seront supprimés, ainsi que ses tâches à venir dans le planning.', okLabel:'Supprimer', danger:true});
     if(!ok) return;
+    await removeQuitPlan(q);
     state.quits = state.quits.filter(x=> x.id !== q.id);
     quitSel = state.quits[0] ? state.quits[0].id : null;
     quitView = state.quits.length ? 'dash' : 'form';
     persist(); renderQuit(); renderQuitLine();
   };
   body.appendChild(d);
+}
+
+// ---- plan in the planning: supportive routines tied to the challenge ----
+let quitPlanDraft = null; // {quitId, time, days:Set, on:Set} while the builder is open
+
+function quitPlanRoutines(q){ return ((q.plan && q.plan.ids) || []).map(findRoutine).filter(Boolean); }
+function describeDaysShort(days){
+  const set = new Set(days);
+  if(set.size === 7) return 'tous les jours';
+  return DOW_ORDER.filter(d=> set.has(d)).map(d=> ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'][d]).join(' ');
+}
+
+function renderQuitPlan(wrap, q){
+  wrap.innerHTML = '';
+  const box = document.createElement('div');
+  box.className = 'qtPlan';
+  wrap.appendChild(box);
+  const items = QUIT_PLAN[q.kind] || QUIT_PLAN.autre;
+  const building = quitPlanDraft && quitPlanDraft.quitId === q.id;
+  const existing = quitPlanRoutines(q);
+  if(!building && existing.length){
+    box.innerHTML = '<p>Ces tâches reviennent toutes seules dans ton planning. Avec les rappels Windows activés, tu es prévenu avant chaque moment à risque.</p>';
+    existing.forEach(r=>{
+      const row = document.createElement('div');
+      row.className = 'qtPlanRow';
+      row.innerHTML = '<span></span><span class="qtWhen"></span>';
+      row.children[0].textContent = r.title;
+      row.children[1].textContent = `${r.start} · ${describeDaysShort(r.days)}`;
+      box.appendChild(row);
+    });
+    const btns = document.createElement('div');
+    btns.className = 'qtPlanBtns';
+    btns.innerHTML = '<button class="rm">Retirer du planning</button><button class="redo primary">✏️ Modifier mon plan</button>';
+    btns.querySelector('.rm').onclick = async ()=>{
+      const ok = await showConfirm({icon:'📅', title:'Retirer ces tâches du planning ?', msg:'Les prochaines occurrences sont retirées ; celles déjà cochées restent dans ton historique.', okLabel:'Retirer'});
+      if(!ok) return;
+      await removeQuitPlan(q);
+      persist(); render(); renderQuit(true);
+    };
+    btns.querySelector('.redo').onclick = ()=>{ startQuitPlanDraft(q); renderQuit(true); };
+    box.appendChild(btns);
+    return;
+  }
+  if(!building){
+    box.innerHTML = `<p>Les moments durs sont dans tes journées : l'apéro, la pause, le vendredi soir. Ajoute à ton planning quelques tâches qui t'aident pile à ces moments-là.</p>`;
+    const btns = document.createElement('div');
+    btns.className = 'qtPlanBtns';
+    btns.innerHTML = '<button class="primary">📅 Construire mon plan</button>';
+    btns.querySelector('button').onclick = ()=>{ startQuitPlanDraft(q); renderQuit(true); };
+    box.appendChild(btns);
+    return;
+  }
+  // builder
+  const dr = quitPlanDraft;
+  box.innerHTML = `<div class="qtPlanAsk"><b>Quand l'envie est-elle la plus forte ?</b> <input type="time" class="qtRiskTime" /></div>
+    <div class="qtPlanAsk"><b>Quels jours ?</b> <div class="qtDays"></div></div>`;
+  const timeIn = box.querySelector('.qtRiskTime');
+  timeIn.value = dr.time;
+  timeIn.onchange = ()=>{ if(timeIn.value){ dr.time = timeIn.value; renderQuit(true); } };
+  const daysEl = box.querySelector('.qtDays');
+  DOW_ORDER.forEach(d=>{
+    const b = document.createElement('button');
+    b.textContent = DOW_SHORT[d];
+    b.classList.toggle('on', dr.days.has(d));
+    b.onclick = ()=>{ if(dr.days.has(d) && dr.days.size > 1) dr.days.delete(d); else dr.days.add(d); renderQuit(true); };
+    daysEl.appendChild(b);
+  });
+  items.forEach(it=>{
+    const rt = quitPlanRoutine(it, dr.time, [...dr.days]);
+    const row = document.createElement('label');
+    row.className = 'qtPlanRow';
+    row.innerHTML = '<input type="checkbox" /><span></span><span class="qtWhen"></span>';
+    row.querySelector('input').checked = dr.on.has(it.id);
+    row.querySelector('input').onchange = (e)=>{ if(e.target.checked) dr.on.add(it.id); else dr.on.delete(it.id); };
+    row.children[1].textContent = it.title;
+    row.children[2].textContent = `${rt.start} · ${describeDaysShort(rt.days)}`;
+    row.title = it.notes;
+    box.appendChild(row);
+  });
+  const btns = document.createElement('div');
+  btns.className = 'qtPlanBtns';
+  btns.innerHTML = '<button class="cancel">Annuler</button><button class="ok primary">Ajouter au planning</button>';
+  btns.querySelector('.cancel').onclick = ()=>{ quitPlanDraft = null; renderQuit(true); };
+  btns.querySelector('.ok').onclick = ()=> saveQuitPlan(q);
+  box.appendChild(btns);
+}
+
+function startQuitPlanDraft(q){
+  const def = QUIT_RISK_DEFAULT[q.kind] || QUIT_RISK_DEFAULT.autre;
+  const items = QUIT_PLAN[q.kind] || QUIT_PLAN.autre;
+  const prev = q.plan || null;
+  quitPlanDraft = {quitId: q.id, time: prev ? prev.time : def.time, days: new Set(prev ? prev.days : def.days),
+    on: new Set(prev && prev.on ? prev.on : items.filter(i=> i.on).map(i=> i.id))};
+}
+
+async function removeQuitPlan(q){
+  for(const r of quitPlanRoutines(q)) await deleteRoutine(r, false);
+  if(q.plan) q.plan.ids = [];
+}
+
+async function saveQuitPlan(q){
+  const dr = quitPlanDraft;
+  if(!dr) return;
+  const items = (QUIT_PLAN[q.kind] || QUIT_PLAN.autre).filter(it=> dr.on.has(it.id));
+  if(!items.length){ showToast({icon:'📅', text:'Coche au moins une tâche'}); return; }
+  await removeQuitPlan(q);
+  const category = state.categories['Santé'] ? 'Santé' : (state.categories['Personnel'] ? 'Personnel' : Object.keys(state.categories)[0]);
+  const ids = items.map(it=>{
+    const rt = quitPlanRoutine(it, dr.time, [...dr.days]);
+    return createRoutine({title: rt.title, start: rt.start, duration: rt.duration, category}, rt.days, todayKey(), '', {notes: rt.notes, quitId: q.id}).id;
+  });
+  q.plan = {time: dr.time, days: [...dr.days], on: [...dr.on], ids};
+  quitPlanDraft = null;
+  bumpCounter('quitPlans');
+  persist(); render(); renderQuit(true);
+  showToast({icon:'📅', text:`${ids.length} tâche${ids.length > 1 ? 's' : ''} ajoutée${ids.length > 1 ? 's' : ''} au planning`, sub:'Elles reviennent toutes seules, avec leurs conseils dans la note.'});
+  if(!state.settings.reminders){
+    const ok = await showConfirm({icon:'⏰', title:'Être prévenu avant tes moments à risque ?',
+      msg:`Active les rappels Windows : tu recevras une notification ${Number(state.settings.reminderLead) || 10} minutes avant chaque tâche de ton plan, pile au bon moment.`,
+      okLabel:'Activer les rappels', cancelLabel:'Plus tard'});
+    if(ok){ state.settings.reminders = true; state.settings.reminderPromptSeen = true; persist(); renderSettingsTab(); checkTaskReminders(); showToast({icon:'⏰', text:'Rappels activés'}); }
+  }
+}
+
+// ---- check-in when closing the day ----
+let closeDayQuitChoice = {};
+function quitLapsedOn(q, dayKey){ return (q.lapses || []).some(l=> iso(new Date(l.at)) === dayKey); }
+function renderCloseDayQuits(dayKey){
+  const wrap = document.getElementById('cdQuitWrap');
+  wrap.innerHTML = '';
+  closeDayQuitChoice = {};
+  const list = (state.quits || []).filter(q=> iso(new Date(q.start)) <= dayKey && dayKey <= todayKey());
+  if(!list.length) return;
+  const label = document.createElement('div');
+  label.className = 'cdSectionLabel';
+  label.textContent = 'Tes défis aujourd\'hui';
+  wrap.appendChild(label);
+  list.forEach(q=>{
+    const lapsed = quitLapsedOn(q, dayKey);
+    closeDayQuitChoice[q.id] = (q.checkins && q.checkins[dayKey]) || (lapsed ? 'lapse' : 'ok');
+    const row = document.createElement('div');
+    row.className = 'cdQuitRow';
+    row.innerHTML = '<span></span><button class="ok"></button><button class="ko bad"></button>';
+    row.querySelector('span').textContent = `${QUIT_KINDS[q.kind].icon} ${quitName(q)}`;
+    const okB = row.querySelector('.ok'), koB = row.querySelector('.ko');
+    okB.textContent = q.kind === 'tabac' ? '✅ Journée sans fumer' : q.kind === 'alcool' ? '✅ Journée sans alcool' : '✅ Tenu';
+    koB.textContent = '😬 Un écart';
+    const sync = ()=>{ okB.classList.toggle('on', closeDayQuitChoice[q.id] === 'ok'); koB.classList.toggle('on', closeDayQuitChoice[q.id] === 'lapse'); };
+    okB.onclick = ()=>{ closeDayQuitChoice[q.id] = 'ok'; sync(); };
+    koB.onclick = ()=>{ closeDayQuitChoice[q.id] = 'lapse'; sync(); };
+    sync();
+    wrap.appendChild(row);
+  });
+}
+function applyCloseDayQuits(dayKey){
+  Object.entries(closeDayQuitChoice).forEach(([id, choice])=>{
+    const q = quitById(id);
+    if(!q) return;
+    q.checkins = q.checkins || {};
+    q.checkins[dayKey] = choice;
+    if(choice === 'lapse' && !quitLapsedOn(q, dayKey)){
+      const at = dayKey === todayKey() ? new Date() : new Date(dayKey + 'T21:00:00');
+      q.lapses = q.lapses || [];
+      q.lapses.push({at: at.toISOString()});
+      q.seenMilestones = 0;
+    }
+  });
+  if(Object.keys(closeDayQuitChoice).length) renderQuitLine();
+  closeDayQuitChoice = {};
 }
 
 async function noteLapse(q){
@@ -6152,7 +6347,7 @@ function routineActiveOn(r, key){
 }
 function instanceFromRoutine(r){
   return {id:uid(), title:r.title, start:r.start, duration:r.duration, category:r.category, done:false,
-    recurId:r.id, ...(r.parallel ? {parallel:true} : {})};
+    recurId:r.id, ...(r.parallel ? {parallel:true} : {}), ...(r.notes ? {notes:r.notes} : {})};
 }
 function createRoutine(f, days, from, until, extra){
   const r = {id:'r'+uid(), title:f.title, start:f.start, duration:f.duration, category:f.category,

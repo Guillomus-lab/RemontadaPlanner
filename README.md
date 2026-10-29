@@ -154,7 +154,12 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
   changer d'idée), écarts notés sans remise à zéro des progrès, phrases de
   motivation, boîte à outils et numéros d'aide. Pour l'alcool, un mini
   questionnaire recommande un avis médical en cas de risque de sevrage.
-  Contenu dans `ui/quit.js`.
+  « 📅 Mon plan dans le planning » : tu indiques l'heure et les jours où l'envie
+  est la plus forte, et l'app ajoute des routines qui aident pile à ces moments
+  (boisson sans alcool, casser le rituel, bilan du soir, sport doux, courses
+  sans alcool…) avec leurs conseils en note ; les rappels Windows préviennent
+  avant chaque moment à risque. « Clôturer la journée » sert de check-in
+  quotidien (journée tenue ou écart). Contenu dans `ui/quit.js`.
 - Concentration : bouton « ▶ Focus » au survol de chaque tâche du jour, et zone
   « En ce moment » dans la barre du jour pour la tâche en cours.
 - Sauvegarde de tes données (Profil → Réglages) : export dans un fichier et

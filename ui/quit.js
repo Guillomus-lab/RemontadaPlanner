@@ -252,3 +252,58 @@ function quitPhraseOfDay(dateKey, offset){
   for(const ch of String(dateKey) + (offset || "")) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   return QUIT_PHRASES[hash % QUIT_PHRASES.length];
 }
+
+// ---------- plan in the planning: supportive routines ----------
+// at: "risk" = relative to the risky time (offset in minutes), or a fixed "HH:MM"
+// days: "risk" = the risky days chosen by the user, "all", or a list (0 = Sunday)
+const QUIT_PLAN = {
+  alcool: [
+    {id:"drink", on:true, at:"risk", offset:-15, dur:15, days:"risk", title:"🍹 Moment à risque : ta boisson sans alcool",
+     notes:"Prépare-la AVANT que l'envie arrive : eau pétillante citron-menthe, kombucha, bière ou vin sans alcool, mocktail. Garde ton verre plein en main, ça coupe court aux « tu bois quoi ? »."},
+    {id:"move", on:true, at:"risk", offset:0, dur:15, days:"risk", title:"🚶 Casser le rituel : sortir 10 min ou bouger",
+     notes:"Marche, douche, sport léger, appel à un ami : change de pièce et d'activité au moment où l'apéro commençait. Envie trop forte ? Ouvre « J'ai une envie » (menu ⋯ ou Ctrl+K)."},
+    {id:"review", on:true, at:"21:30", dur:10, days:"all", title:"🌙 Bilan du soir sans alcool",
+     notes:"Clôture ta journée : coche « sans alcool » ou note l'écart, et écris ce qui t'a aidé. 5 minutes qui renforcent tout le reste."},
+    {id:"sport", on:true, at:"risk", offset:-75, dur:45, days:[1, 3, 5], title:"🏃 Sport doux",
+     notes:"Le sport fait baisser le stress, réduit les envies et améliore le sommeil, souvent perturbé les premières semaines sans alcool."},
+    {id:"shop", on:true, at:"11:00", dur:30, days:[6], title:"🛒 Courses sans alcool",
+     notes:"Liste : eaux pétillantes, sirops, citrons, menthe, bières et vins sans alcool. N'achète pas d'alcool « pour les invités » : ce qui n'est pas à la maison ne tente pas."},
+    {id:"call", on:false, at:"18:00", dur:20, days:[0], title:"📞 Appeler un proche ou un groupe de soutien",
+     notes:"Raconte où tu en es à quelqu'un qui te soutient. Besoin d'aide ? Alcool Info Service : 0 980 980 930 (anonyme, 7 j/7)."},
+    {id:"reward", on:false, at:"16:00", dur:30, days:[0], title:"🎁 Me faire plaisir avec l'argent économisé",
+     notes:"Regarde ton compteur d'économies et offre-toi quelque chose : c'est ta récompense, tu l'as méritée."},
+  ],
+  tabac: [
+    {id:"coffee", on:true, at:"08:30", dur:10, days:"all", title:"☕ Café sans cigarette (change de place)",
+     notes:"Change de tasse ou de pièce, ou passe au thé quelques semaines : le café-cigarette est un des rituels les plus tenaces."},
+    {id:"walk", on:true, at:"13:15", dur:10, days:"all", title:"🚶 Après le repas : 10 min de marche",
+     notes:"La fin du repas est un gros déclencheur. Lève-toi tout de suite, marche ou brosse-toi les dents."},
+    {id:"risk", on:true, at:"risk", offset:0, dur:5, days:"risk", title:"💨 Moment à risque : respiration + grand verre d'eau",
+     notes:"Ouvre « J'ai une envie » (menu ⋯ ou Ctrl+K) : 3 minutes de respiration guidée et l'envie redescend."},
+    {id:"review", on:true, at:"21:30", dur:10, days:"all", title:"🌙 Bilan du soir sans tabac",
+     notes:"Clôture ta journée et note tes envies surmontées. Chaque soir tenu compte."},
+    {id:"sport", on:false, at:"18:00", dur:40, days:[1, 3, 5], title:"🏃 Sport doux",
+     notes:"Le souffle revient vite après l'arrêt : le sport le rend visible, et il aide à gérer le stress et l'appétit."},
+    {id:"reward", on:false, at:"16:00", dur:30, days:[0], title:"🎁 Me faire plaisir avec l'argent économisé",
+     notes:"Regarde ton compteur d'économies et offre-toi quelque chose : c'est ta récompense."},
+  ],
+  autre: [
+    {id:"risk", on:true, at:"risk", offset:-10, dur:15, days:"risk", title:"🎯 Moment à risque : activité de remplacement",
+     notes:"Prévois une activité à la place de l'habitude : marche, appel, lecture, rangement. Envie trop forte ? Ouvre « J'ai une envie »."},
+    {id:"review", on:true, at:"21:30", dur:10, days:"all", title:"🌙 Bilan du soir",
+     notes:"Clôture ta journée et note si tu as tenu. Ce qui a aidé, ce qui a été dur."},
+    {id:"reward", on:false, at:"16:00", dur:30, days:[0], title:"🎁 Une récompense pour la semaine tenue",
+     notes:"Fais-toi plaisir : chaque semaine tenue mérite d'être fêtée."},
+  ],
+};
+const QUIT_RISK_DEFAULT = {alcool: {time: "18:30", days: [5, 6]}, tabac: {time: "10:30", days: [0, 1, 2, 3, 4, 5, 6]}, autre: {time: "20:00", days: [0, 1, 2, 3, 4, 5, 6]}};
+
+// Resolve a plan item into a routine definition {title, start, duration, days, notes}
+function quitPlanRoutine(item, riskTime, riskDays){
+  const [h, m] = riskTime.split(":").map(Number);
+  let start = item.at === "risk" ? h * 60 + m + (item.offset || 0) : Number(item.at.slice(0, 2)) * 60 + Number(item.at.slice(3));
+  start = Math.max(6 * 60, Math.min(23 * 60 + 45 - item.dur, start));
+  const days = item.days === "risk" ? riskDays.slice() : item.days === "all" ? [0, 1, 2, 3, 4, 5, 6] : item.days.slice();
+  const p2 = n=> String(n).padStart(2, "0");
+  return {title: item.title, start: `${p2(Math.floor(start / 60))}:${p2(start % 60)}`, duration: item.dur, days, notes: item.notes};
+}
