@@ -14,7 +14,7 @@
   }
   [data-theme="light"]{
     --bg:#f7f5fd; --surface:#ffffff; --surface2:#f2eefc; --surface3:#e9e2fa; --border:#e2d9f7;
-    --text:#211c33; --text-dim:#6f6693; --text-faint:#b3a8d6;
+    --text:#211c33; --text-dim:#5f5684; --text-faint:#8a80ad;
     --accent:#7c3aed; --accent2:#db2777; --accent-soft:rgba(124,58,237,.12);
   }
 
@@ -180,16 +180,27 @@
       10%{opacity:.18;} 90%{opacity:.14;}
       100%{transform:translateY(-110vh) rotate(60deg);opacity:0;}}
   *{box-sizing:border-box;}
+  button, input, select, textarea{font-family:inherit;}
   body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);
        height:100vh;overflow:hidden;user-select:none;-webkit-font-smoothing:antialiased;}
   #app{display:flex;flex-direction:column;height:100vh;}
 
   header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 16px;border-bottom:1px solid var(--border);
          background:var(--surface);flex-shrink:0;row-gap:8px;}
-  header h1{font-size:15.5px;font-weight:800;margin:0;flex-shrink:0;display:flex;align-items:center;gap:8px;
-             letter-spacing:-.01em;background:linear-gradient(135deg,var(--accent),var(--accent2));
-             -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-             white-space:nowrap;}
+  /* --- Brand: mark + "REMONTADA / PLANNER" wordmark (fixed brand colors, whatever the theme) --- */
+  @font-face{font-family:"RP Brand";src:url("fonts/unbounded-800.woff2") format("woff2");
+      font-weight:800;font-style:normal;font-display:block;}
+  header h1{margin:0;flex-shrink:0;display:flex;align-items:center;gap:9px;white-space:nowrap;position:relative;}
+  .brandMark{flex-shrink:0;display:block;filter:drop-shadow(0 3px 8px rgba(139,92,246,.35));}
+  .brandText{display:flex;flex-direction:column;line-height:1;}
+  .brandName{font:800 19px/1 "RP Brand","Segoe UI",sans-serif;letter-spacing:-.02em;white-space:nowrap;}
+  .brandWord{background:linear-gradient(100deg,#8b5cf6 0%,#ec4899 55%,#fbbf24 100%);-webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;color:transparent;}
+  [data-theme="light"] .brandWord{background-image:linear-gradient(100deg,#7c3aed 0%,#db2777 55%,#f59e0b 100%);}
+  .brandDot{display:inline-block;width:.3em;height:.3em;border-radius:50%;background:#10d896;margin-left:.07em;
+      box-shadow:0 0 0 .1em rgba(16,216,150,.2);}
+  .brandSub{font:800 7.5px/1 "RP Brand","Segoe UI",sans-serif;letter-spacing:.5em;text-transform:lowercase;
+      color:var(--text-dim);margin-top:4px;padding-left:1px;}
   .navGroup{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);
             border-radius:10px;padding:3px;flex-shrink:0;}
   .navbtn{background:transparent;border:none;color:var(--text-dim);border-radius:7px;
@@ -208,7 +219,7 @@
   /* medium windows: shorter progress bar so the header stays on one line */
   @media (max-width: 1480px){ #progressBarOuter{width:56px;} header{gap:10px 10px;} }
   @media (max-width: 1380px){ #progressBarOuter{display:none;} }
-  @media (max-width: 1300px){ header h1{display:none;} }
+  @media (max-width: 1300px){ header h1 .brandText{display:none;} }
   #progressBarInner{height:100%;background:linear-gradient(90deg,var(--done),#5eead4);width:0%;transition:width .3s ease;border-radius:4px;}
   #dayBadge{font-size:17px;transition:transform .2s ease;}
   #dayBadge.pulse{animation:badgePulse .5s ease;}
@@ -431,27 +442,34 @@
       background:radial-gradient(circle, var(--accent-soft), transparent 70%);
       animation:splashOrbPulse 2.4s ease-in-out infinite;filter:blur(2px);}
   @keyframes splashOrbPulse{0%,100%{transform:scale(.9);opacity:.6;}50%{transform:scale(1.15);opacity:1;}}
-  .splashLogo{font-size:64px;z-index:1;animation:splashLogoFloat 2.6s ease-in-out infinite,
+  .splashLogo{z-index:1;animation:splashLogoFloat 2.6s ease-in-out infinite,
       splashLogoGlow 2.6s ease-in-out infinite;filter:drop-shadow(0 8px 28px var(--accent-soft));}
   @keyframes splashLogoFloat{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-10px) rotate(3deg);}}
   @keyframes splashLogoGlow{0%,100%{filter:drop-shadow(0 8px 20px var(--accent-soft));}
       50%{filter:drop-shadow(0 10px 36px var(--accent2));}}
-  .splashName{z-index:1;font-size:20px;font-weight:900;letter-spacing:.02em;text-align:center;line-height:1.25;
-      background:linear-gradient(135deg,var(--accent),var(--accent2),#fbbf24);
-      -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-      background-size:200% 200%;animation:splashNameShimmer 3s ease-in-out infinite;}
+  .splashName{z-index:1;display:flex;flex-direction:column;align-items:center;margin-top:6px;}
+  .splashName .brandName{font-size:44px;}
+  .splashName .brandWord{background-size:200% 100%;animation:splashNameShimmer 3s ease-in-out infinite;}
+  .splashName .brandSub{font-size:14px;margin-top:10px;padding-left:.5em;}
   @keyframes splashNameShimmer{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
-  .splashDots{z-index:1;display:flex;gap:7px;margin-top:6px;}
-  .splashDots span{width:7px;height:7px;border-radius:50%;background:var(--accent);
-      animation:splashDotBounce 1s ease-in-out infinite;}
-  .splashDots span:nth-child(2){animation-delay:.15s;background:var(--accent2);}
-  .splashDots span:nth-child(3){animation-delay:.3s;background:#fbbf24;}
-  @keyframes splashDotBounce{0%,80%,100%{transform:translateY(0);opacity:.5;}40%{transform:translateY(-8px);opacity:1;}}
+  .splashBar{z-index:1;width:220px;height:5px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:14px;}
+  #splashBarFill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2),#fbbf24);
+      animation:splashBarFill 2.4s cubic-bezier(.3,.6,.4,1) forwards;}
+  #splashBarFill.done{animation:none;width:100%;transition:width .25s ease;}
+  @keyframes splashBarFill{from{width:0;}to{width:92%;}}
+  .splashStatus{z-index:1;font-size:11.5px;color:var(--text-dim);font-weight:600;min-height:16px;transition:opacity .2s ease;}
+  #splashScreen{cursor:pointer;}
 
   /* --- Update popup (checked once at launch, user accepts or dismisses) --- */
   #updateOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:2600;
       display:none;align-items:center;justify-content:center;}
   #updateOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  .updProgress{margin:14px 0 4px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .updProgress .splashBar{margin-top:0;}
+  #updateBarFill{height:100%;width:8%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2),#fbbf24);
+      animation:updBar 1.6s ease-in-out infinite alternate;}
+  @keyframes updBar{from{width:15%;}to{width:85%;}}
+  .updStatus{font-size:11.5px;color:var(--text-dim);font-weight:600;}
   #updateCard{width:340px;text-align:center;padding:26px;border-radius:20px;
       box-shadow:0 24px 70px rgba(0,0,0,.55);animation:modalPop .3s cubic-bezier(.34,1.56,.64,1);}
   #updateCard .updIcon{font-size:38px;margin-bottom:8px;}
@@ -465,12 +483,17 @@
   #updateGoBtn:hover{filter:brightness(1.1);}
 
   /* --- Glassmorphism pass: translucent frosted panels over blurred content --- */
-  header, #sidebar, #quickAdd, .toast, #miniCal, #celebrateMsg,
+  header, #sidebar, #quickAdd, .toast, #celebrateMsg,
   #profileCard, #taskModal, #dayRecapCard, #confirmCard, #recapCard, #questCard,
   #weekFillCard, #dayThemesCard, #onboardingTooltip, #updateCard{
       background:color-mix(in srgb, var(--surface) 72%, transparent)!important;
       backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
       box-shadow:inset 0 1px 0 rgba(255,255,255,.05);}
+  /* light theme: dialogs over the dark dim overlay turned grey and washed out */
+  [data-theme="light"] #profileCard, [data-theme="light"] #taskModal, [data-theme="light"] #dayRecapCard,
+  [data-theme="light"] #confirmCard, [data-theme="light"] #recapCard, [data-theme="light"] #questCard,
+  [data-theme="light"] #weekFillCard, [data-theme="light"] #dayThemesCard, [data-theme="light"] #updateCard{
+      background:color-mix(in srgb, var(--surface) 96%, transparent)!important;}
 
   /* --- Subtle film-grain noise overlay for texture, app-wide ---
      z-index kept LOW (just above flow content) and no mix-blend-mode:
@@ -505,7 +528,6 @@
                cursor:pointer;color:var(--text);font-size:14px;transition:transform .15s ease;flex-shrink:0;}
   #themeToggle:hover,#sfxToggle:hover{transform:scale(1.08);}
   #sfxToggle.muted{opacity:.5;}
-  #calBtn{position:relative;}
   #moreBtn{font-size:17px;font-weight:800;line-height:1;}
   #moreBtn.on{background:var(--accent-soft);}
   #moreMenu{position:fixed;z-index:180;display:none;flex-direction:column;min-width:240px;background:var(--surface);
@@ -519,10 +541,6 @@
   .mmTools span{flex:1;font-size:10.5px;font-weight:800;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
   .mmTools .navbtn{width:32px;height:32px;}
 
-  #miniCal{position:absolute;top:54px;right:150px;background:var(--surface);border:1px solid var(--border);
-            border-radius:var(--radius);padding:10px;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.45);display:none;}
-  #miniCal.show{display:block;}
-  #miniCal input[type=date]{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:7px;font-size:13px;}
 
   main{flex:1;display:flex;overflow:hidden;}
   #sidebar{width:198px;border-right:1px solid var(--border);background:var(--surface);padding:18px 12px;flex-shrink:0;overflow-y:auto;}
@@ -565,7 +583,7 @@
       border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:700;cursor:pointer;
       box-shadow:0 4px 12px rgba(0,0,0,.25);}
   #zoomFloat button:hover{border-color:var(--accent);color:var(--accent);}
-  #quickAdd{display:flex;gap:8px;padding:12px 22px;border-bottom:1px solid var(--border);background:var(--surface);
+  #quickAdd{display:flex;gap:8px;padding:9px 22px;border-bottom:1px solid var(--border);background:var(--surface);
             align-items:center;flex-shrink:0;}
   #openAddBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;
               padding:10px 20px;font-size:13px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px;
@@ -623,7 +641,7 @@
   .task .time::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--catColor, var(--accent));
               display:inline-block;flex-shrink:0;}
   .task.compact .time{display:none;}
-  .task.compact{display:flex;align-items:center;padding:0 8px;gap:0;cursor:pointer;}
+  .task.compact{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;padding:0 8px;gap:0;cursor:pointer;}
   .task.compact .title{font-size:11px;margin:0;gap:5px;line-height:1;}
   /* Visually small (matches the thin bar) but the whole compact row is also
      clickable to toggle — see attachDrag()'s onUp — because a 11px box alone
@@ -694,12 +712,12 @@
   .catChip:hover{transform:translateY(-1px);}
   .catChip.selected{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
   .catChip .catDot{width:8px;height:8px;}
-  .parallelLabel{display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:12px;
+  .parallelLabel{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:12px;
       color:var(--text-dim);line-height:1.4;padding:9px 11px;border-radius:10px;background:var(--surface2);
       border:1px solid var(--border);transition:all .15s ease;}
   .parallelLabel:hover{border-color:var(--accent);}
   .modalField label.parallelLabel{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:0;}
-  .parallelLabel input[type=checkbox]{margin-top:1px;flex-shrink:0;cursor:pointer;width:15px;height:15px;
+  .parallelLabel input[type=checkbox]{margin-top:0;flex-shrink:0;cursor:pointer;width:15px;height:15px;
       accent-color:var(--accent);}
   .modalActions{display:flex;gap:10px;margin-top:20px;}
   #modalCancel{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;
@@ -956,7 +974,9 @@
   .fieldInput, .fieldSelect, #modalDate{width:100%;}
   .fieldInput:focus, .fieldSelect:focus, #modalDate:focus{outline:none;border-color:var(--accent);}
   .inlineTime, .inlineSelect{background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:2px 5px;font-size:12px;}
-  #taskModal{max-height:92vh;overflow-y:auto;width:440px;}
+  #taskModal{max-height:92vh;overflow-y:auto;width:440px;padding-bottom:0;}
+  #taskModal .modalActions{position:sticky;bottom:0;margin:20px -24px 0;padding:14px 24px 18px;z-index:2;
+      background:linear-gradient(to top, var(--surface) 75%, transparent);}
   #repeatScopeWrap{display:none;}
   #repeatScopeWrap.show{display:flex;}
   .btnPrimary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;
@@ -1185,7 +1205,7 @@
   .srItem.sel{background:var(--accent-soft);}
   .srIcon{width:25px;height:25px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;
       justify-content:center;font-size:14px;flex-shrink:0;}
-  .srMain{flex:1;min-width:0;}
+  .srMain{flex:1;min-width:0;display:flex;flex-direction:column;}
   .srTitle{font-size:12.5px;font-weight:650;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .srSub{font-size:10px;color:var(--text-faint);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .srTag{font-size:9px;color:var(--text-faint);border:1px solid var(--border);border-radius:5px;padding:1px 5px;flex-shrink:0;}
@@ -1321,23 +1341,37 @@
 </style>
 </head>
 <body data-theme="dark">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="rpGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#ec4899"/><stop offset="1" stop-color="#fbbf24"/></linearGradient>
+  <symbol id="rpMark" viewBox="0 0 64 64">
+    <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#rpGrad)"/>
+    <rect x="14" y="17" width="36" height="32" rx="6" fill="#fff" opacity=".96"/>
+    <rect x="14" y="17" width="36" height="9" rx="4" fill="#e9defe"/>
+    <rect x="21" y="11" width="5" height="11" rx="2.5" fill="#fff"/><rect x="38" y="11" width="5" height="11" rx="2.5" fill="#fff"/>
+    <rect x="20" y="32" width="18" height="3" rx="1.5" fill="#d9d0f2"/><rect x="20" y="39" width="12" height="3" rx="1.5" fill="#d9d0f2"/>
+    <circle cx="45" cy="45" r="11" fill="#10d896" stroke="#fff" stroke-width="3"/>
+    <path d="M40 45.5l3.6 3.6 6.4-7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</defs></svg>
 <div id="splashScreen">
   <div class="splashOrb"></div>
-  <div class="splashLogo">📅</div>
-  <div class="splashName">Remontada<br>Planner</div>
-  <div class="splashDots"><span></span><span></span><span></span></div>
+  <svg class="splashLogo" width="96" height="96" viewBox="0 0 64 64" aria-hidden="true"><use href="#rpMark"/></svg>
+  <div class="splashName"><span class="brandName"><span class="brandWord">remontada</span><span class="brandDot"></span></span><span class="brandSub">planner</span></div>
+  <div class="splashBar"><div id="splashBarFill"></div></div>
+  <div class="splashStatus" id="splashStatus">Chargement de ton planning…</div>
 </div>
 <div id="app">
   <header>
-    <h1>📅 Remontada Planner</h1>
+    <h1 aria-label="Remontada Planner">
+      <svg class="brandMark" width="32" height="32" viewBox="0 0 64 64" aria-hidden="true"><use href="#rpMark"/></svg>
+      <span class="brandText"><span class="brandName"><span class="brandWord">remontada</span><span class="brandDot"></span></span><span class="brandSub">planner</span></span>
+    </h1>
     <div class="navGroup">
       <button class="navbtn" id="prevDay">‹</button>
       <button class="navbtn" id="nextDay">›</button>
     </div>
     <div id="dateLabel">—</div>
     <button id="todayBtn">Aujourd'hui</button>
-    <button id="calBtn" class="navbtn" title="Choisir une date" style="background:var(--surface2);border:1px solid var(--border);">🗓</button>
-    <div id="miniCal"><input type="date" id="dateInput" /></div>
     <div class="viewSwitch" id="viewSwitch">
       <button data-view="day">Jour</button>
       <button data-view="week">Semaine</button>
@@ -1401,23 +1435,23 @@
 
   <main>
     <div id="sidebar">
-      <h2>Catégories</h2>
+      <h2>🏷️ Catégories</h2>
       <div id="catList"></div>
       <div id="backlogSection">
         <h2>📥 À planifier <span id="backlogCount">0</span></h2>
         <div id="backlogList"></div>
         <div id="backlogAddRow">
           <input id="backlogInput" placeholder="Une idée, une tâche…" maxlength="90" />
-          <button id="backlogAddBtn" title="Ajouter au backlog">+</button>
+          <button id="backlogAddBtn" title="Ajouter à « À planifier »">+</button>
         </div>
         <div class="backlogHint">Clique pour modifier · glisse sur la timeline ou clique sur 📅 pour planifier.</div>
       </div>
       <div id="routineSection">
-        <h2>Routines 🔁</h2>
+        <h2>🔁 Routines</h2>
         <div id="routineList"></div>
       </div>
       <div id="templateSection">
-        <h2>Modèles</h2>
+        <h2>🧩 Modèles</h2>
         <div id="tplList"></div>
         <button id="weekFillBtn" class="periodOnly">🗓️ Planifier la semaine</button>
         <button id="saveTplBtn" class="dayOnly">💾 Enregistrer ce jour</button>
@@ -1460,7 +1494,8 @@
     <div class="updIcon">🚀</div>
     <div class="updTitle">Nouvelle version disponible</div>
     <div class="updText" id="updateText"></div>
-    <div class="updBtns">
+    <div class="updProgress" id="updateProgress" style="display:none"><div class="splashBar"><div id="updateBarFill"></div></div><div class="updStatus" id="updateStatus"></div></div>
+    <div class="updBtns" id="updateBtns">
       <button id="updateLaterBtn">Plus tard</button>
       <button id="updateGoBtn">Mettre à jour</button>
     </div>
@@ -1588,7 +1623,7 @@
         </div>
         <div class="settingsBlock">
           <h4>💡 Conseils</h4>
-          <div class="settingsHint">Le loop quotidien : capture dans le backlog → choisis 3 priorités → exécute → clôture la journée. L'app s'occupe des reports.</div>
+          <div class="settingsHint">La boucle quotidienne : note tes idées dans « À planifier » → choisis 3 priorités → avance → clôture la journée. L'app s'occupe des reports.</div>
         </div>
       </div>
       <div class="profileTabPanel" id="tabHistory">
@@ -1746,7 +1781,7 @@
       <div class="cdChoice">
         <label><input type="radio" name="cdMode" value="tomorrow_same" checked /> 📅 Demain, même heure</label>
         <label><input type="radio" name="cdMode" value="tomorrow_free" /> 📅 Demain, prochain créneau libre</label>
-        <label><input type="radio" name="cdMode" value="backlog" /> 📥 Dans le backlog</label>
+        <label><input type="radio" name="cdMode" value="backlog" /> 📥 Dans « À planifier »</label>
       </div>
     </div>
     <div class="cdSectionLabel">Note du soir <span style="text-transform:none;letter-spacing:0;font-weight:500">(optionnel)</span></div>
@@ -1951,7 +1986,7 @@
       </label>
     </div>
     <div class="modalActions">
-      <button id="modalBacklog" title="Mettre dans le backlog (pas aujourd'hui)">📥</button>
+      <button id="modalBacklog" title="Mettre dans « À planifier » (sans heure)">📥</button>
       <button id="modalFocus" title="Mode concentration sur cette tâche">🎯</button>
       <button id="modalDelete" title="Supprimer">🗑️</button>
       <button id="modalCancel">Annuler</button>
@@ -2077,8 +2112,8 @@ async function loadState(){
   applyLightDark(state.settings.theme === 'light' ? 'light' : 'dark');
   HOUR_H = Math.min(140, Math.max(32, Number(state.settings.zoom) || 72));
   render();
-  hideSplash();
   renderSettingsTab();
+  await hideSplash(); // launch popups must not open behind the splash
   if(!firstLoadDone){
     firstLoadDone = true;
     if(viewMode==='day') scrollToNow();
@@ -2505,8 +2540,7 @@ function renderFreeGaps(tasks){
     div.style.top = (minutesFromStart(s)/60*HOUR_H)+'px';
     div.style.height = ((e-s)/60*HOUR_H)+'px';
     div.style.left = '66px'; div.style.right='4px';
-    const hrs = ((e-s)/60).toFixed(1).replace('.0','');
-    div.textContent = hrs+'h libre';
+    div.textContent = `${fmtDur(e-s)} de libre`;
     grid.appendChild(div);
   });
 }
@@ -3165,7 +3199,11 @@ function getAudioCtx(){
   if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
   return audioCtx;
 }
+// Every effect was tuned very low (hardly audible on laptop speakers): one
+// master multiplier lifts them all evenly without touching each sound.
+const SFX_VOLUME = 1.6;
 function playTone(freq, startTime, duration, gainPeak, type='sine'){
+  gainPeak = Math.min(0.25, gainPeak * SFX_VOLUME);
   // Cosmetic only: never let a Web Audio hiccup (missing device, policy...)
   // break the caller — level-up/check/toast/purchase all call this first.
   try{
@@ -3882,7 +3920,6 @@ function render(){
   document.body.classList.add('view-'+viewMode);
   document.querySelectorAll('#viewSwitch button').forEach(b=> b.classList.toggle('active', b.dataset.view===viewMode));
   document.getElementById('dateLabel').textContent = periodLabel();
-  document.getElementById('dateInput').value = iso(currentDate);
   document.getElementById('todayBtn').textContent = viewMode==='day' ? 'Aujourd\'hui' : viewMode==='week' ? 'Cette semaine' : 'Ce mois';
   document.getElementById('prevDay').title = viewMode==='day' ? 'Jour précédent' : viewMode==='week' ? 'Semaine précédente' : 'Mois précédent';
   document.getElementById('nextDay').title = viewMode==='day' ? 'Jour suivant' : viewMode==='week' ? 'Semaine suivante' : 'Mois suivant';
@@ -5332,7 +5369,7 @@ function buildSearchGroups(query){
       tag:'À planifier',
       run:()=> openTaskModal(null, null, {backlog:i})
     }));
-  if(backlog.length) groups.push({label:'Backlog', items:backlog});
+  if(backlog.length) groups.push({label:'À planifier', items:backlog});
 
   const dayKeys = tokens.length
     ? Object.keys(state.days).sort().reverse()
@@ -6309,7 +6346,7 @@ function openTaskModal(presetMinutes, task, opts){
   editingBacklogId = backlog ? backlog.id : null;
   const src = task || routine || backlog;
   const linked = routine || (task ? findRoutine(task.recurId) : null);
-  document.querySelector('#taskModal h3').textContent = backlog ? '📥 Tâche du backlog'
+  document.querySelector('#taskModal h3').textContent = backlog ? '📥 Tâche à planifier'
     : routine ? '🔁 Modifier la routine' : task ? '✏️ Modifier la tâche' : '✨ Nouvelle tâche';
   document.getElementById('modalSave').textContent = src ? 'Enregistrer' : 'Ajouter la tâche';
   document.getElementById('modalTitle').value = src ? src.title : '';
@@ -6434,7 +6471,7 @@ async function saveModalTask(){
     const item = (state.backlog || []).find(x=> x.id===editingBacklogId);
     if(item){
       Object.assign(item, {title, duration, category, notes, url, priority:priorityWanted});
-      toast = {icon:'📥', text:'Backlog mis à jour'};
+      toast = {icon:'📥', text:'« À planifier » mis à jour'};
     }
   } else if(editingRoutineId){                             // routine edited from the sidebar
     const r = findRoutine(editingRoutineId);
@@ -6512,7 +6549,7 @@ function deleteFromModal(){
     state.backlog = (state.backlog || []).filter(x=> x.id!==backlogId);
     closeTaskModal();
     persist(); render();
-    showToast({icon:'🗑️', text:'Retiré du backlog'});
+    showToast({icon:'🗑️', text:'Retiré de « À planifier »'});
     return;
   }
   if(routineId){
@@ -6540,7 +6577,7 @@ function moveEditingTaskToBacklog(){
   list.splice(list.indexOf(t), 1);
   closeTaskModal();
   persist(); render();
-  showToast({icon:'📥', text:'Déplacée dans le backlog', sub:'Elle reste disponible, sans heure fixe.'});
+  showToast({icon:'📥', text:'Déplacée dans « À planifier »', sub:'Elle reste disponible, sans heure fixe.'});
 }
 
 function openQuickAddAt(minutes){
@@ -6571,12 +6608,6 @@ document.addEventListener('keydown', (e)=>{
   else if(document.getElementById('dayThemesOverlay').classList.contains('show')) closeDayThemesModal();
   else if(document.getElementById('profileOverlay').classList.contains('show')) closeProfileModal();
   else if(document.getElementById('dayRecapOverlay').classList.contains('show')) document.getElementById('dayRecapOverlay').classList.remove('show');
-  else document.getElementById('miniCal').classList.remove('show');
-});
-// close the mini calendar when clicking anywhere else
-document.addEventListener('mousedown', (e)=>{
-  const cal = document.getElementById('miniCal');
-  if(cal.classList.contains('show') && !cal.contains(e.target) && e.target.id!=='calBtn') cal.classList.remove('show');
 });
 // keep the "now" line moving and follow midnight rollover while the app stays open
 let lastTodayKey = iso(new Date());
@@ -6830,13 +6861,6 @@ document.querySelectorAll('#recapScopeSwitch button').forEach(b=> b.onclick = ()
 document.getElementById('newChallengeBtn').onclick = openChallengeForm;
 document.getElementById('chCancel').onclick = ()=> document.getElementById('challengeForm').classList.remove('show');
 document.getElementById('chCreate').onclick = createChallengeFromForm;
-document.getElementById('calBtn').onclick = ()=>{ document.getElementById('miniCal').classList.toggle('show'); };
-document.getElementById('dateInput').addEventListener('change', (e)=>{
-  if(!e.target.value) return;
-  currentDate = new Date(e.target.value+'T12:00:00');
-  document.getElementById('miniCal').classList.remove('show');
-  render();
-});
 document.getElementById('saveTplBtn').onclick = saveTemplateFromToday;
 document.getElementById('copyYesterdayBtn').onclick = copyYesterday;
 document.getElementById('dayThemesBtn').onclick = openDayThemesModal;
@@ -7056,26 +7080,92 @@ setTimeout(hideSplash, 6000);
 // Fades the launch splash out once the first real render has happened.
 // Idempotent (checks it's not already hidden) so later loadState() calls
 // (e.g. after restoring a backup) never re-trigger it.
-let splashHidden = false;
-function hideSplash(){
-  if(splashHidden) return;
-  splashHidden = true;
-  document.getElementById('splashScreen').classList.add('hide');
+// The data loads in a few ms, but a short launch screen makes the app feel
+// finished: it stays at least SPLASH_MIN_MS, with a progress bar and status
+// lines. A click skips it once the data is ready. Launch popups (tutorial,
+// rollover, update...) wait for `splashDone` so they never open behind it.
+const SPLASH_MIN_MS = 2400;
+const SPLASH_STEPS = ['Chargement de ton planning…', 'On prépare tes priorités…', 'Mise à jour de ta série 🔥…',
+  'On réveille tes rappels ⏰…', 'C\'est parti !'];
+let splashHidden = false, splashFinished = false, splashResolve = null;
+const splashDone = new Promise(r=> splashResolve = r);
+let splashStep = 0;
+const splashStepTimer = setInterval(()=>{
+  if(splashStep >= SPLASH_STEPS.length - 2) return; // the last line is kept for the very end
+  splashStep++;
+  const el = document.getElementById('splashStatus');
+  if(el) el.textContent = SPLASH_STEPS[splashStep];
+}, Math.round(SPLASH_MIN_MS / (SPLASH_STEPS.length - 0.5)));
+function finishSplash(){
+  if(splashFinished) return;
+  splashFinished = true;
+  clearInterval(splashStepTimer);
+  document.getElementById('splashStatus').textContent = SPLASH_STEPS[SPLASH_STEPS.length - 1];
+  document.getElementById('splashBarFill').classList.add('done');
+  setTimeout(()=>{
+    document.getElementById('splashScreen').classList.add('hide');
+    splashResolve();
+  }, 300);
 }
+// called once the first render is done; resolves when the splash is gone
+function hideSplash(){
+  if(!splashHidden){
+    splashHidden = true;
+    setTimeout(finishSplash, Math.max(0, SPLASH_MIN_MS - performance.now()));
+  }
+  return splashDone;
+}
+document.getElementById('splashScreen').addEventListener('click', ()=>{ if(splashHidden) finishSplash(); });
 
 // One-shot update check at launch, surfaced as a small popup (not a nag):
 // the user explicitly accepts (opens the release page) or dismisses it, and
 // a dismissal is remembered per-version so it won't reappear for the same release.
+async function installUpdate(res){
+  const btns = document.getElementById('updateBtns');
+  const prog = document.getElementById('updateProgress');
+  const status = document.getElementById('updateStatus');
+  btns.style.display = 'none';
+  prog.style.display = '';
+  status.textContent = 'Enregistrement de tes données…';
+  await persist();
+  while(saveInFlight) await new Promise(r=> setTimeout(r, 50));
+  status.textContent = 'Téléchargement de la nouvelle version…';
+  const out = await window.pywebview.api.install_update().catch(err=> ({ok:false, manual:true, error:String(err)}));
+  if(out && out.ok){
+    persistBlocked = true; // this window is about to close
+    status.textContent = 'Installée ! Redémarrage…';
+    return;
+  }
+  // failure: the current version is untouched, offer the manual way
+  prog.style.display = 'none';
+  btns.style.display = '';
+  document.getElementById('updateText').textContent = `${(out && out.error) || 'La mise à jour a échoué.'} Tu peux la télécharger depuis la page GitHub.`;
+  const go = document.getElementById('updateGoBtn');
+  go.textContent = 'Ouvrir la page';
+  go.onclick = ()=>{
+    window.pywebview.api.open_url((out && out.url) || res.url);
+    document.getElementById('updateOverlay').classList.remove('show');
+  };
+}
+
 function checkForUpdate(){
-  window.pywebview.api.check_update().then(res=>{
+  window.pywebview.api.check_update().then(async res=>{
     if(!res || !res.update_available) return;
+    await splashDone;
     if(localStorage.getItem('updateDismissed') === res.latest_version) return;
+    const auto = !!res.can_auto_update;
     document.getElementById('updateText').textContent =
-      `${res.release_name || res.latest_version} est disponible (tu utilises la ${res.current_version}).`;
+      `${res.release_name || res.latest_version} est disponible (tu utilises la ${res.current_version}).`
+      + (auto ? ' L\'app se met à jour toute seule et redémarre, tes données ne bougent pas.' : '');
+    document.getElementById('updateGoBtn').textContent = auto ? 'Mettre à jour maintenant' : 'Mettre à jour';
     document.getElementById('updateOverlay').classList.add('show');
-    document.getElementById('updateGoBtn').onclick = ()=>{
-      window.pywebview.api.open_url(res.url);
-      document.getElementById('updateOverlay').classList.remove('show');
+    document.getElementById('updateGoBtn').onclick = async ()=>{
+      if(!auto){
+        window.pywebview.api.open_url(res.url);
+        document.getElementById('updateOverlay').classList.remove('show');
+        return;
+      }
+      await installUpdate(res);
     };
     document.getElementById('updateLaterBtn').onclick = ()=>{
       localStorage.setItem('updateDismissed', res.latest_version);
