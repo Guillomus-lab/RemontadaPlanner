@@ -1,0 +1,3614 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Remontada Planner</title>
+<style>
+  :root{
+    --bg:#121018; --surface:#1a1724; --surface2:#221f30; --surface3:#2c2840; --border:#352f48;
+    --text:#f3f1fa; --text-dim:#a39fc0; --text-faint:#6b6690;
+    --accent:#8b5cf6; --accent2:#ec4899; --accent-soft:rgba(139,92,246,.18);
+    --done:#10d896; --warn:#ffb648; --danger:#ff5d7a; --radius:14px; --radius-sm:9px;
+    --hour-h:56px;
+    --font: "Segoe UI", Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  [data-theme="light"]{
+    --bg:#f7f5fd; --surface:#ffffff; --surface2:#f2eefc; --surface3:#e9e2fa; --border:#e2d9f7;
+    --text:#211c33; --text-dim:#6f6693; --text-faint:#b3a8d6;
+    --accent:#7c3aed; --accent2:#db2777; --accent-soft:rgba(124,58,237,.12);
+  }
+
+  /* --- Purchasable color themes: override --accent/--accent2 only, keep dark/light logic intact --- */
+  [data-color-theme="ocean"]{ --accent:#06b6d4; --accent2:#3b82f6; --accent-soft:rgba(6,182,212,.16); }
+  [data-color-theme="sunset"]{ --accent:#f97316; --accent2:#ec4899; --accent-soft:rgba(249,115,22,.16); }
+  [data-color-theme="forest"]{ --accent:#22c55e; --accent2:#0ea5e9; --accent-soft:rgba(34,197,94,.16); }
+  [data-color-theme="candy"]{ --accent:#f472b6; --accent2:#a78bfa; --accent-soft:rgba(244,114,182,.16); }
+  [data-color-theme="gold"]{ --accent:#eab308; --accent2:#f97316; --accent-soft:rgba(234,179,8,.16); }
+  [data-color-theme="mono"]{ --accent:#64748b; --accent2:#334155; --accent-soft:rgba(100,116,139,.16); }
+  [data-color-theme="neon"]{ --accent:#a3e635; --accent2:#22d3ee; --accent-soft:rgba(163,230,53,.16); }
+
+  /* --- Troll themes: deliberately chaotic/"buggy-looking" cosmetics, pure fun --- */
+  [data-color-theme="glitch"]{ --accent:#ff003c; --accent2:#00ff9d; --accent-soft:rgba(255,0,60,.18); }
+  [data-color-theme="glitch"] #app{animation:glitchJitter 2.4s steps(2) infinite;}
+  @keyframes glitchJitter{0%,88%,100%{transform:translate(0,0);filter:none;}
+    89%{transform:translate(-2px,1px);filter:hue-rotate(15deg);}
+    91%{transform:translate(2px,-1px);filter:hue-rotate(-20deg);}
+    93%{transform:translate(-1px,0);filter:none;}}
+  [data-color-theme="invert"]{ --accent:#111; --accent2:#333; --accent-soft:rgba(0,0,0,.12); }
+  [data-color-theme="invert"] #app{filter:invert(0.92) hue-rotate(180deg);}
+  [data-color-theme="clown"]{ --accent:#ff00ff; --accent2:#ffea00; --accent-soft:rgba(255,0,255,.2); }
+  [data-color-theme="clown"] #app{animation:clownHue 3s linear infinite;}
+  @keyframes clownHue{0%{filter:hue-rotate(0deg) saturate(1.6);}100%{filter:hue-rotate(360deg) saturate(1.6);}}
+  [data-color-theme="vhs"]{ --accent:#ff0080; --accent2:#00e5ff; --accent-soft:rgba(255,0,128,.18); }
+  [data-color-theme="vhs"] #app{position:relative;}
+  [data-color-theme="vhs"] #app::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;
+      background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0px,rgba(255,255,255,.05) 1px,transparent 1px,transparent 3px);
+      mix-blend-mode:overlay;animation:vhsRoll 6s linear infinite;}
+  @keyframes vhsRoll{0%{background-position-y:0;}100%{background-position-y:300px;}}
+  [data-color-theme="crt"]{ --accent:#39ff14; --accent2:#0d7a0d; --accent-soft:rgba(57,255,20,.16); }
+  [data-color-theme="crt"] #app{filter:grayscale(.3) brightness(.92) sepia(.15) hue-rotate(60deg);animation:crtFlicker 4s infinite;}
+  @keyframes crtFlicker{0%,96%,100%{opacity:1;}97%{opacity:.85;}98%{opacity:1;}}
+  [data-color-theme="blind"]{ --accent:#ff0000; --accent2:#008000; --accent-soft:rgba(255,0,0,.16); }
+  [data-color-theme="nightmare"]{ --accent:#8b0000; --accent2:#1a0000; --accent-soft:rgba(139,0,0,.2); }
+  [data-color-theme="nightmare"] header{animation:nmShake 5s infinite;}
+  @keyframes nmShake{0%,97%,100%{transform:translateX(0);}97.5%{transform:translateX(-1.5px);}98.5%{transform:translateX(1.5px);}}
+  [data-color-theme="comicsans"]{ --accent:#ff69b4; --accent2:#1e90ff; --accent-soft:rgba(255,105,180,.18); }
+  [data-color-theme="comicsans"] *{font-family:"Comic Sans MS","Comic Sans",cursive!important;}
+  [data-color-theme="matrix"]{ --accent:#00ff41; --accent2:#003b00; --accent-soft:rgba(0,255,65,.18); }
+  [data-color-theme="matrix"] *{font-family:"Consolas",monospace!important;}
+  [data-color-theme="matrix"] #app{background:#000;}
+  [data-color-theme="y2k"]{ --accent:#c0c0c0; --accent2:#000080; --accent-soft:rgba(192,192,192,.2); }
+
+  /* --- Bastinos: the ultimate legendary theme, rose/peach, extra polish --- */
+  [data-color-theme="bastinos"]{
+    --accent:#ff6fa5; --accent2:#ffb37c; --accent-soft:rgba(255,111,165,.2);
+    --bg:#1f1319; --surface:#2a1821; --surface2:#34202b; --surface3:#402735; --border:#52303f;
+  }
+  [data-theme="light"][data-color-theme="bastinos"]{
+    --bg:#fff3ee; --surface:#fffaf7; --surface2:#ffe9e0; --surface3:#ffd9c9; --border:#ffc3ac;
+  }
+  [data-color-theme="bastinos"] header{position:relative;overflow:hidden;}
+  [data-color-theme="bastinos"] header::before{content:"🍑";position:absolute;right:10px;top:50%;
+      transform:translateY(-50%);font-size:46px;opacity:.1;pointer-events:none;}
+  [data-color-theme="bastinos"] #levelPill{box-shadow:0 0 0 1px var(--accent), 0 0 18px -2px var(--accent2);
+      animation:bastinosGlow 2.6s ease-in-out infinite;}
+  @keyframes bastinosGlow{0%,100%{box-shadow:0 0 0 1px var(--accent), 0 0 10px -2px var(--accent2);}
+      50%{box-shadow:0 0 0 1px var(--accent2), 0 0 22px 0px var(--accent);}}
+  [data-color-theme="bastinos"] #levelPill::after{content:"👑";position:absolute;top:-9px;left:-6px;font-size:13px;
+      filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+  [data-color-theme="bastinos"] #openAddBtn, [data-color-theme="bastinos"] #profileSaveBtn,
+  [data-color-theme="bastinos"] #modalSave, [data-color-theme="bastinos"] #dayThemesBtn{
+      background:linear-gradient(120deg,var(--accent),var(--accent2),var(--accent));
+      background-size:220% 100%;animation:bastinosShimmer 3.2s linear infinite;}
+  @keyframes bastinosShimmer{0%{background-position:0% 0;}100%{background-position:220% 0;}}
+  #bastinosBg{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;display:none;}
+  #bastinosBg.show{display:block;}
+  .bastinosPeach{position:absolute;bottom:-40px;font-size:20px;opacity:.16;will-change:transform,opacity;
+      animation:peachFloat linear forwards;}
+  @keyframes peachFloat{0%{transform:translateY(0) rotate(0deg);opacity:0;}
+      10%{opacity:.18;} 90%{opacity:.14;}
+      100%{transform:translateY(-110vh) rotate(60deg);opacity:0;}}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);
+       height:100vh;overflow:hidden;user-select:none;-webkit-font-smoothing:antialiased;}
+  #app{display:flex;flex-direction:column;height:100vh;}
+
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 16px;border-bottom:1px solid var(--border);
+         background:var(--surface);flex-shrink:0;row-gap:8px;}
+  header h1{font-size:15.5px;font-weight:800;margin:0;flex-shrink:0;display:flex;align-items:center;gap:8px;
+             letter-spacing:-.01em;background:linear-gradient(135deg,var(--accent),var(--accent2));
+             -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+             white-space:nowrap;}
+  .navGroup{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);
+            border-radius:10px;padding:3px;flex-shrink:0;}
+  .navbtn{background:transparent;border:none;color:var(--text-dim);border-radius:7px;
+          width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;
+          transition:background .15s ease, color .15s ease;flex-shrink:0;}
+  .navbtn:hover{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transform:scale(1.06);}
+  #todayBtn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;
+            padding:0 12px;height:32px;cursor:pointer;font-size:12.5px;font-weight:600;transition:all .15s ease;
+            flex-shrink:0;white-space:nowrap;}
+  #todayBtn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+  #dateLabel{font-weight:700;font-size:14.5px;text-transform:capitalize;letter-spacing:-.01em;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex-shrink:1;}
+  .spacer{flex:1 0 8px;min-width:8px;}
+  #progressWrap{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text-dim);font-weight:600;flex-shrink:0;}
+  #progressBarOuter{width:110px;height:7px;background:var(--surface3);border-radius:4px;overflow:hidden;}
+  #progressBarInner{height:100%;background:linear-gradient(90deg,var(--done),#5eead4);width:0%;transition:width .3s ease;border-radius:4px;}
+  #dayBadge{font-size:17px;transition:transform .2s ease;}
+  #dayBadge.pulse{animation:badgePulse .5s ease;}
+  @keyframes badgePulse{0%{transform:scale(1);}40%{transform:scale(1.35) rotate(-6deg);}100%{transform:scale(1);}}
+  #streakWrap{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--warn);font-weight:700;
+              background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;flex-shrink:0;}
+  #streakWrap.zero{color:var(--text-faint);}
+  #streakWrap.hot{animation:streakHot 1.2s ease-in-out infinite;}
+  @keyframes streakHot{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+
+  /* --- Level pill --- */
+  #levelPill{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);
+      border-radius:30px;padding:4px 12px 4px 4px;cursor:pointer;transition:all .2s ease;position:relative;flex-shrink:0;}
+  #levelPill:hover{border-color:var(--accent);transform:translateY(-1px);
+      box-shadow:0 6px 16px -4px var(--accent-soft);}
+  #levelRing{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+      position:relative;background:conic-gradient(var(--accent) var(--ringPct, 0%), var(--surface3) 0);}
+  #levelRing::before{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--surface);}
+  #levelNum, #levelAvatar{position:relative;font-size:13px;font-weight:900;color:var(--accent);z-index:1;}
+  #levelTextWrap{display:flex;flex-direction:column;line-height:1.1;}
+  #levelTitle{font-size:11px;font-weight:800;color:var(--text);}
+  #levelXp{font-size:9.5px;color:var(--text-faint);font-weight:600;}
+  #coinWrap{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--warn);
+      background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;flex-shrink:0;
+      transition:transform .15s ease;}
+  #coinWrap.bump{animation:coinBump .4s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes coinBump{0%{transform:scale(1);}40%{transform:scale(1.25) rotate(-6deg);}100%{transform:scale(1);}}
+
+  /* --- Profile modal (succès / boutique / pseudo) --- */
+  #profileOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:400;
+      display:none;align-items:center;justify-content:center;}
+  #profileOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #profileCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:0;
+      width:560px;max-height:84vh;box-shadow:0 24px 70px rgba(0,0,0,.55);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);
+      display:flex;flex-direction:column;overflow:hidden;}
+  #profileHeader{display:flex;align-items:center;gap:14px;padding:20px 22px;
+      background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface)), var(--surface));
+      border-bottom:1px solid var(--border);flex-shrink:0;}
+  #profileAvatarBig{font-size:40px;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      background:var(--surface2);border:2px solid var(--accent);flex-shrink:0;}
+  #profileNameWrap{flex:1;min-width:0;}
+  #profileName{font-size:17px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #profileSub{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  #profileClose{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;
+      width:30px;height:30px;cursor:pointer;flex-shrink:0;font-size:14px;}
+  #profileClose:hover{background:var(--surface3);}
+  #profileTabs{display:flex;gap:2px;padding:10px 16px 0;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .profileTabBtn{background:transparent;border:none;color:var(--text-dim);font-size:12.5px;font-weight:700;
+      padding:9px 14px;cursor:pointer;border-radius:8px 8px 0 0;transition:all .15s ease;}
+  .profileTabBtn:hover{color:var(--text);background:var(--surface2);}
+  .profileTabBtn.active{color:var(--accent);background:var(--surface2);box-shadow:inset 0 -2px 0 var(--accent);}
+  #profileBody{padding:16px 22px 22px;overflow-y:auto;flex:1;}
+  .profileTabPanel{display:none;}
+  .profileTabPanel.active{display:block;}
+
+  .achItem{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;margin-bottom:5px;
+      background:var(--surface2);opacity:.45;transition:all .2s ease;}
+  .achItem.unlocked{opacity:1;background:var(--accent-soft);}
+  .achItem.secret:not(.unlocked){opacity:.3;}
+  .achIcon{font-size:18px;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+      background:var(--surface3);flex-shrink:0;}
+  .achItem.unlocked .achIcon{background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:0 4px 12px var(--accent-soft);}
+  .achInfo .achName{font-size:12px;font-weight:700;}
+  .achInfo .achDesc{font-size:10.5px;color:var(--text-faint);margin-top:1px;}
+  #achProgressLabel{font-size:11px;color:var(--text-faint);font-weight:700;margin-bottom:10px;}
+
+  .shopSectionTitle{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);
+      font-weight:700;margin:16px 0 8px;}
+  .shopSectionTitle:first-child{margin-top:0;}
+  .shopGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .shopItem{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px;
+      text-align:center;cursor:pointer;transition:all .15s ease;position:relative;}
+  .shopItem:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .shopItem.active{border-color:var(--done);background:color-mix(in srgb, var(--done) 12%, var(--surface2));}
+  .shopItem.locked{opacity:.85;}
+  .shopItemPreview{font-size:24px;margin-bottom:4px;}
+  .shopThemeSwatch{width:100%;height:20px;border-radius:6px;margin-bottom:6px;}
+  .shopItemName{font-size:10.5px;font-weight:700;color:var(--text);line-height:1.2;}
+  .shopItemPrice{font-size:10px;font-weight:700;color:var(--warn);margin-top:4px;}
+  .shopItemPrice.owned{color:var(--done);}
+  .shopItemCheck{position:absolute;top:4px;right:6px;font-size:11px;color:var(--done);}
+  .shopBadge{position:absolute;top:4px;left:6px;font-size:7.5px;font-weight:900;letter-spacing:.04em;
+      padding:2px 5px;border-radius:5px;z-index:1;}
+  .shopBadge.troll{background:rgba(236,72,153,.22);color:#f472b6;}
+  .shopBadge.legendary{background:linear-gradient(135deg,#ff6fa5,#ffb37c);color:#2a1821;
+      box-shadow:0 0 10px rgba(255,111,165,.5);}
+  .shopItem.shopLegendary{border-color:#ff6fa5;background:linear-gradient(160deg,rgba(255,111,165,.12),var(--surface2));}
+  .shopItem.shopLegendary:hover{border-color:#ffb37c;box-shadow:0 0 18px -4px rgba(255,111,165,.6);}
+
+  #profileNameInput{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);
+      border-radius:10px;padding:11px 14px;font-size:14px;margin-bottom:14px;transition:border-color .15s ease;}
+  #profileNameInput:focus{outline:none;border-color:var(--accent);}
+  .avatarGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:10px;}
+  .avatarOption{font-size:22px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+      background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s ease;}
+  .avatarOption:hover{border-color:var(--accent);transform:scale(1.08);}
+  .avatarOption.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .avatarOption.locked{opacity:.3;cursor:not-allowed;filter:grayscale(1);}
+  #profileSaveBtn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+      border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px;
+      transition:filter .15s ease, transform .1s ease;}
+  #profileSaveBtn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+
+  .xpFloat{position:absolute;font-size:13px;font-weight:900;color:var(--done);pointer-events:none;z-index:50;
+      animation:xpFloatUp 1.1s cubic-bezier(.22,1,.36,1) forwards;text-shadow:0 2px 8px rgba(0,0,0,.4);}
+  @keyframes xpFloatUp{
+    0%{opacity:0;transform:translateY(0) scale(.7);}
+    15%{opacity:1;transform:translateY(-6px) scale(1.15);}
+    80%{opacity:1;transform:translateY(-34px) scale(1);}
+    100%{opacity:0;transform:translateY(-44px) scale(.9);}
+  }
+
+  #levelUpOverlay{position:fixed;inset:0;z-index:1001;display:none;align-items:center;justify-content:center;
+      background:radial-gradient(circle at center, rgba(139,92,246,.25), rgba(10,8,16,.75));pointer-events:none;}
+  #levelUpOverlay.show{display:flex;animation:overlayIn .2s ease;}
+  #levelUpCard{text-align:center;animation:levelUpPop .55s cubic-bezier(.22,1.5,.36,1);}
+  @keyframes levelUpPop{
+    0%{opacity:0;transform:scale(.4) rotate(-8deg);}
+    55%{opacity:1;transform:scale(1.15) rotate(3deg);}
+    100%{opacity:1;transform:scale(1) rotate(0);}
+  }
+  #levelUpCard .lvRay{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--accent2);margin-bottom:4px;}
+  #levelUpCard .lvNum{font-size:64px;font-weight:900;line-height:1;
+      background:linear-gradient(135deg,var(--accent),var(--accent2),#fbbf24);
+      -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+      filter:drop-shadow(0 6px 20px rgba(139,92,246,.6));}
+  #levelUpCard .lvTitle{font-size:18px;font-weight:800;color:#fff;margin-top:6px;}
+
+  /* --- Toast rewards (motivation, crit, loot) --- */
+  #toastStack{position:fixed;bottom:24px;right:24px;z-index:900;display:flex;flex-direction:column-reverse;gap:10px;
+      pointer-events:none;align-items:flex-end;}
+  .toast{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;
+      max-width:300px;box-shadow:0 14px 36px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;
+      animation:toastIn .35s cubic-bezier(.22,1,.36,1), toastOut .35s ease 5.6s forwards;}
+  .toast.crit{border-color:#fbbf24;background:linear-gradient(135deg, color-mix(in srgb, #fbbf24 16%, var(--surface)), var(--surface));
+      box-shadow:0 14px 36px rgba(251,191,36,.35);}
+  .toast.loot{border-color:var(--accent2);background:linear-gradient(135deg, color-mix(in srgb, var(--accent2) 14%, var(--surface)), var(--surface));}
+  @keyframes toastIn{from{opacity:0;transform:translateX(40px) scale(.9);}to{opacity:1;transform:translateX(0) scale(1);}}
+  @keyframes toastOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(40px);}}
+  .toast .toastIcon{font-size:22px;flex-shrink:0;}
+  .toast .toastText{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3;}
+  .toast .toastSub{font-size:10.5px;color:var(--text-faint);font-weight:600;margin-top:1px;}
+
+  #dayRecapOverlay{position:fixed;inset:0;z-index:1002;display:none;align-items:center;justify-content:center;
+      background:rgba(10,8,16,.7);backdrop-filter:blur(3px);}
+  #dayRecapOverlay.show{display:flex;animation:overlayIn .2s ease;}
+  #dayRecapCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;
+      width:360px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:modalPop .3s cubic-bezier(.34,1.56,.64,1);}
+  #dayRecapCard .recapEmoji{font-size:42px;margin-bottom:10px;}
+  #dayRecapCard .recapTitle{font-size:18px;font-weight:800;margin-bottom:6px;}
+  #dayRecapCard .recapMsg{font-size:13px;color:var(--text-dim);line-height:1.5;margin-bottom:18px;}
+  #dayRecapClose{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+      border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer;}
+  #dayRecapClose:hover{filter:brightness(1.1);}
+  .toolGroup{display:flex;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border);
+             border-radius:10px;padding:3px;flex-shrink:0;}
+  .toolGroup .navbtn{width:30px;height:30px;}
+  #themeToggle{background:var(--surface2);border:1px solid var(--border);border-radius:9px;width:32px;height:32px;
+               cursor:pointer;color:var(--text);font-size:14px;transition:transform .15s ease;flex-shrink:0;}
+  #themeToggle:hover{transform:scale(1.08);}
+  #calBtn{position:relative;}
+
+  #miniCal{position:absolute;top:54px;right:150px;background:var(--surface);border:1px solid var(--border);
+            border-radius:var(--radius);padding:10px;z-index:50;box-shadow:0 12px 32px rgba(0,0,0,.45);display:none;}
+  #miniCal.show{display:block;}
+  #miniCal input[type=date]{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:7px;font-size:13px;}
+
+  main{flex:1;display:flex;overflow:hidden;}
+  #sidebar{width:198px;border-right:1px solid var(--border);background:var(--surface);padding:18px 12px;flex-shrink:0;overflow-y:auto;}
+  #sidebar h2{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin:0 6px 10px;font-weight:700;}
+  .catRow{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;font-size:13px;cursor:pointer;
+          transition:background .15s ease;margin-bottom:2px;font-weight:500;}
+  .catRow:hover{background:var(--surface2);}
+  .catRow.active{background:var(--accent-soft);color:var(--accent);font-weight:700;}
+  .catDot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  #templateSection{margin-top:24px;}
+  .tplBtn{display:block;width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);
+          color:var(--text);border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:6px;cursor:pointer;
+          font-weight:500;transition:border-color .15s ease, transform .1s ease;}
+  .tplBtn:hover{border-color:var(--accent);transform:translateX(2px);}
+  #saveTplBtn, #copyYesterdayBtn, #dayThemesBtn, #clearDayBtn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+          border:none;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;
+          padding:9px;font-size:12px;cursor:pointer;margin-top:4px;font-weight:600;transition:filter .15s ease, transform .1s ease;}
+  #saveTplBtn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .tplBtn{display:flex;align-items:center;gap:6px;}
+  .tplBtn .tplName{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tplBtn .tplDel{flex-shrink:0;width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+          font-size:10px;color:var(--text-faint);opacity:0;transition:all .15s ease;}
+  .tplBtn:hover .tplDel{opacity:1;}
+  .tplBtn .tplDel:hover{background:var(--danger);color:#fff;}
+  #copyYesterdayBtn{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  #copyYesterdayBtn:hover{border-color:var(--accent);color:var(--accent);}
+  #dayThemesBtn{background:linear-gradient(120deg,#f59e0b,#ec4899 45%,#8b5cf6 75%,#06b6d4);
+          box-shadow:0 4px 14px color-mix(in srgb, var(--accent2) 35%, transparent);margin-top:14px;}
+  #dayThemesBtn:hover{filter:brightness(1.12) saturate(1.1);transform:translateY(-1px) scale(1.01);}
+  #clearDayBtn{background:var(--surface2);color:var(--danger);border:1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+          margin-top:16px;}
+  #clearDayBtn:hover{background:var(--danger);color:#fff;border-color:var(--danger);}
+  #sidebarDivider{height:1px;background:var(--border);margin:16px 0 4px;}
+
+  #timelineWrap{flex:1;overflow-y:auto;position:relative;background:var(--bg);}
+  #quickAdd{display:flex;gap:8px;padding:12px 22px;border-bottom:1px solid var(--border);background:var(--surface);
+            align-items:center;flex-shrink:0;}
+  #openAddBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;
+              padding:10px 20px;font-size:13px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px;
+              transition:filter .15s ease, transform .12s ease;box-shadow:0 4px 14px rgba(139,92,246,.3);}
+  #openAddBtn:hover{filter:brightness(1.1);transform:translateY(-1px) scale(1.01);}
+  #openAddBtn:active{transform:scale(.97);}
+  #quickAdd .hint{font-size:11px;color:var(--text-faint);white-space:nowrap;}
+
+  #grid{position:relative;margin:4px 22px 40px 0;}
+  .hourRow{display:flex;height:var(--hour-h);border-top:1px solid var(--border);}
+  .hourLabel{width:58px;flex-shrink:0;font-size:11px;color:var(--text-faint);padding-top:4px;text-align:right;padding-right:12px;font-weight:600;}
+  .hourTrack{flex:1;position:relative;transition:background .1s ease;}
+  .hourTrack:hover{background:rgba(124,127,244,.04);}
+  .nowLine{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--danger));z-index:8;pointer-events:none;
+           box-shadow:0 0 8px var(--accent2);}
+  .nowLine::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;
+           background:var(--accent2);box-shadow:0 0 10px var(--accent2);animation:nowPulse 1.6s ease-in-out infinite;}
+  @keyframes nowPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.4);opacity:.6;}}
+
+  .freeGap{position:absolute;left:0;right:0;background:repeating-linear-gradient(135deg, rgba(255,255,255,.025) 0 7px, transparent 7px 14px);
+           border-radius:6px;font-size:10px;color:var(--text-faint);display:flex;align-items:center;justify-content:center;
+           pointer-events:none;font-weight:600;letter-spacing:.02em;}
+
+  .task{position:absolute;left:5px;right:5px;border-radius:12px;
+        background:color-mix(in srgb, var(--catColor, var(--accent)) 14%, var(--surface2));
+        border:1px solid color-mix(in srgb, var(--catColor, var(--accent)) 30%, var(--border));
+        border-left:4px solid var(--catColor, var(--accent));
+        box-shadow:0 2px 8px rgba(0,0,0,.3);padding:5px 10px 6px;
+        display:flex;flex-direction:column;justify-content:center;
+        overflow:hidden;cursor:grab;z-index:5;
+        transition:box-shadow .2s ease, transform .15s cubic-bezier(.34,1.56,.64,1), border-color .2s ease, background .2s ease;
+        animation:taskIn .32s cubic-bezier(.22,1,.36,1) backwards;}
+  @keyframes taskIn{from{opacity:0;transform:translateY(-6px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .task:hover{box-shadow:0 10px 28px -6px color-mix(in srgb, var(--catColor, var(--accent)) 45%, transparent), 0 4px 10px rgba(0,0,0,.3);
+              transform:translateY(-2px) scale(1.012);z-index:6;
+              border-color:var(--catColor, var(--accent));
+              background:color-mix(in srgb, var(--catColor, var(--accent)) 22%, var(--surface2));}
+  .task:active{cursor:grabbing;transform:scale(1.015);}
+  .task.conflict{outline:2px solid var(--danger);outline-offset:-2px;animation:taskIn .32s ease backwards, conflictShake .4s ease;}
+  @keyframes conflictShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-2px);}75%{transform:translateX(2px);}}
+  .task.done{opacity:.52;filter:saturate(.55);}
+  .task .title{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px;
+               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s ease;letter-spacing:-.005em;}
+  .task.done .title{text-decoration:line-through;}
+  .task .time{font-size:10px;color:var(--text-dim);margin-top:3px;white-space:nowrap;font-weight:600;
+              display:inline-flex;align-items:center;gap:4px;}
+  .task .time::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--catColor, var(--accent));
+              display:inline-block;flex-shrink:0;}
+  .task.compact .time{display:none;}
+  .task.compact{display:flex;align-items:center;padding:0 8px;gap:0;}
+  .task.compact .title{font-size:11px;margin:0;gap:5px;line-height:1;}
+  .task.compact input[type=checkbox]{width:11px;height:11px;border-radius:3px;border-width:1.5px;}
+  .task input[type=checkbox]{cursor:pointer;flex-shrink:0;appearance:none;width:16px;height:16px;border-radius:6px;
+      border:2px solid color-mix(in srgb, var(--catColor, var(--text-faint)) 55%, var(--text-faint));
+      background:transparent;position:relative;transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+  .task input[type=checkbox]:hover{border-color:var(--catColor, var(--accent));transform:scale(1.15);
+      box-shadow:0 0 0 4px color-mix(in srgb, var(--catColor, var(--accent)) 20%, transparent);}
+  .task input[type=checkbox]:checked{background:linear-gradient(135deg,var(--done),#5eead4);border-color:var(--done);}
+  .task input[type=checkbox]:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;
+      justify-content:center;color:#06281e;font-size:11px;font-weight:900;}
+  .task input[type=checkbox].justChecked{animation:checkPop .4s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes checkPop{0%{transform:scale(1);}35%{transform:scale(1.6) rotate(-8deg);}65%{transform:scale(.9) rotate(4deg);}100%{transform:scale(1) rotate(0);}}
+  .task .resizeHandle{position:absolute;bottom:0;left:0;right:0;height:9px;cursor:ns-resize;}
+  .task .resizeHandle::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+      width:28px;height:3px;border-radius:2px;background:var(--catColor, var(--text-faint));opacity:0;transition:opacity .15s ease;}
+  .task:hover .resizeHandle::after{opacity:.7;}
+  .task .delBtn{position:absolute;top:5px;right:7px;font-size:12px;color:var(--text-faint);cursor:pointer;display:none;
+                transition:color .15s ease, transform .15s ease;width:18px;height:18px;border-radius:5px;
+                align-items:center;justify-content:center;background:rgba(0,0,0,.15);}
+  .task .delBtn:hover{color:#fff;background:var(--danger);transform:scale(1.15) rotate(90deg);}
+  .task:hover .delBtn{display:flex;}
+
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--text-faint);}
+
+  #celebration{position:fixed;inset:0;pointer-events:none;z-index:999;display:none;}
+  #celebration.show{display:block;}
+  .confetti{position:absolute;top:-20px;width:8px;height:14px;opacity:.9;
+             animation:confettiFall linear forwards;border-radius:2px;}
+  @keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg);opacity:1;}
+    100%{transform:translateY(110vh) rotate(540deg);opacity:0;}
+  }
+  #celebrateMsg{position:fixed;top:18%;left:50%;transform:translateX(-50%) scale(.85);background:var(--surface);
+      border:1px solid var(--border);border-radius:14px;padding:18px 28px;box-shadow:0 20px 50px rgba(0,0,0,.4);
+      font-size:16px;font-weight:700;color:var(--text);display:none;z-index:1000;text-align:center;
+      animation:celebrateIn .4s cubic-bezier(.34,1.56,.64,1) forwards;}
+  #celebrateMsg.show{display:block;}
+  @keyframes celebrateIn{from{opacity:0;transform:translateX(-50%) scale(.7);}to{opacity:1;transform:translateX(-50%) scale(1);}}
+
+  /* --- Add task modal --- */
+  #modalOverlay{position:fixed;inset:0;background:rgba(10,8,16,.6);backdrop-filter:blur(3px);z-index:200;
+      display:none;align-items:center;justify-content:center;}
+  #modalOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  @keyframes overlayIn{from{opacity:0;}to{opacity:1;}}
+  #taskModal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;
+      width:380px;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes modalPop{from{opacity:0;transform:scale(.88) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  #taskModal h3{margin:0 0 18px;font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .modalField{margin-bottom:14px;}
+  .modalField label{display:block;font-size:11px;font-weight:700;color:var(--text-faint);text-transform:uppercase;
+      letter-spacing:.06em;margin-bottom:6px;}
+  #modalTitle{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);
+      border-radius:10px;padding:11px 14px;font-size:14px;transition:border-color .15s ease;}
+  #modalTitle:focus{outline:none;border-color:var(--accent);}
+  .modalRow{display:flex;gap:10px;}
+  .modalRow .modalField{flex:1;}
+  #modalStart, #modalDurSelect{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);
+      border-radius:10px;padding:10px 12px;font-size:13px;transition:border-color .15s ease;}
+  #modalStart:focus, #modalDurSelect:focus{outline:none;border-color:var(--accent);}
+  .catPicker{display:flex;flex-wrap:wrap;gap:8px;}
+  .catChip{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:20px;border:1.5px solid var(--border);
+      background:var(--surface2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s ease;}
+  .catChip:hover{transform:translateY(-1px);}
+  .catChip.selected{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+  .catChip .catDot{width:8px;height:8px;}
+  .parallelLabel{display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:12px;
+      color:var(--text-dim);line-height:1.4;padding:9px 11px;border-radius:10px;background:var(--surface2);
+      border:1px solid var(--border);transition:all .15s ease;}
+  .parallelLabel:hover{border-color:var(--accent);}
+  .modalField label.parallelLabel{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:0;}
+  .parallelLabel input[type=checkbox]{margin-top:1px;flex-shrink:0;cursor:pointer;width:15px;height:15px;
+      accent-color:var(--accent);}
+  .modalActions{display:flex;gap:10px;margin-top:20px;}
+  #modalCancel{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;
+      padding:11px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s ease;}
+  #modalCancel:hover{background:var(--surface3);}
+  #modalSave{flex:1.4;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+      border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;
+      transition:filter .15s ease, transform .1s ease;box-shadow:0 6px 16px rgba(139,92,246,.35);}
+  #modalSave:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  #modalSave:active{transform:scale(.97);}
+  #modalDelete{display:none;flex:none;width:44px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+      cursor:pointer;font-size:14px;transition:all .15s ease;}
+  #modalDelete.show{display:block;}
+  #modalDelete:hover{background:var(--danger);border-color:var(--danger);}
+
+  /* --- Day themes (journées types) --- */
+  #dayThemesOverlay{position:fixed;inset:0;background:rgba(10,8,16,.6);backdrop-filter:blur(3px);z-index:210;
+      display:none;align-items:center;justify-content:center;}
+  #dayThemesOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #dayThemesCard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;
+      width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5);
+      animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);}
+  #dayThemesCard h3{margin:0 0 4px;font-size:17px;font-weight:800;}
+  #dayThemesCard .dtSub{font-size:11.5px;color:var(--text-faint);margin-bottom:16px;}
+  .dayThemeItem{display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);
+      border-radius:12px;padding:12px 14px;margin-bottom:10px;transition:border-color .15s ease, transform .1s ease;}
+  .dayThemeItem:hover{border-color:var(--accent);transform:translateX(2px);}
+  .dayThemeItem.dayThemeSpecial{background:linear-gradient(120deg, color-mix(in srgb, var(--accent2) 10%, var(--surface2)), color-mix(in srgb, var(--accent) 10%, var(--surface2)));
+      border-style:dashed;}
+  .dayThemeItem.dayThemeSpecial:hover{border-color:var(--accent2);}
+  .dayThemeItem .dtIcon{font-size:24px;flex-shrink:0;}
+  .dayThemeItem .dtInfo{flex:1;}
+  .dayThemeItem .dtName{font-size:13px;font-weight:700;color:var(--text);}
+  .dayThemeItem .dtDesc{font-size:11px;color:var(--text-dim);margin-top:1px;line-height:1.3;}
+  .dayThemeItem .dtApply{flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;
+      color:#fff;border-radius:8px;padding:8px 12px;font-size:11.5px;font-weight:700;cursor:pointer;
+      transition:filter .15s ease, transform .1s ease;}
+  .dayThemeItem .dtApply:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .dayThemeItem{flex-wrap:wrap;}
+  .dtRecipeBtn{flex-shrink:0;background:var(--surface3);border:1px solid var(--border);color:var(--text-dim);
+      border-radius:8px;width:34px;height:34px;font-size:14px;cursor:pointer;transition:all .15s ease;}
+  .dtRecipeBtn:hover{border-color:var(--accent);color:var(--accent);}
+  .dtRecipeBtn.open{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .dtRecipePanel{display:none;width:100%;margin-top:4px;padding:12px 14px;border-radius:10px;
+      background:var(--surface3);border:1px dashed var(--border);}
+  .dtRecipePanel.show{display:block;animation:overlayIn .15s ease;}
+  .dtRecipeName{font-size:12.5px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .dtRecipeTime{font-size:10.5px;color:var(--text-faint);font-weight:700;margin-left:auto;}
+  .dtRecipeIngr{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;}
+  .dtRecipeIngr li{font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:6px;}
+  .dtRecipeIngr li::before{content:"•";color:var(--accent);font-weight:900;}
+  #dayThemesClose{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);
+      border-radius:10px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;}
+  #dayThemesClose:hover{background:var(--surface3);}
+
+  /* --- Custom confirm/alert/prompt modal (replaces native popups) --- */
+  #confirmOverlay{position:fixed;inset:0;background:rgba(10,8,16,.65);backdrop-filter:blur(4px);z-index:300;
+      display:none;align-items:center;justify-content:center;}
+  #confirmOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #confirmCard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;
+      width:360px;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);
+      text-align:center;}
+  #confirmIcon{font-size:34px;margin-bottom:10px;}
+  #confirmTitle{font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.35;}
+  #confirmMsg{font-size:12.5px;color:var(--text-dim);line-height:1.5;margin-bottom:18px;}
+  #confirmInput{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);
+      border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:18px;text-align:center;
+      transition:border-color .15s ease;display:none;}
+  #confirmInput:focus{outline:none;border-color:var(--accent);}
+  #confirmInput.show{display:block;}
+  .confirmActions{display:flex;gap:10px;}
+  #confirmCancel{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;
+      padding:11px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s ease;}
+  #confirmCancel:hover{background:var(--surface3);}
+  #confirmOk{flex:1;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+      border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;
+      transition:filter .15s ease, transform .1s ease;}
+  #confirmOk:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  #confirmOk:active{transform:scale(.97);}
+  #confirmOk.danger{background:linear-gradient(135deg,var(--danger),#ff8a65);}
+  #confirmCard.alertOnly .confirmActions{display:block;}
+
+  /* ===== Views: jour / semaine / mois ===== */
+  .viewSwitch{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px;flex-shrink:0;}
+  .viewSwitch button{background:transparent;border:none;color:var(--text-dim);font-size:12px;font-weight:700;padding:5px 11px;
+      border-radius:7px;cursor:pointer;transition:all .15s ease;}
+  .viewSwitch button:hover{color:var(--text);}
+  body.view-week #dateLabel, body.view-month #dateLabel{text-transform:none;}
+  body.view-month #dateLabel::first-letter{text-transform:uppercase;}
+  .viewSwitch button.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:none;
+      box-shadow:0 3px 10px color-mix(in srgb, var(--accent) 35%, transparent);}
+  #planView{flex:1;overflow:auto;display:none;padding:16px 20px 30px;background:var(--bg);}
+  body.view-week #planView, body.view-month #planView{display:block;}
+  body.view-week #timelineWrap, body.view-month #timelineWrap{display:none;}
+  body.view-week .dayOnly, body.view-month .dayOnly{display:none !important;}
+  body.view-day .periodOnly{display:none !important;}
+  #weekFillBtn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:8px;
+      padding:9px;font-size:12px;cursor:pointer;margin-top:4px;font-weight:600;}
+  #weekFillBtn:hover{filter:brightness(1.1);}
+  #questsBtn{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;
+      padding:9px;font-size:12px;cursor:pointer;margin-top:14px;font-weight:600;transition:all .15s ease;}
+  #questsBtn:hover{border-color:var(--warn);color:var(--warn);transform:translateY(-1px);}
+  #questPill{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;
+      background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;flex-shrink:0;transition:all .15s ease;}
+  #questPill:hover{border-color:var(--accent);transform:translateY(-1px);}
+  #questPill.complete{border-color:var(--done);color:var(--done);}
+
+  /* week */
+  .wkQuests{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+  .wkQuest{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer;
+      display:flex;align-items:center;gap:10px;transition:all .15s ease;}
+  .wkQuest:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .wkQuest.done{border-color:color-mix(in srgb, var(--done) 55%, var(--border));background:color-mix(in srgb, var(--done) 8%, var(--surface));}
+  .wkQuest .qIcon{font-size:20px;flex-shrink:0;}
+  .wkQuest .qInfo{flex:1;min-width:0;}
+  .wkQuest .qName{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .qBar{height:6px;background:var(--surface3);border-radius:4px;overflow:hidden;margin-top:5px;}
+  .qBar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .3s ease;}
+  .done .qBar>div, .qBar.full>div{background:linear-gradient(90deg,var(--done),#5eead4);}
+  .qCount{font-size:10.5px;color:var(--text-faint);font-weight:700;margin-top:3px;}
+  .wkGrid{display:grid;grid-template-columns:repeat(7,minmax(112px,1fr));gap:10px;}
+  .wkCol{background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;
+      min-height:380px;overflow:hidden;}
+  .wkCol.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent), 0 8px 24px -10px var(--accent);}
+  .wkCol.past{opacity:.8;}
+  .wkHead{padding:10px 10px 8px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s ease;}
+  .wkHead:hover{background:var(--surface2);}
+  .wkHeadTop{display:flex;align-items:baseline;justify-content:space-between;gap:6px;}
+  .wkDow{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);font-weight:800;}
+  .wkNum{font-size:19px;font-weight:900;}
+  .wkCol.today .wkNum{color:var(--accent);}
+  .wkPct{font-size:10.5px;color:var(--text-dim);font-weight:700;}
+  .wkHeadRow{display:flex;align-items:center;justify-content:space-between;gap:4px;}
+  .wkDel{background:transparent;border:none;color:var(--text-faint);width:20px;height:20px;border-radius:6px;
+      cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      opacity:0;transition:all .15s ease;}
+  .wkHead:hover .wkDel{opacity:1;}
+  .wkDel:hover{background:var(--danger);color:#fff;transform:scale(1.08);}
+  .wkTasks{flex:1;padding:8px;display:flex;flex-direction:column;gap:5px;overflow-y:auto;}
+  .wkTask{display:flex;align-items:flex-start;gap:6px;padding:6px 7px;border-radius:8px;cursor:pointer;
+      background:color-mix(in srgb, var(--catColor) 13%, var(--surface2));border-left:3px solid var(--catColor);
+      transition:background .15s ease, transform .1s ease;}
+  .wkTask:hover{background:color-mix(in srgb, var(--catColor) 22%, var(--surface2));transform:translateX(1px);}
+  .wkTask.done{opacity:.5;}
+  .wkTask.done .wkTitle{text-decoration:line-through;}
+  .wkTask input[type=checkbox]{appearance:none;width:14px;height:14px;border-radius:5px;flex-shrink:0;cursor:pointer;margin-top:1px;
+      border:2px solid color-mix(in srgb, var(--catColor) 55%, var(--text-faint));position:relative;transition:all .2s ease;}
+  .wkTask input[type=checkbox]:checked{background:linear-gradient(135deg,var(--done),#5eead4);border-color:var(--done);}
+  .wkTask input[type=checkbox]:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      color:#06281e;font-size:9px;font-weight:900;}
+  .wkTask input[type=checkbox].justChecked{animation:checkPop .4s cubic-bezier(.34,1.56,.64,1);}
+  .wkTxt{min-width:0;flex:1;}
+  .wkTime{font-size:9.5px;color:var(--text-dim);font-weight:700;display:block;}
+  .wkTitle{font-size:11.5px;font-weight:700;line-height:1.25;word-break:break-word;}
+  .wkAdd{margin:0 8px 8px;background:transparent;border:1px dashed var(--border);color:var(--text-faint);border-radius:8px;
+      padding:6px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s ease;}
+  .wkAdd:hover{border-color:var(--accent);color:var(--accent);}
+  .wkEmpty{font-size:11px;color:var(--text-faint);text-align:center;padding:14px 4px;}
+
+  /* month */
+  .moDow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:6px;}
+  .moDow div{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);font-weight:800;text-align:center;}
+  .moGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+  .moCell{background:var(--surface);border:1px solid var(--border);border-radius:12px;min-height:86px;padding:8px;cursor:pointer;
+      display:flex;flex-direction:column;gap:5px;transition:all .15s ease;position:relative;}
+  .moCell:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .moCell.out{opacity:.35;}
+  .moCell.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+  .moCell.perfect{background:color-mix(in srgb, var(--done) 9%, var(--surface));}
+  .moNum{font-size:13px;font-weight:800;display:flex;justify-content:space-between;align-items:center;}
+  .moDots{display:flex;flex-wrap:wrap;gap:3px;}
+  .moDots span{width:7px;height:7px;border-radius:50%;}
+  .moInfo{font-size:10px;color:var(--text-dim);font-weight:700;margin-top:auto;}
+
+  /* shared form bits */
+  .labelHint{font-size:10.5px;color:var(--text-faint);font-weight:500;text-transform:none;letter-spacing:0;}
+  .repeatPresets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .repeatPresets button{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:20px;
+      padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s ease;}
+  .repeatPresets button:hover, .repeatPresets button.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+  .dowPicker{display:flex;gap:5px;}
+  .dowPicker button{flex:1;aspect-ratio:1;max-width:38px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border);
+      color:var(--text-dim);font-size:12px;font-weight:800;cursor:pointer;transition:all .15s ease;}
+  .dowPicker button:hover{border-color:var(--accent);}
+  .dowPicker button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;}
+  .repeatExtra{display:none;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--text-dim);}
+  .repeatExtra.show{display:flex;}
+  .repeatExtra input, .fieldInput, .fieldSelect, #modalDate{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+      border-radius:10px;padding:9px 11px;font-size:13px;}
+  .fieldInput, .fieldSelect, #modalDate{width:100%;}
+  .fieldInput:focus, .fieldSelect:focus, #modalDate:focus{outline:none;border-color:var(--accent);}
+  .inlineTime, .inlineSelect{background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:2px 5px;font-size:12px;}
+  #taskModal{max-height:92vh;overflow-y:auto;width:440px;}
+  #repeatScopeWrap{display:none;}
+  #repeatScopeWrap.show{display:flex;}
+  .btnPrimary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;
+      padding:11px;font-size:13px;font-weight:700;cursor:pointer;flex:1.4;transition:filter .15s ease, transform .1s ease;}
+  .btnPrimary:hover{filter:brightness(1.1);transform:translateY(-1px);}
+  .btnSecondary{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;
+      padding:11px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btnSecondary:hover{background:var(--surface3);}
+  .btnSmall{flex:none;padding:6px 12px;font-size:11.5px;text-transform:none;letter-spacing:0;}
+  .routineRow{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:8px;font-size:12px;cursor:pointer;margin-bottom:2px;
+      transition:background .15s ease;}
+  .routineRow:hover{background:var(--surface2);}
+  .routineRow .rInfo{flex:1;min-width:0;}
+  .routineRow .rTitle{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .routineRow .rSub{font-size:10px;color:var(--text-faint);font-weight:600;}
+  .routineRow .rDel{opacity:0;font-size:10px;color:var(--text-faint);width:18px;height:18px;border-radius:5px;display:flex;
+      align-items:center;justify-content:center;flex-shrink:0;}
+  .routineRow:hover .rDel{opacity:1;}
+  .routineRow .rDel:hover{background:var(--danger);color:#fff;}
+  .routineEmpty{font-size:11px;color:var(--text-faint);padding:2px 8px 6px;line-height:1.4;}
+  #routineSection{margin-top:20px;}
+
+  /* week fill + quests overlays */
+  #weekFillOverlay, #questOverlay{position:fixed;inset:0;background:rgba(10,8,16,.6);backdrop-filter:blur(3px);z-index:220;
+      display:none;align-items:center;justify-content:center;}
+  #weekFillOverlay.show, #questOverlay.show{display:flex;animation:overlayIn .15s ease;}
+  #weekFillCard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;width:440px;
+      box-shadow:0 24px 60px rgba(0,0,0,.5);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);}
+  #weekFillCard h3{margin:0 0 4px;font-size:17px;font-weight:800;}
+  #weekFillCard .dtSub{font-size:11.5px;color:var(--text-faint);margin-bottom:16px;}
+  .wfTip{font-size:11.5px;color:var(--text-dim);background:var(--surface2);border-radius:10px;padding:9px 11px;line-height:1.45;}
+  #questCard{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:600px;max-height:86vh;
+      box-shadow:0 24px 70px rgba(0,0,0,.55);animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);
+      display:flex;flex-direction:column;overflow:hidden;}
+  #questHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;flex-shrink:0;
+      background:linear-gradient(135deg, color-mix(in srgb, var(--warn) 14%, var(--surface)), var(--surface));border-bottom:1px solid var(--border);}
+  #questTitle{font-size:17px;font-weight:800;}
+  #questSub{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  #questClose{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;cursor:pointer;}
+  #questBody{padding:16px 22px 22px;overflow-y:auto;}
+  .questRow{display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+      padding:11px 13px;margin-bottom:8px;}
+  .questRow.done{border-color:color-mix(in srgb, var(--done) 55%, var(--border));background:color-mix(in srgb, var(--done) 9%, var(--surface2));}
+  .questRow .qIcon{font-size:24px;flex-shrink:0;}
+  .questRow .qInfo{flex:1;min-width:0;}
+  .questRow .qName{font-size:13px;font-weight:800;}
+  .questRow .qDesc{font-size:11px;color:var(--text-dim);margin-top:1px;}
+  .qReward{font-size:11px;font-weight:800;color:var(--warn);text-align:right;flex-shrink:0;line-height:1.4;}
+  .questRow.done .qReward{color:var(--done);}
+  #challengeForm{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
+  #challengeForm.show{display:block;animation:taskIn .25s ease;}
+  .chPresets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .chPresets button{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:20px;padding:5px 10px;
+      font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s ease;}
+  .chPresets button:hover{border-color:var(--accent);color:var(--accent);}
+  .chRow{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 13px;margin-bottom:8px;}
+  .chRow.won{border-color:color-mix(in srgb, var(--done) 55%, var(--border));}
+  .chRow.failed{opacity:.7;}
+  .chTop{display:flex;align-items:center;gap:10px;}
+  .chTop .qIcon{font-size:22px;}
+  .chTop .qInfo{flex:1;min-width:0;}
+  .chStatus{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:20px;background:var(--surface3);color:var(--text-dim);flex-shrink:0;}
+  .chStatus.active{background:var(--accent-soft);color:var(--accent);}
+  .chStatus.won{background:color-mix(in srgb, var(--done) 18%, transparent);color:var(--done);}
+  .chStatus.failed{background:color-mix(in srgb, var(--danger) 16%, transparent);color:var(--danger);}
+  .chDays{display:flex;flex-wrap:wrap;gap:3px;margin-top:9px;}
+  .chDays span{width:11px;height:11px;border-radius:3px;background:var(--surface3);}
+  .chDays span.ok{background:linear-gradient(135deg,var(--done),#5eead4);}
+  .chDays span.miss{background:var(--danger);}
+  .chDays span.today{outline:2px solid var(--accent);outline-offset:1px;}
+  .chActions{display:flex;gap:6px;margin-top:9px;}
+  .chActions button{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:7px;padding:4px 9px;
+      font-size:11px;font-weight:700;cursor:pointer;}
+  .chActions button:hover{border-color:var(--accent);color:var(--accent);}
+  .chActions button.danger:hover{border-color:var(--danger);color:var(--danger);}
+  .chEmpty{font-size:12px;color:var(--text-faint);text-align:center;padding:16px;line-height:1.5;}
+</style>
+</head>
+<body data-theme="dark">
+<div id="app">
+  <header>
+    <h1>📅 Remontada Planner</h1>
+    <div class="navGroup">
+      <button class="navbtn" id="prevDay">‹</button>
+      <button class="navbtn" id="nextDay">›</button>
+    </div>
+    <div id="dateLabel">—</div>
+    <button id="todayBtn">Aujourd'hui</button>
+    <button id="calBtn" class="navbtn" title="Choisir une date" style="background:var(--surface2);border:1px solid var(--border);">🗓</button>
+    <div id="miniCal"><input type="date" id="dateInput" /></div>
+    <div class="viewSwitch" id="viewSwitch">
+      <button data-view="day">Jour</button>
+      <button data-view="week">Semaine</button>
+      <button data-view="month">Mois</button>
+    </div>
+    <div class="spacer"></div>
+    <div id="streakWrap" class="zero">🔥 <span id="streakLabel">0</span>j</div>
+    <div id="questPill" title="Quêtes de la semaine & défis">🎯 <span id="questLabel">0/3</span></div>
+    <div id="coinWrap" title="Pièces Remontada">🪙 <span id="coinLabel">0</span></div>
+    <div id="levelPill" title="Voir mon profil">
+      <div id="levelRing"><span id="levelAvatar">🙂</span></div>
+      <div id="levelTextWrap">
+        <span id="levelTitle">Novice</span>
+        <span id="levelXp">0 XP</span>
+      </div>
+    </div>
+    <div id="progressWrap"><span id="dayBadge">🌱</span><span id="progressLabel">0/0</span><div id="progressBarOuter"><div id="progressBarInner"></div></div></div>
+    <div class="toolGroup">
+      <button id="refreshBtn" class="navbtn" title="Rafraîchir les données">🔄</button>
+      <button id="zoomOutBtn" class="navbtn" title="Zoom -">−</button>
+      <button id="zoomInBtn" class="navbtn" title="Zoom +">+</button>
+    </div>
+    <button id="themeToggle" title="Mode clair/sombre">🌙</button>
+  </header>
+
+  <div id="quickAdd">
+    <button id="openAddBtn">✨ Ajouter une tâche</button>
+    <span class="hint" id="greeting">ou clique directement sur un créneau de la timeline</span>
+  </div>
+
+  <main>
+    <div id="sidebar">
+      <h2>Catégories</h2>
+      <div id="catList"></div>
+      <div id="routineSection">
+        <h2>Routines 🔁</h2>
+        <div id="routineList"></div>
+      </div>
+      <div id="templateSection">
+        <h2>Modèles</h2>
+        <div id="tplList"></div>
+        <button id="weekFillBtn" class="periodOnly">🗓️ Planifier la semaine</button>
+        <button id="saveTplBtn" class="dayOnly">💾 Enregistrer ce jour</button>
+        <button id="copyYesterdayBtn" class="dayOnly">⟲ Copier hier</button>
+        <button id="dayThemesBtn" class="dayOnly">🌈 Journées types</button>
+        <button id="questsBtn">🎯 Quêtes & défis</button>
+        <div id="sidebarDivider" class="dayOnly"></div>
+        <button id="clearDayBtn" class="dayOnly">🗑️ Vider la journée</button>
+      </div>
+    </div>
+    <div id="timelineWrap">
+      <div id="grid"></div>
+    </div>
+    <div id="planView"></div>
+  </main>
+</div>
+
+<div id="celebration"></div>
+<div id="bastinosBg"></div>
+<div id="celebrateMsg"></div>
+<div id="levelUpOverlay">
+  <div id="levelUpCard">
+    <div class="lvRay">Niveau supérieur !</div>
+    <div class="lvNum" id="lvUpNum">2</div>
+    <div class="lvTitle" id="lvUpTitle">Apprenti</div>
+  </div>
+</div>
+<div id="toastStack"></div>
+<div id="dayRecapOverlay">
+  <div id="dayRecapCard">
+    <div class="recapEmoji" id="recapEmoji">🎉</div>
+    <div class="recapTitle" id="recapTitle">Journée complétée !</div>
+    <div class="recapMsg" id="recapMsg"></div>
+    <button id="dayRecapClose">Continuer</button>
+  </div>
+</div>
+
+<div id="dayThemesOverlay">
+  <div id="dayThemesCard">
+    <h3>🌈 Journées types</h3>
+    <div class="dtSub">Choisis une ambiance positive pour remplir ta journée. Les tâches s'ajoutent à celles déjà présentes.</div>
+    <div id="dayThemesList"></div>
+    <button id="dayThemesClose">Fermer</button>
+  </div>
+</div>
+
+<div id="profileOverlay">
+  <div id="profileCard">
+    <div id="profileHeader">
+      <div id="profileAvatarBig">🙂</div>
+      <div id="profileNameWrap">
+        <div id="profileName">Aventurier</div>
+        <div id="profileSub">Niveau 1 · Novice · 0 XP</div>
+      </div>
+      <button id="profileClose">✕</button>
+    </div>
+    <div id="profileTabs">
+      <button class="profileTabBtn active" data-tab="ach">🏅 Succès</button>
+      <button class="profileTabBtn" data-tab="shop">🛍️ Boutique</button>
+      <button class="profileTabBtn" data-tab="identity">✏️ Pseudo</button>
+    </div>
+    <div id="profileBody">
+      <div class="profileTabPanel active" id="tabAch">
+        <div id="achProgressLabel"></div>
+        <div id="achList"></div>
+      </div>
+      <div class="profileTabPanel" id="tabShop">
+        <div class="shopSectionTitle">🎨 Thèmes de couleur</div>
+        <div class="shopGrid" id="shopThemeGrid"></div>
+        <div class="shopSectionTitle">😀 Avatars</div>
+        <div class="shopGrid" id="shopAvatarGrid"></div>
+      </div>
+      <div class="profileTabPanel" id="tabIdentity">
+        <input id="profileNameInput" placeholder="Comment veux-tu que je t'appelle ?" maxlength="24" />
+        <div class="shopSectionTitle">Choisis ton avatar</div>
+        <div class="avatarGrid" id="identityAvatarGrid"></div>
+        <button id="profileSaveBtn">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="confirmOverlay">
+  <div id="confirmCard">
+    <div id="confirmIcon">❓</div>
+    <div id="confirmTitle"></div>
+    <div id="confirmMsg"></div>
+    <input id="confirmInput" type="text" />
+    <div class="confirmActions">
+      <button id="confirmCancel">Annuler</button>
+      <button id="confirmOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="weekFillOverlay">
+  <div id="weekFillCard">
+    <h3>🗓️ Planifier la semaine</h3>
+    <div class="dtSub" id="wfSub">Copie une journée sur plusieurs jours d'un coup. Les créneaux déjà occupés sont conservés.</div>
+    <div class="modalField">
+      <label>Source</label>
+      <select id="wfSource" class="fieldSelect"></select>
+    </div>
+    <div class="modalField">
+      <label>Sur quels jours ?</label>
+      <div class="repeatPresets" id="wfPresets">
+        <button type="button" data-preset="weekdays">Lun → Ven</button>
+        <button type="button" data-preset="weekend">Week-end</button>
+        <button type="button" data-preset="daily">Tous</button>
+        <button type="button" data-preset="empty">Jours vides</button>
+      </div>
+      <div class="dowPicker" id="wfDays"></div>
+    </div>
+    <div class="wfTip">💡 Pour une habitude qui revient chaque semaine, utilise plutôt <b>Répéter</b> dans une tâche : elle devient une routine 🔁 et se planifie toute seule.</div>
+    <div class="modalActions">
+      <button id="wfCancel" class="btnSecondary">Annuler</button>
+      <button id="wfApply" class="btnPrimary">Planifier</button>
+    </div>
+  </div>
+</div>
+
+<div id="questOverlay">
+  <div id="questCard">
+    <div id="questHeader">
+      <div>
+        <div id="questTitle">🎯 Quêtes & défis</div>
+        <div id="questSub"></div>
+      </div>
+      <button id="questClose">✕</button>
+    </div>
+    <div id="questBody">
+      <div class="shopSectionTitle">📜 Quêtes de la semaine <span id="questReset" class="labelHint"></span></div>
+      <div id="weeklyQuestList"></div>
+      <div class="shopSectionTitle" style="display:flex;align-items:center;justify-content:space-between">
+        <span>🔥 Mes défis de régularité</span>
+        <button id="newChallengeBtn" class="btnPrimary btnSmall">+ Nouveau défi</button>
+      </div>
+      <div id="challengeForm">
+        <div class="chPresets" id="chPresets"></div>
+        <div class="modalField">
+          <label>Nom du défi</label>
+          <input id="chTitle" class="fieldInput" maxlength="40" placeholder="ex : Sport 30 jours" />
+        </div>
+        <div class="modalField">
+          <label>Ce qui compte chaque jour <span class="labelHint">— une tâche cochée de cette catégorie et/ou contenant un de ces mots</span></label>
+          <div class="catPicker" id="chCatPicker"></div>
+          <input id="chKeywords" class="fieldInput" style="margin-top:8px" placeholder="mots-clés séparés par des virgules (ex : sport, gym, yoga)" />
+        </div>
+        <div class="modalRow">
+          <div class="modalField">
+            <label>Durée</label>
+            <select id="chLength" class="fieldSelect">
+              <option value="7">7 jours</option><option value="10">10 jours</option><option value="14">14 jours</option>
+              <option value="21" selected>21 jours</option><option value="30">30 jours</option>
+              <option value="60">60 jours</option><option value="90">90 jours</option>
+            </select>
+          </div>
+        </div>
+        <label class="parallelLabel">
+          <input type="checkbox" id="chAutoPlan" checked />
+          <span>Planifier automatiquement chaque jour à <input type="time" id="chTime" value="07:30" class="inlineTime" />
+            pendant <select id="chDur" class="inlineSelect"><option value="15">15 min</option><option value="20">20 min</option>
+            <option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">1h</option></select></span>
+        </label>
+        <div class="modalActions">
+          <button id="chCancel" class="btnSecondary">Annuler</button>
+          <button id="chCreate" class="btnPrimary">Lancer le défi</button>
+        </div>
+      </div>
+      <div id="challengeList"></div>
+    </div>
+  </div>
+</div>
+
+<div id="modalOverlay">
+  <div id="taskModal">
+    <h3>✨ Nouvelle tâche</h3>
+    <div class="modalField">
+      <label>Titre</label>
+      <input id="modalTitle" placeholder="ex: Gym, Réunion client, Dessin..." />
+    </div>
+    <div class="modalRow">
+      <div class="modalField" id="modalDateField">
+        <label>Date</label>
+        <input type="date" id="modalDate" />
+      </div>
+      <div class="modalField">
+        <label>Heure de début</label>
+        <input type="time" id="modalStart" />
+      </div>
+      <div class="modalField">
+        <label>Durée</label>
+        <select id="modalDurSelect">
+          <option value="15">15 min</option>
+          <option value="30" selected>30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">1h</option>
+          <option value="90">1h30</option>
+          <option value="120">2h</option>
+          <option value="180">3h</option>
+        </select>
+      </div>
+    </div>
+    <div class="modalField">
+      <label>Catégorie</label>
+      <div class="catPicker" id="modalCatPicker"></div>
+    </div>
+    <div class="modalField">
+      <label>Répéter <span class="labelHint">— crée une routine 🔁 au lieu de recopier la tâche</span></label>
+      <div class="repeatPresets" id="repeatPresets">
+        <button type="button" data-preset="none">Jamais</button>
+        <button type="button" data-preset="daily">Tous les jours</button>
+        <button type="button" data-preset="weekdays">Lun → Ven</button>
+        <button type="button" data-preset="weekend">Week-end</button>
+      </div>
+      <div class="dowPicker" id="modalDowPicker"></div>
+      <div class="repeatExtra" id="repeatExtra">
+        <span>Jusqu'au</span><input type="date" id="modalRepeatEnd" /><span class="labelHint">(vide = sans fin)</span>
+      </div>
+      <label class="parallelLabel" id="repeatScopeWrap" style="margin-top:8px">
+        <input type="checkbox" id="modalRepeatScope" checked />
+        <span>Appliquer aussi aux prochaines occurrences de la routine</span>
+      </label>
+    </div>
+    <div class="modalField">
+      <label class="parallelLabel" id="parallelToggle">
+        <input type="checkbox" id="modalParallel" />
+        <span>🔀 Activité en parallèle (ex: Discord + jeu, musique de fond...)</span>
+      </label>
+    </div>
+    <div class="modalActions">
+      <button id="modalDelete" title="Supprimer">🗑️</button>
+      <button id="modalCancel">Annuler</button>
+      <button id="modalSave">Ajouter la tâche</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const START_HOUR = 6, END_HOUR = 24; // 6h -> minuit
+let HOUR_H = 72; // px, dynamic zoom level
+let state = { schemaVersion:1, days:{}, categories:{}, templates:{}, unlockedAchievements:[],
+  profile:{name:'', avatar:'🙂'},
+  economy:{coinsSpent:0, unlockedThemes:['default'], unlockedAvatars:['🙂','😎','🦊','🐱','🐼','🤖','👾','🌟'], activeThemeId:'default'},
+  counters:{} };
+let currentDate = new Date();
+let activeCategory = "Travail";
+let drag = null;
+let viewMode = 'day'; // 'day' | 'week' | 'month'
+
+// Local calendar date (NOT toISOString, which is UTC: in France it shifted local
+// midnight to the previous day, e.g. picking the 31st in the calendar opened the 30th).
+function iso(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function fmtLabel(d){
+  return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+}
+function pad(n){ return n.toString().padStart(2,'0'); }
+function minutesToHHMM(m){ return pad(Math.floor(m/60))+':'+pad(m%60); }
+function hhmmToMinutes(s){ const [h,m]=s.split(':').map(Number); return h*60+m; }
+function uid(){ return 't'+Date.now()+Math.random().toString(36).slice(2,7); }
+
+// --- Usage counters (fuel for easter-egg achievements) ---
+function bumpCounter(key, by=1){
+  if(!state.counters) state.counters = {};
+  state.counters[key] = (state.counters[key]||0) + by;
+}
+function getCounter(key){ return (state.counters && state.counters[key]) || 0; }
+
+// --- Custom confirm/alert/prompt (replaces native browser popups) ---
+let confirmResolve = null;
+function closeConfirmModal(result){
+  document.getElementById('confirmOverlay').classList.remove('show');
+  if(confirmResolve){ const r = confirmResolve; confirmResolve = null; r(result); }
+}
+function showConfirm({icon='❓', title='', msg='', okLabel='OK', cancelLabel='Annuler', danger=false, alertOnly=false}={}){
+  return new Promise(resolve=>{
+    confirmResolve = resolve;
+    document.getElementById('confirmIcon').textContent = icon;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').innerHTML = msg;
+    document.getElementById('confirmInput').classList.remove('show');
+    const okBtn = document.getElementById('confirmOk');
+    okBtn.textContent = okLabel;
+    okBtn.classList.toggle('danger', danger);
+    const cancelBtn = document.getElementById('confirmCancel');
+    cancelBtn.textContent = cancelLabel;
+    cancelBtn.style.display = alertOnly ? 'none' : '';
+    document.getElementById('confirmOverlay').classList.add('show');
+  });
+}
+function showAlert(msg, title='Info', icon='ℹ️'){
+  return showConfirm({icon, title, msg, okLabel:'Compris', alertOnly:true});
+}
+function showPrompt({icon='✏️', title='', msg='', defaultValue='', okLabel='Valider'}={}){
+  return new Promise(resolve=>{
+    confirmResolve = (ok)=>{
+      const input = document.getElementById('confirmInput');
+      resolve(ok ? (input.value.trim() || null) : null);
+    };
+    document.getElementById('confirmIcon').textContent = icon;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').innerHTML = msg;
+    const input = document.getElementById('confirmInput');
+    input.classList.add('show');
+    input.value = defaultValue;
+    const okBtn = document.getElementById('confirmOk');
+    okBtn.textContent = okLabel;
+    okBtn.classList.remove('danger');
+    document.getElementById('confirmCancel').style.display = '';
+    document.getElementById('confirmOverlay').classList.add('show');
+    setTimeout(()=>{ input.focus(); input.select(); }, 50);
+  });
+}
+document.getElementById('confirmOk').onclick = ()=>closeConfirmModal(true);
+document.getElementById('confirmCancel').onclick = ()=>closeConfirmModal(false);
+document.getElementById('confirmOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='confirmOverlay') closeConfirmModal(false);
+});
+document.getElementById('confirmInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); closeConfirmModal(true); }
+  if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); closeConfirmModal(false); }
+});
+document.addEventListener('keydown', (e)=>{
+  if(!document.getElementById('confirmOverlay').classList.contains('show')) return;
+  // the confirm popup sits on top of other modals: it consumes Escape/Enter so the
+  // modal underneath doesn't also close / re-submit
+  if(e.key==='Escape'){ e.preventDefault(); closeConfirmModal(false); }
+  else if(e.key==='Enter'){ e.preventDefault(); closeConfirmModal(true); }
+}, true);
+
+let firstLoadDone = false;
+async function loadState(){
+  const data = await window.pywebview.api.load();
+  state = data;
+  ensureCollections();
+  viewMode = ['day','week','month'].includes(state.settings.view) ? state.settings.view : 'day';
+  // achievements already earned in a previous session must not re-toast / re-pay coins
+  unlockedAchIds = new Set(state.unlockedAchievements || []);
+  // apply the player's purchased color theme (falls back to default/no override)
+  const themeId = (state.economy && state.economy.activeThemeId) || 'default';
+  document.body.setAttribute('data-color-theme', themeId==='default' ? '' : themeId);
+  if(themeId === 'bastinos') startBastinosEffect();
+  applyLightDark(state.settings.theme === 'light' ? 'light' : 'dark');
+  HOUR_H = Math.min(140, Math.max(32, Number(state.settings.zoom) || 72));
+  render();
+  if(!firstLoadDone){
+    firstLoadDone = true;
+    if(viewMode==='day') scrollToNow();
+    if(!nick() && !state.profile.askedName) setTimeout(askNickname, 700);
+  }
+}
+
+// Saves are serialized: one call in flight at a time, and if more changes happen
+// meanwhile, exactly one more save of the LATEST state follows. Previously each
+// persist() fired its own concurrent call and an older snapshot could land last.
+let saveInFlight = false, savePending = false, lastSaveErrorAt = 0;
+async function persist(){
+  if(saveInFlight){ savePending = true; return; }
+  saveInFlight = true;
+  try{
+    do{
+      savePending = false;
+      let res;
+      try{ res = await window.pywebview.api.save(state); }
+      catch(err){ res = {ok:false, error:String(err)}; }
+      if(res && res.ok === false && Date.now()-lastSaveErrorAt > 10000){
+        lastSaveErrorAt = Date.now();
+        showToast({icon:'⚠️', text:'Sauvegarde impossible', sub:res.error || 'Erreur inconnue'});
+      }
+    } while(savePending);
+  } finally { saveInFlight = false; }
+}
+
+function applyLightDark(mode){
+  document.body.setAttribute('data-theme', mode);
+  document.getElementById('themeToggle').textContent = mode==='light' ? '☀' : '🌙';
+}
+
+function scrollToNow(){
+  if(iso(new Date()) !== iso(currentDate)) return;
+  const now = new Date();
+  const mins = now.getHours()*60 + now.getMinutes() - 60; // one hour of context above "now"
+  const wrap = document.getElementById('timelineWrap');
+  wrap.scrollTop = Math.max(0, minutesFromStart(mins)/60*HOUR_H);
+}
+
+function dayTasks(){
+  const key = iso(currentDate);
+  if(!state.days[key]) return [];
+  return state.days[key];
+}
+function ensureDay(key){
+  key = key || iso(currentDate);
+  if(!state.days[key]) state.days[key] = [];
+  return state.days[key];
+}
+
+function renderCategories(){
+  const el = document.getElementById('catList');
+  el.innerHTML = '';
+  Object.entries(state.categories).forEach(([name, color])=>{
+    const row = document.createElement('div');
+    row.className = 'catRow'+(name===activeCategory?' active':'');
+    row.innerHTML = `<span class="catDot" style="background:${escapeHtml(color)}"></span>${escapeHtml(name)}`;
+    row.onclick = ()=>{ activeCategory = name; renderCategories(); };
+    el.appendChild(row);
+  });
+}
+
+const DAY_THEMES = {
+  "Ressourcement": { icon:"🌱", desc:"Repos actif et soin de soi.", tasks:[
+    {title:"Réveil en douceur + étirements", start:"07:30", duration:15, category:"Santé"},
+    {title:"Petit-déj au calme", start:"08:00", duration:30, category:"Personnel"},
+    {title:"Lecture / journaling", start:"10:00", duration:45, category:"Personnel"},
+    {title:"Préparation d'un repas léger", start:"12:30", duration:30, category:"Personnel"},
+    {title:"Balade nature", start:"14:00", duration:60, category:"Santé"},
+    {title:"Sieste ou méditation", start:"16:00", duration:30, category:"Santé"},
+    {title:"Tisane + lecture du soir", start:"18:30", duration:30, category:"Personnel"},
+    {title:"Bain / soin du soir", start:"20:00", duration:30, category:"Personnel"},
+  ]},
+  "Sport & Énergie": { icon:"💪", desc:"Mouvement et dépense physique.", tasks:[
+    {title:"Réveil + verre d'eau + étirements", start:"06:45", duration:10, category:"Santé"},
+    {title:"Séance de sport", start:"07:00", duration:60, category:"Santé"},
+    {title:"Petit-déj riche en protéines", start:"08:15", duration:20, category:"Santé"},
+    {title:"Déjeuner équilibré", start:"12:30", duration:30, category:"Santé"},
+    {title:"Marche rapide / vélo", start:"15:00", duration:30, category:"Santé"},
+    {title:"Étirements / yoga", start:"18:00", duration:20, category:"Santé"},
+    {title:"Préparation d'un repas sain", start:"20:00", duration:30, category:"Personnel"},
+  ]},
+  "Créativité & Loisirs": { icon:"🎨", desc:"Un projet perso, dessin, musique, écriture.", tasks:[
+    {title:"Café + playlist inspirante", start:"08:30", duration:15, category:"Personnel"},
+    {title:"Session créative libre", start:"09:00", duration:60, category:"Divers"},
+    {title:"Avancer un projet perso", start:"11:00", duration:90, category:"Divers"},
+    {title:"Découverte (expo, tuto, lecture)", start:"14:00", duration:60, category:"Divers"},
+    {title:"Pause goûter", start:"16:00", duration:20, category:"Personnel"},
+    {title:"Partage / retour sur le travail créé", start:"17:00", duration:30, category:"Personnel"},
+  ]},
+  "Zen & Calme": { icon:"🧘", desc:"Anti-stress, peu de tâches, calme mental.", tasks:[
+    {title:"Méditation", start:"08:00", duration:15, category:"Santé"},
+    {title:"Tâche unique prioritaire", start:"09:00", duration:90, category:"Travail"},
+    {title:"Déjeuner sans écran", start:"13:00", duration:30, category:"Personnel"},
+    {title:"Temps libre, rien de prévu", start:"16:00", duration:60, category:"Divers"},
+    {title:"Respiration / étirements doux", start:"18:30", duration:15, category:"Santé"},
+    {title:"Digital detox en soirée", start:"20:00", duration:60, category:"Personnel"},
+  ]},
+  "Productivité boostée": { icon:"🚀", desc:"Avancer fort sur le travail et les objectifs.", tasks:[
+    {title:"Routine matinale rapide", start:"07:00", duration:20, category:"Santé"},
+    {title:"Bloc deep work #1", start:"08:30", duration:90, category:"Travail"},
+    {title:"Pause courte", start:"10:30", duration:15, category:"Divers"},
+    {title:"Bloc deep work #2", start:"11:00", duration:90, category:"Travail"},
+    {title:"Réunions / admin", start:"14:00", duration:120, category:"Travail"},
+    {title:"Pause café", start:"16:15", duration:15, category:"Divers"},
+    {title:"Bloc deep work #3", start:"16:30", duration:60, category:"Travail"},
+    {title:"Revue de journée + plan du lendemain", start:"18:00", duration:20, category:"Travail"},
+  ]},
+  "Famille & Social": { icon:"👨‍👩‍👧", desc:"Du lien avec les autres.", tasks:[
+    {title:"Petit-déj en famille", start:"08:30", duration:30, category:"Personnel"},
+    {title:"Appel / visite famille ou ami", start:"10:00", duration:45, category:"Personnel"},
+    {title:"Repas partagé", start:"13:00", duration:60, category:"Personnel"},
+    {title:"Activité commune (jeu, sortie)", start:"16:00", duration:90, category:"Personnel"},
+    {title:"Préparation du repas du soir ensemble", start:"19:00", duration:30, category:"Personnel"},
+    {title:"Soirée conviviale", start:"19:30", duration:90, category:"Personnel"},
+  ]},
+  "Nature & Extérieur": { icon:"🌿", desc:"Dehors, déconnexion écran.", tasks:[
+    {title:"Petit-déj puis sortie rando/plage", start:"09:00", duration:30, category:"Santé"},
+    {title:"Randonnée / balade longue", start:"09:45", duration:90, category:"Santé"},
+    {title:"Pique-nique", start:"12:00", duration:60, category:"Personnel"},
+    {title:"Activité extérieure (vélo, jardinage)", start:"15:00", duration:90, category:"Santé"},
+    {title:"Retour, douche, détente", start:"18:00", duration:30, category:"Personnel"},
+  ]},
+  "Apprentissage": { icon:"📚", desc:"Apprendre un truc nouveau.", tasks:[
+    {title:"Café + plan de la session d'apprentissage", start:"08:45", duration:15, category:"Travail"},
+    {title:"Cours en ligne / lecture technique", start:"09:00", duration:60, category:"Travail"},
+    {title:"Pratique / exercices", start:"11:00", duration:60, category:"Travail"},
+    {title:"Pause déjeuner", start:"12:30", duration:45, category:"Personnel"},
+    {title:"Pomodoro révisions", start:"15:00", duration:50, category:"Travail"},
+    {title:"Résumé de ce qui a été appris", start:"17:00", duration:15, category:"Divers"},
+  ]},
+};
+
+function renderDayThemesList(){
+  const el = document.getElementById('dayThemesList');
+  el.innerHTML = '';
+
+  // --- special entries: remix + random, always on top ---
+  const remixItem = document.createElement('div');
+  remixItem.className = 'dayThemeItem dayThemeSpecial';
+  remixItem.innerHTML = `<span class="dtIcon">🧩</span>
+    <span class="dtInfo"><span class="dtName">Remix de journée</span><div class="dtDesc">Un peu de chaque thème, mélangé en une seule journée équilibrée.</div></span>
+    <button class="dtApply">Appliquer</button>`;
+  remixItem.querySelector('.dtApply').onclick = ()=> applyDayTheme('__remix__');
+  el.appendChild(remixItem);
+
+  const randomItem = document.createElement('div');
+  randomItem.className = 'dayThemeItem dayThemeSpecial';
+  randomItem.innerHTML = `<span class="dtIcon">🎲</span>
+    <span class="dtInfo"><span class="dtName">Journée aléatoire</span><div class="dtDesc">Surprise ! Tire au sort un thème (ou un remix) pour toi.</div></span>
+    <button class="dtApply">Appliquer</button>`;
+  randomItem.querySelector('.dtApply').onclick = ()=> applyDayTheme('__random__');
+  el.appendChild(randomItem);
+
+  Object.entries(DAY_THEMES).forEach(([name, theme])=>{
+    const item = document.createElement('div');
+    item.className = 'dayThemeItem';
+    item.innerHTML = `<span class="dtIcon">${theme.icon}</span>
+      <span class="dtInfo"><span class="dtName">${escapeHtml(name)}</span><div class="dtDesc">${escapeHtml(theme.desc)}</div></span>
+      <button class="dtApply">Appliquer</button>`;
+    item.querySelector('.dtApply').onclick = ()=> applyDayTheme(name);
+    el.appendChild(item);
+  });
+}
+
+function tasksOverlap(a, b){
+  const aS = hhmmToMinutes(a.start), aE = aS + a.duration;
+  const bS = hhmmToMinutes(b.start), bE = bS + b.duration;
+  return aS < bE && bS < aE;
+}
+
+function buildRemixTasks(existingTasks){
+  // Pick ~1-2 tasks per theme, skip ones that would overlap what's already chosen
+  // OR what's already on the day (existingTasks), and deliberately stop once the
+  // day has a decent amount of tasks — keeps real gaps instead of a packed schedule.
+  const allThemeNames = Object.keys(DAY_THEMES);
+  const candidates = [];
+  allThemeNames.forEach(name=>{
+    const tasks = DAY_THEMES[name].tasks;
+    const shuffled = [...tasks].sort(()=>Math.random()-0.5);
+    const pickCount = Math.random() < 0.5 ? 1 : 2;
+    shuffled.slice(0, pickCount).forEach(t=> candidates.push({...t, _from:name}));
+  });
+  candidates.sort(()=>Math.random()-0.5);
+
+  const picked = [];
+  const maxTasks = 9; // keep the remix day readable, not a wall-to-wall schedule
+  for(const t of candidates){
+    if(picked.length >= maxTasks) break;
+    const overlapsExisting = (existingTasks||[]).some(p=> tasksOverlap(t,p));
+    const overlapsPicked = picked.some(p=> tasksOverlap(t,p));
+    if(!overlapsExisting && !overlapsPicked) picked.push(t);
+  }
+  return picked.sort((a,b)=> hhmmToMinutes(a.start)-hhmmToMinutes(b.start));
+}
+
+// Filters a theme's fixed task list against whatever is already on the day,
+// dropping any task that would overlap an existing one — prevents the kind of
+// "Temps libre" sitting on top of "Bloc deep work" inconsistency.
+function filterAgainstExisting(tasks, existingTasks){
+  return tasks.filter(t => !(existingTasks||[]).some(p=> tasksOverlap(t,p)));
+}
+
+function applyDayTheme(name){
+  let tasks;
+  let closeAfter = true;
+  const existingTasks = dayTasks();
+  if(name === '__remix__'){
+    tasks = buildRemixTasks(existingTasks);
+    bumpCounter('remixUsed');
+  } else if(name === '__random__'){
+    bumpCounter('randomUsed');
+    // 70% chance: a single random existing theme. 30%: a fresh remix — keeps it a real surprise.
+    if(Math.random() < 0.3){
+      tasks = buildRemixTasks(existingTasks);
+    } else {
+      const names = Object.keys(DAY_THEMES);
+      const pick = names[Math.floor(Math.random()*names.length)];
+      tasks = filterAgainstExisting(DAY_THEMES[pick].tasks, existingTasks);
+    }
+  } else {
+    const theme = DAY_THEMES[name];
+    if(!theme) return;
+    tasks = filterAgainstExisting(theme.tasks, existingTasks);
+    if(!state.counters) state.counters = {};
+    if(!state.counters.themesUsed) state.counters.themesUsed = [];
+    if(!state.counters.themesUsed.includes(name)) state.counters.themesUsed.push(name);
+  }
+  const skipped = (name==='__remix__' || name==='__random__' ? 0 : DAY_THEMES[name] ? DAY_THEMES[name].tasks.length - tasks.length : 0);
+  if(tasks.length===0){
+    showToast({icon:'🤷', text:'Aucune tâche ajoutée', sub:'Tous les créneaux du thème sont déjà occupés.'});
+    return;
+  }
+  const list = ensureDay();
+  tasks.forEach(t=> list.push({id:uid(), title:t.title, start:t.start, duration:t.duration, category:t.category, done:false}));
+  persist(); render();
+  if(skipped > 0){
+    showToast({icon:'⚠️', text:`${skipped} tâche(s) du thème ignorée(s)`, sub:'Elles chevauchaient des tâches déjà présentes dans ta journée.'});
+  }
+  if(closeAfter) closeDayThemesModal();
+}
+
+function openDayThemesModal(){
+  renderDayThemesList();
+  document.getElementById('dayThemesOverlay').classList.add('show');
+}
+function closeDayThemesModal(){
+  document.getElementById('dayThemesOverlay').classList.remove('show');
+}
+
+function renderTemplates(){
+  const el = document.getElementById('tplList');
+  el.innerHTML = '';
+  Object.keys(state.templates).forEach(name=>{
+    const btn = document.createElement('button');
+    btn.className = 'tplBtn';
+    btn.title = 'Ajouter ce modèle à la journée affichée';
+    const label = document.createElement('span');
+    label.className = 'tplName';
+    label.textContent = name;
+    const del = document.createElement('span');
+    del.className = 'tplDel';
+    del.title = 'Supprimer ce modèle';
+    del.textContent = '✕';
+    del.onclick = (e)=>{ e.stopPropagation(); deleteTemplate(name); };
+    btn.append(label, del);
+    btn.onclick = ()=> applyTemplate(name);
+    el.appendChild(btn);
+  });
+}
+
+async function deleteTemplate(name){
+  const ok = await showConfirm({icon:'🗑️', title:`Supprimer le modèle « ${name} » ?`,
+    msg:'Les journées déjà planifiées avec ce modèle ne sont pas touchées.', okLabel:'Supprimer', danger:true});
+  if(!ok) return;
+  delete state.templates[name];
+  persist(); renderTemplates();
+}
+
+// Adds copies of `src` tasks to the current day, skipping any that would overlap
+// a task already there (so clicking twice doesn't duplicate everything).
+// `silent` = batch mode (week fill): caller persists/renders and reports once.
+function addCopiesToDay(src, label, key, silent){
+  const list = ensureDay(key);
+  // parallel tasks (background music…) are meant to overlap: they never block a copy
+  const toAdd = src.filter(t => t.parallel || !list.some(p => !p.parallel && tasksOverlap(t, p)));
+  toAdd.forEach(t=> list.push({id:uid(), title:t.title, start:t.start, duration:t.duration,
+    category:t.category, done:false, ...(t.parallel ? {parallel:true} : {})}));
+  const skipped = src.length - toAdd.length;
+  if(!silent){
+    persist(); render();
+    if(skipped > 0){
+      showToast({icon:'⚠️', text:`${skipped} tâche(s) ${label} ignorée(s)`, sub:'Elles chevauchaient des tâches déjà présentes.'});
+    }
+  }
+  return {added: toAdd.length, skipped};
+}
+
+function applyTemplate(name){
+  const tpl = state.templates[name];
+  if(!tpl) return;
+  // outside the day view a template is spread over the week instead of a single day
+  if(viewMode !== 'day'){
+    if(viewMode === 'month') setView('week');
+    openWeekFill('tpl:'+name);
+    return;
+  }
+  addCopiesToDay(tpl, 'du modèle');
+}
+
+async function saveTemplateFromToday(){
+  const tasks = dayTasks();
+  if(tasks.length===0){ await showAlert('Ajoute d\'abord des tâches à cette journée.', 'Journée vide', '🤷'); return; }
+  const name = await showPrompt({icon:'💾', title:'Enregistrer ce jour', msg:'Donne un nom à ce modèle de journée :', defaultValue:'Journée type', okLabel:'Enregistrer'});
+  if(!name) return;
+  if(['__proto__','constructor','prototype'].includes(name)){
+    await showAlert('Ce nom est réservé, choisis-en un autre.', 'Nom invalide', '✏️'); return;
+  }
+  if(Object.prototype.hasOwnProperty.call(state.templates, name)){
+    const ok = await showConfirm({icon:'♻️', title:`Remplacer « ${name} » ?`, msg:'Un modèle porte déjà ce nom.', okLabel:'Remplacer'});
+    if(!ok) return;
+  }
+  state.templates[name] = tasks.map(t=>({title:t.title, start:t.start, duration:t.duration, category:t.category,
+    ...(t.parallel ? {parallel:true} : {})}));
+  persist(); renderTemplates();
+  showToast({icon:'💾', text:`Modèle « ${name} » enregistré`});
+}
+
+async function copyYesterday(){
+  const y = new Date(currentDate); y.setDate(y.getDate()-1);
+  const yKey = iso(y);
+  const src = state.days[yKey] || [];
+  if(src.length===0){ await showAlert('Aucune tâche trouvée pour hier.', 'Rien à copier', '🤷'); return; }
+  addCopiesToDay(src, 'd\'hier');
+}
+
+async function clearDay(dayKey){
+  const key = dayKey || iso(currentDate);
+  const label = dayKey ? fmtLabel(keyToDate(dayKey)) : fmtLabel(currentDate);
+  const tasks = state.days[key] || [];
+  if(tasks.length===0){ await showAlert('Cette journée est déjà vide.', 'Rien à vider', '✨'); return; }
+  const ok = await showConfirm({
+    icon:'🗑️', title:'Vider toute la journée ?',
+    msg:`<b>${tasks.length} tâche(s)</b> du ${label} seront supprimées.<br>Cette action est irréversible.`,
+    okLabel:'Oui, tout vider', cancelLabel:'Annuler', danger:true
+  });
+  if(!ok) return;
+  // routines must not silently re-add what was just cleared
+  tasks.forEach(t=> t.recurId && skipRoutineOn(t.recurId, key));
+  state.days[key] = [];
+  bumpCounter('daysCleared');
+  persist(); render();
+}
+
+
+function buildGrid(){
+  document.documentElement.style.setProperty('--hour-h', HOUR_H+'px');
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const totalMinutes = (END_HOUR-START_HOUR)*60;
+  grid.style.height = ((END_HOUR-START_HOUR)*HOUR_H)+'px';
+  for(let h=START_HOUR; h<END_HOUR; h++){
+    const row = document.createElement('div');
+    row.className = 'hourRow';
+    row.innerHTML = `<div class="hourLabel">${pad(h)}:00</div><div class="hourTrack" data-hour="${h}"></div>`;
+    grid.appendChild(row);
+  }
+  // click-to-add on track
+  grid.querySelectorAll('.hourTrack').forEach(track=>{
+    track.addEventListener('click', (e)=>{
+      if(e.target !== track) return;
+      const hour = parseInt(track.dataset.hour);
+      const rect = track.getBoundingClientRect();
+      const frac = (e.clientY - rect.top) / rect.height;
+      const minute = Math.round((frac*60)/15)*15;
+      openQuickAddAt(hour*60+minute);
+    });
+  });
+}
+
+function minutesFromStart(m){ return m - START_HOUR*60; }
+
+function renderFreeGaps(tasks){
+  const grid = document.getElementById('grid');
+  grid.querySelectorAll('.freeGap').forEach(el=>el.remove());
+  const sorted = [...tasks].sort((a,b)=> hhmmToMinutes(a.start)-hhmmToMinutes(b.start));
+  let cursor = START_HOUR*60;
+  const totalEnd = END_HOUR*60;
+  const gaps = [];
+  sorted.forEach(t=>{
+    const s = hhmmToMinutes(t.start);
+    if(s - cursor >= 30) gaps.push([cursor, s]);
+    cursor = Math.max(cursor, s + t.duration);
+  });
+  if(totalEnd - cursor >= 30) gaps.push([cursor, totalEnd]);
+  gaps.forEach(([s,e])=>{
+    const div = document.createElement('div');
+    div.className = 'freeGap';
+    div.style.top = (minutesFromStart(s)/60*HOUR_H)+'px';
+    div.style.height = ((e-s)/60*HOUR_H)+'px';
+    div.style.left = '66px'; div.style.right='4px';
+    const hrs = ((e-s)/60).toFixed(1).replace('.0','');
+    div.textContent = hrs+'h libre';
+    grid.appendChild(div);
+  });
+}
+
+function detectConflicts(tasks){
+  const conflictIds = new Set();
+  for(let i=0;i<tasks.length;i++){
+    for(let j=i+1;j<tasks.length;j++){
+      const a=tasks[i], b=tasks[j];
+      if(a.parallel || b.parallel) continue; // intentional overlap, not a conflict
+      const aS=hhmmToMinutes(a.start), aE=aS+a.duration;
+      const bS=hhmmToMinutes(b.start), bE=bS+b.duration;
+      if(aS < bE && bS < aE){ conflictIds.add(a.id); conflictIds.add(b.id); }
+    }
+  }
+  return conflictIds;
+}
+
+function renderNowLine(){
+  const grid = document.getElementById('grid');
+  grid.querySelectorAll('.nowLine').forEach(el=>el.remove());
+  const today = new Date();
+  if(iso(today) !== iso(currentDate)) return;
+  const mins = today.getHours()*60 + today.getMinutes();
+  if(mins < START_HOUR*60 || mins > END_HOUR*60) return;
+  const div = document.createElement('div');
+  div.className = 'nowLine';
+  div.style.top = (minutesFromStart(mins)/60*HOUR_H)+'px';
+  div.style.left = '58px';
+  grid.appendChild(div);
+}
+
+// Side-by-side layout for overlapping tasks: group tasks into clusters of
+// transitively-overlapping items, assign each the first free column, and give every
+// task in a cluster the same width (1/columns). The old pairwise count gave tasks
+// in the same cluster different widths, so blocks covered each other.
+// Parallel tasks are laid out too (instead of a full-width block hiding the others).
+function computeLanes(tasks){
+  const res = new Map();
+  const sorted = [...tasks].sort((a,b)=> hhmmToMinutes(a.start)-hhmmToMinutes(b.start) || b.duration-a.duration);
+  let cluster = [], colEnds = [], clusterEnd = -1;
+  const flush = ()=>{ cluster.forEach(c=> res.set(c.id, {laneIdx:c.col, laneCount:colEnds.length})); cluster=[]; colEnds=[]; };
+  sorted.forEach(t=>{
+    const s = hhmmToMinutes(t.start), e = s + t.duration;
+    if(s >= clusterEnd) flush();
+    let col = colEnds.findIndex(end=> end <= s);
+    if(col === -1){ col = colEnds.length; colEnds.push(e); } else colEnds[col] = e;
+    cluster.push({id:t.id, col});
+    clusterEnd = Math.max(clusterEnd, e);
+  });
+  flush();
+  return res;
+}
+
+function renderTasks(opts){
+  const skipStagger = opts && opts.skipStagger;
+  const tasks = dayTasks();
+  const sortedForStagger = [...tasks].sort((a,b)=> hhmmToMinutes(a.start)-hhmmToMinutes(b.start));
+  const grid = document.getElementById('grid');
+  grid.querySelectorAll('.task').forEach(el=>el.remove());
+  renderFreeGaps(tasks);
+  renderNowLine();
+  const conflicts = detectConflicts(tasks);
+  const lanes = computeLanes(tasks);
+  tasks.forEach(t=>{
+    const {laneIdx, laneCount} = lanes.get(t.id) || {laneIdx:0, laneCount:1};
+
+    const div = document.createElement('div');
+    const top = minutesFromStart(hhmmToMinutes(t.start))/60*HOUR_H;
+    const rawHeight = t.duration/60*HOUR_H;
+    // compact mode depends on the real pixel height (zoom-aware), and the block never
+    // grows beyond its own slot — a min-height floor made short tasks spill into the next one
+    const compact = rawHeight < 40;
+    div.className = 'task'+(t.done?' done':'')+(conflicts.has(t.id)?' conflict':'')+(compact?' compact':'');
+    const gap = 2;
+    const height = Math.max(6, rawHeight - gap);
+    div.style.top = top+'px';
+    div.style.height = height+'px';
+    // usable track = grid width minus the 66px hour labels and a 4px right margin
+    div.style.left = `calc(66px + (100% - 70px) * ${laneIdx/laneCount})`;
+    div.style.right = 'auto';
+    div.style.width = `calc((100% - 70px) / ${laneCount} - ${laneCount>1?4:0}px)`;
+    div.style.borderLeftColor = state.categories[t.category] || '#6366f1';
+    div.style.setProperty('--catColor', state.categories[t.category] || '#8b5cf6');
+    if(!skipStagger){
+      const idx = sortedForStagger.findIndex(o=>o.id===t.id);
+      div.style.animationDelay = (idx*28)+'ms';
+    } else {
+      div.style.animation = 'none';
+    }
+    div.dataset.id = t.id;
+    div.innerHTML = `
+      <span class="delBtn" title="Supprimer">✕</span>
+      <div class="title"><input type="checkbox" ${t.done?'checked':''}/> ${t.recurId?'<span title="Routine" style="opacity:.75">🔁</span> ':''}${t.parallel?'<span title="Activité en parallèle" style="opacity:.75">🔀</span> ':''}${escapeHtml(t.title)}</div>
+      <div class="time">${t.start} · ${fmtDur(t.duration)}</div>
+      <div class="resizeHandle"></div>
+    `;
+    const dayKey = iso(currentDate);
+    div.querySelector('input[type=checkbox]').addEventListener('change', (e)=>{
+      onTaskChecked(t, dayKey, e.target.checked, e.target);
+    });
+    div.querySelector('.delBtn').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      deleteTask(t, dayKey);
+    });
+    attachDrag(div, t);
+    grid.appendChild(div);
+  });
+}
+
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function attachDrag(div, task){
+  let mode = null, startY=0, origStart=0, origDuration=0, moved=false;
+  div.addEventListener('dblclick', (e)=>{
+    if(e.target.tagName==='INPUT' || e.target.classList.contains('delBtn')) return;
+    openTaskModal(null, task);
+  });
+  div.addEventListener('mousedown', (e)=>{
+    if(e.button !== 0) return;
+    if(e.target.tagName==='INPUT' || e.target.classList.contains('delBtn')) return;
+    if(e.target.classList.contains('resizeHandle')) mode='resize'; else mode='move';
+    startY = e.clientY;
+    origStart = hhmmToMinutes(task.start);
+    origDuration = task.duration;
+    moved = false;
+    e.preventDefault();
+    e.stopPropagation();
+    const onMove = (ev)=>{
+      const deltaMin = Math.round(((ev.clientY-startY)/HOUR_H*60)/15)*15;
+      if(mode==='move'){
+        let newStart = origStart + deltaMin;
+        // keep the whole block inside the 6h–24h timeline
+        newStart = Math.max(START_HOUR*60, Math.min(newStart, END_HOUR*60 - task.duration));
+        const v = minutesToHHMM(newStart);
+        if(v === task.start) return;
+        task.start = v;
+      } else {
+        const maxDur = END_HOUR*60 - origStart;
+        const newDur = Math.max(15, Math.min(maxDur, origDuration + deltaMin));
+        if(newDur === task.duration) return;
+        task.duration = newDur;
+      }
+      moved = true;
+      renderTasks({skipStagger:true});
+    };
+    const onUp = ()=>{
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if(moved){ persist(); renderTasks({skipStagger:true}); }
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+function badgeForPct(total, pct){
+  if(total===0) return '🌱';
+  if(pct>=100) return '🏆';
+  if(pct>=60) return '🔥';
+  if(pct>0) return '⚡';
+  return '🌱';
+}
+
+function computeStreak(){
+  // count consecutive days up to and including today with 100% completion
+  let streak = 0;
+  let d = new Date();
+  // if today isn't fully done yet, start counting from yesterday (today still "in progress")
+  const todayTasks = state.days[iso(d)] || [];
+  const todayDone = todayTasks.length>0 && todayTasks.every(t=>t.done);
+  if(!todayDone) d.setDate(d.getDate()-1);
+  while(true){
+    const key = iso(d);
+    const list = state.days[key];
+    if(list && list.length>0 && list.every(t=>t.done)){
+      streak++;
+      d.setDate(d.getDate()-1);
+    } else break;
+  }
+  return streak;
+}
+
+function spawnConfetti(){
+  const colors = ['#7c7ff4','#34d399','#f6ad55','#5eead4','#f56565','#fbbf24'];
+  const container = document.getElementById('celebration');
+  container.innerHTML = '';
+  container.classList.add('show');
+  for(let i=0;i<70;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = Math.random()*100+'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (1.8+Math.random()*1.4)+'s';
+    el.style.animationDelay = (Math.random()*0.4)+'s';
+    el.style.width = (6+Math.random()*5)+'px';
+    container.appendChild(el);
+  }
+  const msg = document.getElementById('celebrateMsg');
+  const streak = computeStreak();
+  msg.innerHTML = `🎉 ${escapeHtml(withNick('Journée complétée'))} !${streak>1?`<br><span style="font-size:12px;color:var(--text-dim);font-weight:500">🔥 ${streak} jours d'affilée</span>`:''}`;
+  msg.classList.add('show');
+  setTimeout(()=>{ container.classList.remove('show'); container.innerHTML=''; }, 3200);
+  setTimeout(()=>{ msg.classList.remove('show'); }, 2600);
+}
+
+let lastCelebratedDay = null;
+
+function computeGameStats(){
+  let totalTasksDone = 0;
+  let totalDaysCompleted = 0;
+  let totalDaysWithTasks = 0;
+  let bonusXp = 0;
+  let earlyBird = false;    // completed a task scheduled before 08:00
+  let nightOwl = false;     // completed a task scheduled at/after 22:00
+  let varietyDay = false;   // 4+ different categories done in the same day
+  let weekendPerfect = false; // a Saturday or Sunday fully completed
+  let maxTasksInDay = 0;
+  let parallelUsed = false; // used the "parallel activity" feature at least once
+  let midnightTask = false; // a task starting right at 00:xx? (none, END_HOUR=24) -> use 23:xx done
+  let lateNightDone = false; // completed a task at/after 23:00
+  let sameMinuteCompletion = false; // two tasks checked within the same day both starting at identical minute (back to back override) placeholder
+  let singleTaskDay = false; // a day with exactly 1 task, fully completed
+  let allCategoriesEverUsed = new Set();
+
+  Object.entries(state.days).forEach(([dayKey, list])=>{
+    if(!list || list.length===0) return;
+    totalDaysWithTasks++;
+    const done = list.filter(t=>t.done);
+    totalTasksDone += done.length;
+    if(done.length===list.length) totalDaysCompleted++;
+    maxTasksInDay = Math.max(maxTasksInDay, done.length);
+    if(list.length===1 && done.length===1) singleTaskDay = true;
+    list.forEach(t=>{ if(t.done && t.bonusXp) bonusXp += t.bonusXp; allCategoriesEverUsed.add(t.category); });
+
+    done.forEach(t=>{
+      const startMin = hhmmToMinutes(t.start);
+      if(startMin < 8*60) earlyBird = true;
+      if(startMin >= 22*60) nightOwl = true;
+      if(startMin >= 23*60) lateNightDone = true;
+      if(t.parallel) parallelUsed = true;
+    });
+    const doneCats = new Set(done.map(t=>t.category));
+    if(doneCats.size >= 4) varietyDay = true;
+
+    if(list.length>0 && done.length===list.length){
+      const d = new Date(dayKey+'T00:00:00');
+      const dow = d.getDay(); // 0=sunday, 6=saturday
+      if(dow===0 || dow===6) weekendPerfect = true;
+    }
+  });
+  const bestStreak = computeBestStreak();
+  const quest = questStats(), chal = challengeStats();
+  const totalXp = totalTasksDone*10 + totalDaysCompleted*25 + bonusXp + quest.xp + chal.xp;
+  const now = new Date();
+  return {totalTasksDone, totalDaysCompleted, totalDaysWithTasks, bestStreak, totalXp,
+          earlyBird, nightOwl, varietyDay, weekendPerfect, maxTasksInDay, parallelUsed,
+          lateNightDone, singleTaskDay, categoriesEverUsedCount: allCategoriesEverUsed.size,
+          remixUsed: getCounter('remixUsed'), randomUsed: getCounter('randomUsed'),
+          themesUsedCount: (state.counters && state.counters.themesUsed) ? state.counters.themesUsed.length : 0,
+          daysCleared: getCounter('daysCleared'), tasksDeleted: getCounter('tasksDeleted'),
+          themeToggles: getCounter('themeToggles'), zoomClicks: getCounter('zoomClicks'),
+          konamiFound: getCounter('konamiFound'),
+          questsDone: quest.done, questWeeksCleared: quest.weeksCleared,
+          challengesWon: chal.won, bestChallengeWon: chal.best,
+          challengesStarted: getCounter('challengesStarted'),
+          routinesCreated: getCounter('routinesCreated'), weekPlanned: getCounter('weekPlanned'),
+          hasPseudo: !!(state.profile && state.profile.name),
+          ownedThemesCount: (state.economy && state.economy.unlockedThemes) ? state.economy.unlockedThemes.length : 1,
+          hasBastinos: !!(state.economy && state.economy.unlockedThemes && state.economy.unlockedThemes.includes('bastinos')),
+          purchasedAvatarsCount: (state.economy && state.economy.unlockedAvatars)
+            ? state.economy.unlockedAvatars.filter(icon=>{
+                const def = SHOP_AVATARS.find(a=>a.icon===icon);
+                return def && def.price > 0;
+              }).length
+            : 0,
+          isAppOpenPastMidnightLocal: now.getHours() < 4, // using the app super late at night
+          isAppOpenAtDawn: now.getHours() >= 4 && now.getHours() < 6,
+          isFriday13: now.getDay()===5 && now.getDate()===13};
+}
+
+function computeBestStreak(){
+  const days = Object.keys(state.days).filter(k=> state.days[k] && state.days[k].length>0 &&
+      state.days[k].every(t=>t.done)).sort();
+  if(days.length===0) return 0;
+  let best=1, cur=1;
+  for(let i=1;i<days.length;i++){
+    const prev = new Date(days[i-1]+'T00:00:00');
+    const curD = new Date(days[i]+'T00:00:00');
+    const diffDays = Math.round((curD-prev)/86400000);
+    if(diffDays===1){ cur++; best=Math.max(best,cur); } else { cur=1; }
+  }
+  return Math.max(best, computeStreak());
+}
+
+function xpThreshold(level){ return 50*level*(level-1); } // cumulative XP needed to reach `level`
+function levelFromXp(xp){
+  let lvl=1;
+  while(xpThreshold(lvl+1) <= xp) lvl++;
+  return lvl;
+}
+function levelTitle(lvl){
+  if(lvl>=16) return 'Légende';
+  if(lvl>=11) return 'Maître du temps';
+  if(lvl>=8) return 'Stratège';
+  if(lvl>=5) return 'Organisé';
+  if(lvl>=3) return 'Apprenti';
+  return 'Novice';
+}
+
+const ACHIEVEMENTS = [
+  // --- progression de base ---
+  {id:'first', icon:'🌱', name:'Premier pas', desc:'Termine ta première tâche',
+   check:s=>s.totalTasksDone>=1},
+  {id:'perfectday', icon:'🏆', name:'Journée parfaite', desc:'Complète 100% d\'une journée',
+   check:s=>s.totalDaysCompleted>=1},
+  {id:'streak3', icon:'🔥', name:'En feu', desc:'3 jours parfaits d\'affilée',
+   check:s=>s.bestStreak>=3},
+  {id:'streak7', icon:'⚡', name:'Semaine légendaire', desc:'7 jours parfaits d\'affilée',
+   check:s=>s.bestStreak>=7},
+  {id:'streak14', icon:'🌋', name:'Inarrêtable', desc:'14 jours parfaits d\'affilée',
+   check:s=>s.bestStreak>=14},
+  {id:'streak30', icon:'🪐', name:'Un mois de constance', desc:'30 jours parfaits d\'affilée',
+   check:s=>s.bestStreak>=30},
+  {id:'tasks10', icon:'📝', name:'Sur la lancée', desc:'10 tâches complétées au total',
+   check:s=>s.totalTasksDone>=10},
+  {id:'tasks25', icon:'✅', name:'Productif', desc:'25 tâches complétées au total',
+   check:s=>s.totalTasksDone>=25},
+  {id:'tasks100', icon:'💯', name:'Centurion', desc:'100 tâches complétées au total',
+   check:s=>s.totalTasksDone>=100},
+  {id:'tasks250', icon:'🏔️', name:'Machine de guerre', desc:'250 tâches complétées au total',
+   check:s=>s.totalTasksDone>=250},
+  {id:'tasks500', icon:'🌌', name:'Légende vivante', desc:'500 tâches complétées au total',
+   check:s=>s.totalTasksDone>=500},
+  {id:'level5', icon:'🚀', name:'Organisé confirmé', desc:'Atteins le niveau 5',
+   check:s=>levelFromXp(s.totalXp)>=5},
+  {id:'level10', icon:'👑', name:'Stratège d\'élite', desc:'Atteins le niveau 10',
+   check:s=>levelFromXp(s.totalXp)>=10},
+  {id:'level16', icon:'🏵️', name:'Statut légendaire', desc:'Atteins le niveau 16',
+   check:s=>levelFromXp(s.totalXp)>=16},
+
+  // --- habitudes & variété ---
+  {id:'earlybird', icon:'🌅', name:'Lève-tôt', desc:'Termine une tâche prévue avant 8h',
+   check:s=>s.earlyBird},
+  {id:'nightowl', icon:'🌙', name:'Oiseau de nuit', desc:'Termine une tâche prévue après 22h',
+   check:s=>s.nightOwl},
+  {id:'variety', icon:'🎨', name:'Touche-à-tout', desc:'4 catégories différentes complétées en une journée',
+   check:s=>s.varietyDay},
+  {id:'allcats', icon:'🧩', name:'Collectionneur', desc:'Utilise toutes les catégories par défaut au moins une fois',
+   check:s=>s.categoriesEverUsedCount>=5},
+  {id:'weekend', icon:'🏖️', name:'Weekend parfait', desc:'Complète 100% d\'un samedi ou dimanche',
+   check:s=>s.weekendPerfect},
+  {id:'bigday', icon:'🗂️', name:'Grosse journée', desc:'8 tâches complétées en une seule journée',
+   check:s=>s.maxTasksInDay>=8},
+  {id:'multitask', icon:'🔀', name:'Jongleur', desc:'Utilise une activité en parallèle',
+   check:s=>s.parallelUsed},
+  {id:'minimalist', icon:'🎯', name:'Minimaliste', desc:'Complète une journée avec une seule tâche',
+   check:s=>s.singleTaskDay},
+
+  // --- découverte des fonctionnalités ---
+  {id:'remixer', icon:'🧬', name:'Alchimiste', desc:'Utilise le Remix de journée',
+   check:s=>s.remixUsed>=1},
+  {id:'gambler', icon:'🎲', name:'Joueur', desc:'Utilise la Journée aléatoire',
+   check:s=>s.randomUsed>=1},
+  {id:'gamblerpro', icon:'🃏', name:'Accro au hasard', desc:'Utilise la Journée aléatoire 10 fois',
+   check:s=>s.randomUsed>=10},
+  {id:'explorer', icon:'🗺️', name:'Explorateur', desc:'Essaie 4 journées types différentes',
+   check:s=>s.themesUsedCount>=4},
+  {id:'allthemes', icon:'🏁', name:'Tour du monde', desc:'Essaie les 8 journées types',
+   check:s=>s.themesUsedCount>=8},
+  {id:'nightandday', icon:'🌗', name:'Caméléon', desc:'Change de thème clair/sombre 10 fois',
+   check:s=>s.themeToggles>=10},
+  {id:'zoomer', icon:'🔍', name:'Perfectionniste du pixel', desc:'Utilise le zoom 20 fois',
+   check:s=>s.zoomClicks>=20},
+  {id:'freshstart', icon:'🧹', name:'Nouveau départ', desc:'Vide une journée pour repartir à zéro',
+   check:s=>s.daysCleared>=1},
+  {id:'ruthless', icon:'✂️', name:'Sans pitié', desc:'Supprime 15 tâches',
+   check:s=>s.tasksDeleted>=15},
+  {id:'identity', icon:'🪪', name:'Carte d\'identité', desc:'Choisis un pseudo dans ton profil',
+   check:s=>s.hasPseudo},
+  {id:'fashionista', icon:'👗', name:'Fashionista', desc:'Débloque 3 thèmes de couleur dans la boutique',
+   check:s=>s.ownedThemesCount>=3},
+  {id:'collector2', icon:'🎭', name:'Collection d\'avatars', desc:'Débloque 5 avatars payants dans la boutique',
+   check:s=>s.purchasedAvatarsCount>=5},
+
+  // --- easter eggs secrets (noms/desc cachés tant que non débloqués) ---
+  {id:'konami', icon:'🕹️', name:'Les vrais savent', desc:'Entre le code Konami : ↑ ↑ ↓ ↓ ← → ← → B A',
+   check:s=>s.konamiFound>=1, secret:true},
+  {id:'owl3am', icon:'🦉', name:'Insomniaque', desc:'Ouvre l\'app entre minuit et 4h du matin',
+   check:s=>s.isAppOpenPastMidnightLocal, secret:true},
+  {id:'dawn', icon:'🌄', name:'Aux aurores', desc:'Ouvre l\'app entre 4h et 6h du matin',
+   check:s=>s.isAppOpenAtDawn, secret:true},
+  {id:'friday13', icon:'🖤', name:'13 à table', desc:'Ouvre l\'app un vendredi 13',
+   check:s=>s.isFriday13, secret:true},
+  {id:'lastminute', icon:'🌃', name:'Dans le dernier wagon', desc:'Termine une tâche prévue après 23h',
+   check:s=>s.lateNightDone, secret:true},
+
+  // --- planning, quêtes & défis ---
+  {id:'routine1', icon:'🔁', name:'Pilote automatique', desc:'Crée ta première routine (tâche répétée)',
+   check:s=>s.routinesCreated>=1},
+  {id:'weekplan', icon:'🗓️', name:'Architecte de la semaine', desc:'Planifie une semaine entière d\'un coup',
+   check:s=>s.weekPlanned>=1},
+  {id:'quest1', icon:'📜', name:'Première quête', desc:'Accomplis une quête de la semaine',
+   check:s=>s.questsDone>=1},
+  {id:'questweek', icon:'👑', name:'Semaine héroïque', desc:'Accomplis les 3 quêtes d\'une même semaine',
+   check:s=>s.questWeeksCleared>=1},
+  {id:'quest10', icon:'🗺️', name:'Aventurier aguerri', desc:'Accomplis 10 quêtes de la semaine',
+   check:s=>s.questsDone>=10},
+  {id:'challenger', icon:'🎯', name:'Lanceur de défi', desc:'Lance ton premier défi de régularité',
+   check:s=>s.challengesStarted>=1},
+  {id:'challenge1', icon:'🏅', name:'Défi relevé', desc:'Termine un défi de régularité sans manquer un jour',
+   check:s=>s.challengesWon>=1},
+  {id:'challenge30', icon:'💎', name:'Volonté de fer', desc:'Termine un défi de 30 jours ou plus',
+   check:s=>s.bestChallengeWon>=30},
+
+  // --- le Graal ---
+  {id:'bastinos', icon:'🍑', name:'Statut Bastinos', desc:'Débloque le thème légendaire Bastinos',
+   check:s=>s.hasBastinos},
+];
+
+let lastKnownLevel = null;
+let unlockedAchIds = new Set(); // tracks already-seen unlocks so we only toast once
+
+// --- Lightweight synth sounds (Web Audio API, no files to ship/break) ---
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC) audioCtx = new AC();
+  }
+  return audioCtx;
+}
+function playTone(freq, startTime, duration, gainPeak, type='sine'){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(gainPeak, startTime + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.02);
+}
+function playCheckSound(){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  // short, warm two-note "ding" — positive confirmation, not a jarring beep
+  const t = ctx.currentTime;
+  playTone(880, t, 0.14, 0.09);
+  playTone(1318.5, t + 0.06, 0.18, 0.08);
+}
+function playCritSound(){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  // slightly bigger three-note sparkle for crit hits / loot
+  const t = ctx.currentTime;
+  playTone(659.25, t, 0.12, 0.08);
+  playTone(880, t + 0.05, 0.12, 0.08);
+  playTone(1318.5, t + 0.1, 0.2, 0.09);
+}
+function playAchievementSound(){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  // a little fanfare — rarer event, slightly more presence
+  const t = ctx.currentTime;
+  [523.25, 659.25, 783.99, 1046.5].forEach((f,i)=> playTone(f, t + i*0.09, 0.22, 0.085));
+}
+
+// --- Reward content banks (motivation, crit hits, loot) — all local, no network/LLM ---
+const MOTIV_PHRASES = [
+  "Une tâche de moins, une version de toi en plus.",
+  "Pas besoin de tout faire aujourd'hui. Juste ça.",
+  "La discipline, c'est se tenir une promesse qu'on s'est faite à soi-même.",
+  "Petit pas. Vraie victoire.",
+  "Tu avances, même sans le sentir.",
+  "C'est ça, la régularité qui bat le talent.",
+  "Rayé de la liste, gravé dans l'élan.",
+  "Fait, pas parfait. Et c'est très bien comme ça.",
+  "Chaque case cochée est un vote pour la personne que tu veux devenir.",
+  "Tu viens de prouver un truc à toi-même.",
+  "La machine tourne. Continue.",
+  "Simple à dire, plus dur à faire. Tu l'as fait.",
+  "Un de moins sur la liste, un de plus dans le rétro.",
+  "L'élan se construit tâche par tâche.",
+  "Ça compte, même les petites.",
+  "Tu es plus avancé que la version de toi d'hier.",
+  "Nice. Prochaine.",
+  "C'est exactement comme ça que les journées se gagnent.",
+  "Ton futur toi te remercie déjà.",
+  "Pas de bruit, pas de drame. Juste du travail bien fait.",
+];
+
+const CRIT_PHRASES = [
+  "COUP CRITIQUE ! Tu étais clairement dans le flow sur celle-là.",
+  "ENCHAÎNEMENT PARFAIT ! Double XP mérité.",
+  "CA C'EST DE L'EXÉCUTION. Bonus débloqué.",
+  "MOMENTUM MAXIMAL ! XP doublé.",
+  "TU ES EN FEU. Prends ton bonus.",
+];
+
+const LOOT_TABLE = [
+  {icon:'☕', name:'Café virtuel offert', flavor:'(il ne se boit pas, mais le geste compte)'},
+  {icon:'🧢', name:'Casquette de la productivité', flavor:'style +12'},
+  {icon:'🧦', name:'Chaussettes dépareillées légendaires', flavor:'chaque paire est unique'},
+  {icon:'🪙', name:'Pièce de la régularité', flavor:'brillante, inutile, satisfaisante'},
+  {icon:'📀', name:'Disque "Lo-fi pour se concentrer"', flavor:'édition collector'},
+  {icon:'🧃', name:'Jus de la détermination', flavor:'goût: motivation'},
+  {icon:'🛡️', name:'Bouclier anti-procrastination', flavor:'durée: jusqu\'à la prochaine notification'},
+  {icon:'🗝️', name:'Clé mystérieuse', flavor:'ouvre... rien, mais classe'},
+  {icon:'🌟', name:'Étoile de constance', flavor:'rareté: commune mais précieuse'},
+  {icon:'🎯', name:'Flèche de précision', flavor:'pour viser juste demain aussi'},
+];
+
+function randomFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+// --- Virtual economy: coins earned by doing tasks, spent in the shop ---
+function addCoins(amount){
+  if(!state.economy) state.economy = {coinsSpent:0, unlockedThemes:['default'], unlockedAvatars:['🙂'], activeThemeId:'default'};
+  state.economy.bonusCoins = (state.economy.bonusCoins || 0) + amount;
+  persist();
+  bumpCoinDisplay();
+}
+function bumpCoinDisplay(){
+  const el = document.getElementById('coinWrap');
+  if(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+}
+function getCoinBalance(){
+  const stats = computeGameStats();
+  const bonus = (state.economy && state.economy.bonusCoins) || 0;
+  const spent = (state.economy && state.economy.coinsSpent) || 0;
+  return Math.max(0, stats.totalXp + bonus - spent);
+}
+
+const SHOP_THEMES = [
+  {id:'default', name:'Classique', price:0, colors:['#8b5cf6','#ec4899']},
+  {id:'ocean', name:'Océan', price:150, colors:['#06b6d4','#3b82f6']},
+  {id:'sunset', name:'Coucher de soleil', price:150, colors:['#f97316','#ec4899']},
+  {id:'forest', name:'Forêt', price:150, colors:['#22c55e','#0ea5e9']},
+  {id:'candy', name:'Bonbon', price:200, colors:['#f472b6','#a78bfa']},
+  {id:'gold', name:'Or', price:250, colors:['#eab308','#f97316']},
+  {id:'mono', name:'Monochrome', price:120, colors:['#64748b','#334155']},
+  {id:'neon', name:'Néon', price:300, colors:['#a3e635','#22d3ee']},
+
+  // --- Thèmes troll : complètement déjantés, pensés pour faire "bug" exprès ---
+  {id:'glitch', name:'Glitch 📼', price:90, colors:['#ff003c','#00ff9d'], troll:true,
+    warn:"L'app tremblote et change de teinte toutes les 2 secondes."},
+  {id:'invert', name:'Négatif ⚫', price:60, colors:['#111111','#333333'], troll:true,
+    warn:"Toutes les couleurs sont inversées. Oui, vraiment toutes."},
+  {id:'clown', name:'Clown 🤡', price:90, colors:['#ff00ff','#ffea00'], troll:true,
+    warn:"Un festival d'arc-en-ciel qui tourne en boucle à l'infini."},
+  {id:'vhs', name:'VHS cassée 📺', price:80, colors:['#ff0080','#00e5ff'], troll:true,
+    warn:"Lignes de scan qui défilent comme une vieille cassette."},
+  {id:'crt', name:'Vieux moniteur 🖥️', price:70, colors:['#39ff14','#0d7a0d'], troll:true,
+    warn:"Teinte verdâtre façon écran cathodique qui scintille."},
+  {id:'blind', name:'Daltonien extrême 🔴🟢', price:60, colors:['#ff0000','#008000'], troll:true,
+    warn:"Rouge et vert à fond, bon courage pour distinguer tes catégories."},
+  {id:'nightmare', name:'Cauchemar 😱', price:100, colors:['#8b0000','#1a0000'], troll:true,
+    warn:"Rouge sang très sombre, l'en-tête tremble un peu de temps en temps."},
+  {id:'comicsans', name:'Comic Sans partout 🤪', price:50, colors:['#ff69b4','#1e90ff'], troll:true,
+    warn:"Toute la police de l'app passe en Comic Sans. Pour toujours (ou presque)."},
+  {id:'matrix', name:'Matrix 🟩', price:110, colors:['#00ff41','#003b00'], troll:true,
+    warn:"Fond noir, police monospace, tu te sens déjà hacker."},
+  {id:'y2k', name:'An 2000 💿', price:65, colors:['#c0c0c0','#000080'], troll:true,
+    warn:"Gris métallisé et bleu Windows XP, nostalgie garantie."},
+
+  // --- Le thème ultime : légendaire, le plus cher et le plus abouti ---
+  {id:'bastinos', name:'Bastinos 🍑👑', price:2500, colors:['#ff6fa5','#ffb37c'], legendary:true,
+    warn:"Le thème le plus abouti de tous : rose pêche intégral, halo doré animé sur ton niveau, boutons scintillants et petites pêches qui flottent en fond. Un vrai statut de légende."},
+];
+const SHOP_AVATARS = [
+  {icon:'🙂', price:0}, {icon:'😎', price:0}, {icon:'🦊', price:0}, {icon:'🐱', price:0},
+  {icon:'🐼', price:0}, {icon:'🤖', price:0}, {icon:'👾', price:0}, {icon:'🌟', price:0},
+  {icon:'🦁', price:80}, {icon:'🐸', price:80}, {icon:'🦉', price:80}, {icon:'🐙', price:80},
+  {icon:'🐲', price:150}, {icon:'🦄', price:150}, {icon:'👽', price:150}, {icon:'🥷', price:150},
+  {icon:'🧙', price:220}, {icon:'🦸', price:220}, {icon:'👑', price:300}, {icon:'🏆', price:350},
+];
+
+async function buyTheme(themeId){
+  if(!state.economy.unlockedThemes) state.economy.unlockedThemes = ['default'];
+  const theme = SHOP_THEMES.find(t=>t.id===themeId);
+  if(!theme) return;
+  if(state.economy.unlockedThemes.includes(themeId)){
+    applyColorTheme(themeId);
+    return;
+  }
+  const balance = getCoinBalance();
+  if(balance < theme.price){
+    showToast({icon:'🪙', text:'Pas assez de pièces !', sub:`Il te manque ${theme.price-balance} pièces.`});
+    return;
+  }
+  if(theme.warn){
+    const ok = await showConfirm({
+      icon: theme.legendary ? '🍑' : '⚠️',
+      title: theme.legendary ? `Débloquer ${theme.name} ?` : `${theme.name} — à savoir avant d'acheter`,
+      msg: theme.warn + (theme.legendary ? '' : '<br><br>Tu pourras toujours revenir à un thème normal ensuite.'),
+      okLabel: theme.legendary ? 'Devenir légende' : "Oui, j'assume", cancelLabel:'Annuler',
+    });
+    if(!ok) return;
+  }
+  state.economy.coinsSpent += theme.price;
+  state.economy.unlockedThemes.push(themeId);
+  applyColorTheme(themeId);
+  persist();
+  showToast({icon: theme.legendary ? '🍑👑' : '🎉', text:`Thème "${theme.name}" débloqué !`, cls:'loot'});
+  updateGamification();
+  renderShopTab();
+}
+let bastinosInterval = null;
+function startBastinosEffect(){
+  const bg = document.getElementById('bastinosBg');
+  if(!bg) return;
+  bg.classList.add('show');
+  if(bastinosInterval) return; // already running
+  const spawnPeach = ()=>{
+    if(document.body.getAttribute('data-color-theme') !== 'bastinos'){
+      stopBastinosEffect();
+      return;
+    }
+    const p = document.createElement('span');
+    p.className = 'bastinosPeach';
+    p.textContent = '🍑';
+    p.style.left = Math.random()*100+'vw';
+    const dur = 9+Math.random()*6;
+    p.style.animationDuration = dur+'s';
+    p.style.fontSize = (14+Math.random()*16)+'px';
+    bg.appendChild(p);
+    setTimeout(()=> p.remove(), dur*1000+200);
+  };
+  bastinosInterval = setInterval(spawnPeach, 900);
+  for(let i=0;i<4;i++) setTimeout(spawnPeach, i*220); // seed a few immediately
+}
+function stopBastinosEffect(){
+  const bg = document.getElementById('bastinosBg');
+  if(bg){ bg.classList.remove('show'); bg.innerHTML=''; }
+  if(bastinosInterval){ clearInterval(bastinosInterval); bastinosInterval = null; }
+}
+function applyColorTheme(themeId){
+  document.body.setAttribute('data-color-theme', themeId==='default' ? '' : themeId);
+  state.economy.activeThemeId = themeId;
+  if(themeId === 'bastinos') startBastinosEffect(); else stopBastinosEffect();
+  persist();
+  renderShopTab();
+}
+function buyAvatar(icon){
+  if(!state.economy.unlockedAvatars) state.economy.unlockedAvatars = ['🙂'];
+  const item = SHOP_AVATARS.find(a=>a.icon===icon);
+  if(!item) return;
+  if(state.economy.unlockedAvatars.includes(icon)){
+    showToast({icon, text:'Déjà débloqué — choisis-le dans l\'onglet Pseudo.'});
+    return;
+  }
+  const balance = getCoinBalance();
+  if(balance < item.price){
+    showToast({icon:'🪙', text:'Pas assez de pièces !', sub:`Il te manque ${item.price-balance} pièces.`});
+    return;
+  }
+  state.economy.coinsSpent += item.price;
+  state.economy.unlockedAvatars.push(icon);
+  persist();
+  showToast({icon, text:'Avatar débloqué !', cls:'loot'});
+  updateGamification();
+  renderShopTab();
+}
+
+function showToast({icon, text, sub, cls}){
+  const stack = document.getElementById('toastStack');
+  const el = document.createElement('div');
+  el.className = 'toast'+(cls?(' '+cls):'');
+  el.innerHTML = `<span class="toastIcon">${icon}</span>
+    <span><span class="toastText">${escapeHtml(text)}</span>${sub?`<div class="toastSub">${escapeHtml(sub)}</div>`:''}</span>`;
+  stack.appendChild(el);
+  setTimeout(()=>el.remove(), 6100);
+}
+
+function triggerTaskReward(checkboxEl, task){
+  const isCrit = Math.random() < 0.12; // ~1 in 8 chance, keeps it a pleasant surprise not a routine
+  const isLoot = !isCrit && Math.random() < 0.18;
+  const baseXp = 10;
+
+  if(isCrit){
+    const xp = baseXp*2;
+    spawnXpFloat(checkboxEl, xp, true);
+    showToast({icon:'💥', text: randomFrom(CRIT_PHRASES), sub:`+${xp} XP (critique !)`, cls:'crit'});
+    playCritSound();
+    task.bonusXp = (task.bonusXp||0) + (xp-baseXp);
+  } else {
+    spawnXpFloat(checkboxEl, baseXp, false);
+    playCheckSound();
+    if(isLoot){
+      const item = randomFrom(LOOT_TABLE);
+      showToast({icon:item.icon, text:`Trouvaille : ${item.name}`, sub:item.flavor, cls:'loot'});
+    } else {
+      showToast({icon:'✨', text: nick() && Math.random()<0.35 ? `${randomFrom(MOTIV_PHRASES)} 💪 ${nick()}` : randomFrom(MOTIV_PHRASES)});
+    }
+  }
+}
+
+const RECAP_MESSAGES = {
+  perfect: [
+    "Journée à 100%. C'est rare, et tu viens de le faire.",
+    "Toutes les cases cochées. Propre, net, sans bavure.",
+    "Zéro excuse, zéro report. Chapeau.",
+  ],
+};
+
+function buildRecapMessage(stats){
+  const streak = computeStreak();
+  let msg = randomFrom(RECAP_MESSAGES.perfect);
+  if(streak>=2) msg += ` Et ça fait ${streak} jours d'affilée — ne casse pas ça.`;
+  return msg;
+}
+
+let lastRecapDay = null;
+function maybeShowDayRecap(dayKey){
+  dayKey = dayKey || iso(currentDate);
+  const tasks = state.days[dayKey] || [];
+  if(tasks.length===0) return;
+  const allDone = tasks.every(t=>t.done);
+  if(!allDone || lastRecapDay===dayKey) return;
+  lastRecapDay = dayKey;
+  setTimeout(()=>{
+    document.getElementById('recapTitle').textContent = `${withNick('Journée complétée')} !`;
+    document.getElementById('recapMsg').textContent = buildRecapMessage(computeGameStats());
+    document.getElementById('dayRecapOverlay').classList.add('show');
+  }, 1300); // let confetti play first
+}
+document.getElementById('dayRecapClose').onclick = ()=>{
+  document.getElementById('dayRecapOverlay').classList.remove('show');
+};
+
+function spawnXpFloat(originEl, amount, isCrit){
+  const rect = originEl.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'xpFloat';
+  el.textContent = '+'+amount+' XP'+(isCrit?' !':'');
+  if(isCrit){ el.style.color = '#fbbf24'; el.style.fontSize = '16px'; }
+  el.style.left = (rect.left + rect.width/2 - 20)+'px';
+  el.style.top = (rect.top - 6)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1150);
+}
+
+function showLevelUp(newLevel){
+  document.getElementById('lvUpNum').textContent = newLevel;
+  document.getElementById('lvUpTitle').textContent = levelTitleWithName(newLevel);
+  const overlay = document.getElementById('levelUpOverlay');
+  overlay.classList.add('show');
+  setTimeout(()=>overlay.classList.remove('show'), 2200);
+}
+
+function renderAchievements(stats){
+  const el = document.getElementById('achList');
+  el.innerHTML = '';
+  let unlockedCount = 0;
+  const persisted = state.unlockedAchievements || [];
+  ACHIEVEMENTS.forEach(a=>{
+    // moment-based secrets (opened at 3am, Friday 13th...) stay unlocked once earned,
+    // instead of re-locking as soon as the condition is no longer true
+    const unlocked = a.check(stats) || (a.secret && persisted.includes(a.id));
+    if(unlocked) unlockedCount++;
+    const isHiddenSecret = a.secret && !unlocked;
+    const row = document.createElement('div');
+    row.className = 'achItem'+(unlocked?' unlocked':'')+(a.secret?' secret':'');
+    const shownIcon = unlocked ? a.icon : (isHiddenSecret ? '❔' : '🔒');
+    const shownName = isHiddenSecret ? 'Succès secret' : a.name;
+    const shownDesc = isHiddenSecret ? 'Débloque-le pour révéler comment.' : a.desc;
+    row.innerHTML = `<div class="achIcon">${shownIcon}</div>
+      <div class="achInfo"><div class="achName">${shownName}</div><div class="achDesc">${shownDesc}</div></div>`;
+    el.appendChild(row);
+  });
+  const label = document.getElementById('achProgressLabel');
+  if(label) label.textContent = `${unlockedCount} / ${ACHIEVEMENTS.length} succès débloqués`;
+}
+
+function checkNewAchievements(stats){
+  if(!state.unlockedAchievements) state.unlockedAchievements = [];
+  let newlyUnlocked = false;
+  ACHIEVEMENTS.forEach(a=>{
+    if(a.check(stats) && !unlockedAchIds.has(a.id)){
+      unlockedAchIds.add(a.id);
+      if(!state.unlockedAchievements.includes(a.id)) state.unlockedAchievements.push(a.id);
+      newlyUnlocked = true;
+      // skip the toast on first load / initial sync (handled by callers passing announce=false)
+      if(announceAchievements){
+        showToast({icon:a.icon, text:`Succès débloqué : ${a.name}`, sub:a.desc, cls:'loot'});
+        playAchievementSound();
+        addCoins(20); // small coin bonus on top of XP, so unlocking feels extra rewarding
+      }
+    }
+  });
+  if(newlyUnlocked) persist();
+}
+// Already-earned ids are seeded from the save file in loadState(), so only genuinely
+// new unlocks toast — including ones earned at launch (e.g. opening the app at 3am).
+let announceAchievements = true;
+
+function levelTitleWithName(level){
+  const name = (state.profile && state.profile.name) ? state.profile.name : null;
+  return name ? `${levelTitle(level)} ${name}` : levelTitle(level);
+}
+
+function updateGamification(){
+  const stats = computeGameStats();
+  const level = levelFromXp(stats.totalXp);
+  const curThresh = xpThreshold(level);
+  const nextThresh = xpThreshold(level+1);
+  const pct = nextThresh>curThresh ? Math.round(((stats.totalXp-curThresh)/(nextThresh-curThresh))*100) : 100;
+
+  const avatar = (state.profile && state.profile.avatar) ? state.profile.avatar : '🙂';
+  document.getElementById('levelAvatar').textContent = avatar;
+  document.getElementById('levelTitle').textContent = nick() || levelTitle(level);
+  document.getElementById('levelPill').title = `${levelTitleWithName(level)} · niveau ${level} — voir mon profil`;
+  document.getElementById('levelXp').textContent = nick() ? `${levelTitle(level)} · ${stats.totalXp} XP` : `${stats.totalXp} XP`;
+  document.getElementById('levelRing').style.setProperty('--ringPct', pct+'%');
+  document.getElementById('coinLabel').textContent = getCoinBalance();
+
+  renderAchievements(stats);
+  checkNewAchievements(stats);
+  announceAchievements = true;
+  updateProfileHeader();
+
+  const streakWrap = document.getElementById('streakWrap');
+  streakWrap.classList.toggle('hot', stats.bestStreak>0 && computeStreak()>=3);
+
+  if(lastKnownLevel!==null && level>lastKnownLevel){
+    // level-up fanfare + coins only the first time a level is ever reached:
+    // unchecking/rechecking a task around a level boundary used to pay again each time
+    const rewarded = (state.economy && state.economy.rewardedLevel) || 1;
+    if(level > rewarded){
+      showLevelUp(level);
+      let bonus = 0;
+      for(let l=rewarded+1; l<=level; l++) bonus += l*10;
+      state.economy.rewardedLevel = level;
+      addCoins(bonus);
+    }
+  }
+  if(state.economy && !state.economy.rewardedLevel) state.economy.rewardedLevel = level;
+  lastKnownLevel = level;
+}
+
+function updateProfileHeader(){
+  const stats = computeGameStats();
+  const level = levelFromXp(stats.totalXp);
+  const avatar = (state.profile && state.profile.avatar) ? state.profile.avatar : '🙂';
+  const name = (state.profile && state.profile.name) ? state.profile.name : 'Aventurier';
+  document.getElementById('profileAvatarBig').textContent = avatar;
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileSub').textContent = `Niveau ${level} · ${levelTitle(level)} · ${stats.totalXp} XP · 🪙 ${getCoinBalance()}`;
+  const nameInput = document.getElementById('profileNameInput');
+  if(nameInput && document.activeElement !== nameInput) nameInput.value = state.profile.name || '';
+}
+
+function renderShopTab(){
+  const themeGrid = document.getElementById('shopThemeGrid');
+  const avatarGrid = document.getElementById('shopAvatarGrid');
+  if(!themeGrid || !avatarGrid) return;
+  const owned = state.economy.unlockedThemes || ['default'];
+  const active = state.economy.activeThemeId || 'default';
+  themeGrid.innerHTML = '';
+  SHOP_THEMES.forEach(theme=>{
+    const isOwned = owned.includes(theme.id);
+    const isActive = active===theme.id;
+    const item = document.createElement('div');
+    item.className = 'shopItem'+(isActive?' active':'')+(!isOwned?' locked':'')
+      +(theme.troll?' shopTroll':'')+(theme.legendary?' shopLegendary':'');
+    if(theme.warn) item.title = theme.warn;
+    item.innerHTML = `${isActive?'<span class="shopItemCheck">✓</span>':''}
+      ${theme.troll?'<span class="shopBadge troll">TROLL</span>':''}
+      ${theme.legendary?'<span class="shopBadge legendary">LÉGENDAIRE</span>':''}
+      <div class="shopThemeSwatch" style="background:linear-gradient(135deg,${theme.colors[0]},${theme.colors[1]})"></div>
+      <div class="shopItemName">${theme.name}</div>
+      <div class="shopItemPrice ${isOwned?'owned':''}">${isOwned ? (isActive?'Actif':'Possédé') : '🪙 '+theme.price}</div>`;
+    item.onclick = ()=> buyTheme(theme.id);
+    themeGrid.appendChild(item);
+  });
+
+  const ownedAv = state.economy.unlockedAvatars || ['🙂'];
+  avatarGrid.innerHTML = '';
+  SHOP_AVATARS.forEach(av=>{
+    const isOwned = ownedAv.includes(av.icon);
+    const item = document.createElement('div');
+    item.className = 'shopItem'+(!isOwned?' locked':'');
+    item.innerHTML = `<div class="shopItemPreview">${isOwned?av.icon:'🔒'}</div>
+      <div class="shopItemPrice ${isOwned?'owned':''}">${isOwned ? 'Possédé' : '🪙 '+av.price}</div>`;
+    item.onclick = ()=> buyAvatar(av.icon);
+    avatarGrid.appendChild(item);
+  });
+}
+
+function renderIdentityAvatars(){
+  const grid = document.getElementById('identityAvatarGrid');
+  if(!grid) return;
+  const owned = state.economy.unlockedAvatars || ['🙂'];
+  grid.innerHTML = '';
+  owned.forEach(icon=>{
+    const opt = document.createElement('div');
+    opt.className = 'avatarOption'+(state.profile.avatar===icon?' selected':'');
+    opt.textContent = icon;
+    opt.onclick = ()=>{
+      state.profile.avatar = icon;
+      persist();
+      renderIdentityAvatars();
+      updateGamification();
+    };
+    grid.appendChild(opt);
+  });
+}
+
+function openProfileModal(){
+  renderShopTab();
+  renderIdentityAvatars();
+  updateProfileHeader();
+  renderAchievements(computeGameStats());
+  document.getElementById('profileOverlay').classList.add('show');
+}
+function closeProfileModal(){
+  clearTimeout(nickTimer);
+  commitNickname(false);
+  document.getElementById('profileOverlay').classList.remove('show');
+}
+
+
+function updateProgress(){
+  // day view: the day's tasks; week/month view: the whole period on screen
+  const keys = viewMode==='day' ? [iso(currentDate)]
+    : viewMode==='week' ? visibleKeys()
+    : visibleKeys().filter(k=> keyToDate(k).getMonth()===currentDate.getMonth());
+  const tasks = keys.flatMap(k=> state.days[k] || []);
+  const total = tasks.length;
+  const done = tasks.filter(t=>t.done).length;
+  document.getElementById('progressLabel').textContent = total===0 ? '—' : `${done}/${total}`;
+  document.getElementById('progressWrap').title = viewMode==='day' ? 'Progression du jour' : viewMode==='week' ? 'Progression de la semaine' : 'Progression du mois';
+  const pct = total===0 ? 0 : (done/total*100);
+  document.getElementById('progressBarInner').style.width = pct+'%';
+
+  const badge = document.getElementById('dayBadge');
+  const newBadge = badgeForPct(total, pct);
+  if(badge.textContent !== newBadge){
+    badge.textContent = newBadge;
+    badge.classList.add('pulse');
+    setTimeout(()=>badge.classList.remove('pulse'), 500);
+  }
+
+  const streak = computeStreak();
+  const streakWrap = document.getElementById('streakWrap');
+  document.getElementById('streakLabel').textContent = streak;
+  streakWrap.classList.toggle('zero', streak===0);
+}
+
+function render(){
+  ensureCollections();
+  // routines write their occurrences into the days on screen (today onwards)
+  if(materializeKeys(visibleKeys())) persist();
+  document.body.classList.remove('view-day','view-week','view-month');
+  document.body.classList.add('view-'+viewMode);
+  document.querySelectorAll('#viewSwitch button').forEach(b=> b.classList.toggle('active', b.dataset.view===viewMode));
+  document.getElementById('dateLabel').textContent = periodLabel();
+  document.getElementById('dateInput').value = iso(currentDate);
+  document.getElementById('todayBtn').textContent = viewMode==='day' ? 'Aujourd\'hui' : viewMode==='week' ? 'Cette semaine' : 'Ce mois';
+  document.getElementById('prevDay').title = viewMode==='day' ? 'Jour précédent' : viewMode==='week' ? 'Semaine précédente' : 'Mois précédent';
+  document.getElementById('nextDay').title = viewMode==='day' ? 'Jour suivant' : viewMode==='week' ? 'Semaine suivante' : 'Mois suivant';
+  renderCategories();
+  renderRoutines();
+  renderTemplates();
+  if(viewMode==='day'){ buildGrid(); renderTasks(); }
+  else renderPlanView();
+  updateGreeting();
+  evaluateGoals();
+  updateProgress();
+  updateGamification();
+  updateQuestPill();
+}
+
+// ================= Pseudo =================
+function nick(){ return (state.profile && state.profile.name) ? state.profile.name : ''; }
+function withNick(base, sep=', '){ return nick() ? base + sep + nick() : base; }
+function lowerFirst(s){ return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+
+function updateGreeting(){
+  const el = document.getElementById('greeting');
+  if(!el) return;
+  const h = new Date().getHours();
+  const hello = h<5 ? 'Encore debout' : h<12 ? 'Bonjour' : h<18 ? 'Bon après-midi' : 'Bonsoir';
+  const hint = viewMode==='day' ? 'clique sur un créneau de la timeline pour ajouter une tâche'
+    : viewMode==='week' ? 'clique sur une tâche pour la modifier, « + Ajouter » pour planifier un jour'
+    : 'clique sur un jour pour l\'ouvrir';
+  el.textContent = `${hello}${nick() ? ' '+nick() : ''} 👋 · ${hint}`;
+}
+
+async function askNickname(){
+  state.profile.askedName = true;
+  persist();
+  const name = await showPrompt({icon:'👋', title:'Bienvenue dans Remontada Planner !',
+    msg:'Comment veux-tu que je t\'appelle ?', defaultValue:'', okLabel:'C\'est parti'});
+  if(!name) return;
+  state.profile.name = name.slice(0,24);
+  persist(); render();
+  showToast({icon:'🤝', text:`Ravi de te connaître, ${state.profile.name} !`, sub:'Tu peux le changer à tout moment dans ton profil.'});
+}
+
+// ================= Date helpers =================
+const DOW_ORDER = [1,2,3,4,5,6,0];               // Monday-first (France)
+const DOW_SHORT = {1:'L',2:'M',3:'M',4:'J',5:'V',6:'S',0:'D'};
+const DOW_NAME = {1:'Lun',2:'Mar',3:'Mer',4:'Jeu',5:'Ven',6:'Sam',0:'Dim'};
+const PRESET_DAYS = {none:[], daily:[0,1,2,3,4,5,6], weekdays:[1,2,3,4,5], weekend:[0,6]};
+function keyToDate(k){ return new Date(k+'T12:00:00'); }
+function addDaysKey(k, n){ const d = keyToDate(k); d.setDate(d.getDate()+n); return iso(d); }
+function dowOfKey(k){ return keyToDate(k).getDay(); }
+function todayKey(){ return iso(new Date()); }
+function weekStart(d){
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
+  x.setDate(x.getDate() - ((x.getDay()+6)%7));
+  return x;
+}
+function weekKeyOf(k){ return iso(weekStart(keyToDate(k))); }
+function weekKeys(wk){ return Array.from({length:7}, (_,i)=> addDaysKey(wk, i)); }
+function fmtShort(d){ return d.toLocaleDateString('fr-FR', {day:'numeric', month:'short'}); }
+function fmtDur(m){ return m>=60 ? `${Math.floor(m/60)}h${m%60 ? pad(m%60) : ''}` : `${m}min`; }
+function normTxt(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function daysKeyStr(days){ return [...days].sort((a,b)=>a-b).join(','); }
+function describeDays(days){
+  const s = daysKeyStr(days);
+  if(days.length===7) return 'Tous les jours';
+  if(s==='1,2,3,4,5') return 'Lun → Ven';
+  if(s==='0,6') return 'Week-end';
+  return DOW_ORDER.filter(d=>days.includes(d)).map(d=>DOW_NAME[d]).join(' ');
+}
+function monthGrid(){
+  const first = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1, 12);
+  const last = new Date(currentDate.getFullYear(), currentDate.getMonth()+1, 0, 12);
+  const start = iso(weekStart(first));
+  const span = Math.round((keyToDate(iso(last)) - keyToDate(start))/86400000) + 1;
+  return {start, weeks: Math.ceil(span/7), month: currentDate.getMonth()};
+}
+function visibleKeys(){
+  if(viewMode==='day') return [iso(currentDate)];
+  if(viewMode==='week') return weekKeys(iso(weekStart(currentDate)));
+  const {start, weeks} = monthGrid();
+  return Array.from({length:weeks*7}, (_,i)=> addDaysKey(start, i));
+}
+function ensureCollections(){
+  if(!Array.isArray(state.routines)) state.routines = [];
+  if(!Array.isArray(state.challenges)) state.challenges = [];
+  if(!state.quests || typeof state.quests!=='object') state.quests = {claimed:{}};
+  if(!state.quests.claimed) state.quests.claimed = {};
+  if(!state.settings) state.settings = {theme:'dark', zoom:72, view:'day'};
+  if(!state.profile) state.profile = {name:'', avatar:'🙂'};
+}
+
+// ================= Routines (tâches récurrentes) =================
+function findRoutine(id){ return id ? ((state.routines||[]).find(r=>r.id===id) || null) : null; }
+function routineActiveOn(r, key){
+  return key >= r.from && (!r.until || key <= r.until) && r.days.includes(dowOfKey(key)) && !(r.skip||[]).includes(key);
+}
+function instanceFromRoutine(r){
+  return {id:uid(), title:r.title, start:r.start, duration:r.duration, category:r.category, done:false,
+    recurId:r.id, ...(r.parallel ? {parallel:true} : {})};
+}
+function createRoutine(f, days, from, until, extra){
+  const r = {id:'r'+uid(), title:f.title, start:f.start, duration:f.duration, category:f.category,
+    ...(f.parallel ? {parallel:true} : {}), days:[...days], from, until:until||'', skip:[], ...(extra||{})};
+  state.routines.push(r);
+  bumpCounter('routinesCreated');
+  return r;
+}
+function applyRoutineFields(r, f, days, until){
+  Object.assign(r, {title:f.title, start:f.start, duration:f.duration, category:f.category, days:[...days], until:until||''});
+  if(f.parallel) r.parallel = true; else delete r.parallel;
+}
+function skipRoutineOn(id, key){
+  const r = findRoutine(id);
+  if(!r) return;
+  r.skip = r.skip || [];
+  if(!r.skip.includes(key)) r.skip.push(key);
+}
+// Occurrences are written into days from today on only: past days are never
+// back-filled (that would turn already-perfect days into unfinished ones).
+function materializeKeys(keys){
+  const tk = todayKey();
+  let added = 0;
+  (state.routines||[]).forEach(r=>{
+    keys.forEach(k=>{
+      if(k < tk || !routineActiveOn(r, k)) return;
+      const list = state.days[k];
+      if(list && list.some(t=>t.recurId===r.id)) return;
+      ensureDay(k).push(instanceFromRoutine(r));
+      added++;
+    });
+  });
+  return added;
+}
+// Push a routine's new settings onto its upcoming, not-yet-checked occurrences.
+function syncRoutineInstances(r, fromKey, exceptId){
+  Object.keys(state.days).forEach(k=>{
+    if(k < fromKey) return;
+    const list = state.days[k];
+    for(let i=list.length-1; i>=0; i--){
+      const t = list[i];
+      if(t.recurId!==r.id || t.done || t.id===exceptId) continue;
+      if(!routineActiveOn(r, k)){ list.splice(i,1); continue; }
+      Object.assign(t, {title:r.title, start:r.start, duration:r.duration, category:r.category});
+      if(r.parallel) t.parallel = true; else delete t.parallel;
+    }
+  });
+}
+function removeFutureInstances(r, fromKey){
+  Object.keys(state.days).forEach(k=>{
+    if(k < fromKey) return;
+    state.days[k] = state.days[k].filter(t=> !(t.recurId===r.id && !t.done));
+  });
+}
+async function deleteRoutine(r, ask=true){
+  if(ask){
+    const ok = await showConfirm({icon:'🔁', title:`Arrêter la routine « ${r.title} » ?`,
+      msg:'Les occurrences passées et cochées sont conservées ; les prochaines non cochées sont retirées.',
+      okLabel:'Arrêter', danger:true});
+    if(!ok) return false;
+  }
+  removeFutureInstances(r, todayKey());
+  state.routines = state.routines.filter(x=>x.id!==r.id);
+  return true;
+}
+function nextOccurrence(r, fromKey){
+  for(let i=0;i<14;i++){ const k = addDaysKey(fromKey, i); if(routineActiveOn(r, k)) return k; }
+  return null;
+}
+function renderRoutines(){
+  const el = document.getElementById('routineList');
+  el.innerHTML = '';
+  const tk = todayKey();
+  const list = (state.routines||[]).filter(r=> !r.until || r.until >= tk);
+  if(!list.length){
+    el.innerHTML = '<div class="routineEmpty">Dans une tâche, choisis « Répéter » : elle revient toute seule, plus besoin de copier.</div>';
+    return;
+  }
+  list.forEach(r=>{
+    const row = document.createElement('div');
+    row.className = 'routineRow';
+    row.title = 'Modifier la routine';
+    const dot = document.createElement('span');
+    dot.className = 'catDot';
+    dot.style.background = state.categories[r.category] || '#8b5cf6';
+    const info = document.createElement('div');
+    info.className = 'rInfo';
+    const t = document.createElement('div'); t.className = 'rTitle'; t.textContent = r.title;
+    const s = document.createElement('div'); s.className = 'rSub';
+    s.textContent = `${describeDays(r.days)} · ${r.start}` + (r.until ? ` · jusqu'au ${fmtShort(keyToDate(r.until))}` : '');
+    info.append(t, s);
+    const del = document.createElement('span');
+    del.className = 'rDel'; del.textContent = '✕'; del.title = 'Arrêter la routine';
+    del.onclick = async (e)=>{ e.stopPropagation(); if(await deleteRoutine(r)){ persist(); render(); } };
+    row.append(dot, info, del);
+    row.onclick = ()=> openTaskModal(null, null, {routine:r});
+    el.appendChild(row);
+  });
+}
+
+// ================= Check / delete (shared by every view) =================
+function onTaskChecked(t, dayKey, checked, el){
+  t.done = checked;
+  if(checked) triggerTaskReward(el, t);
+  else t.bonusXp = 0; // reset so re-checking later gets a fresh, independent reward roll
+  persist();
+  if(viewMode==='day') renderTasks({skipStagger:true}); else renderPlanView();
+  updateProgress(); updateGamification();
+  if(checked){
+    // the re-render replaced the checkbox: play the pop animation on the new one
+    const cb = document.querySelector(`[data-id="${t.id}"] input[type=checkbox]`);
+    if(cb){ cb.classList.add('justChecked'); setTimeout(()=>cb.classList.remove('justChecked'), 400); }
+  }
+  const list = state.days[dayKey] || [];
+  const allDone = list.length>0 && list.every(x=>x.done);
+  if(checked && allDone && lastCelebratedDay!==dayKey){
+    lastCelebratedDay = dayKey;
+    spawnConfetti();
+    maybeShowDayRecap(dayKey);
+  } else if(!allDone && lastCelebratedDay===dayKey){
+    lastCelebratedDay = null;
+  }
+}
+function deleteTask(t, dayKey){
+  const list = state.days[dayKey] || [];
+  const idx = list.findIndex(x=>x.id===t.id);
+  if(idx>=0) list.splice(idx,1);
+  const r = findRoutine(t.recurId);
+  if(r) skipRoutineOn(r.id, dayKey); // otherwise the routine would put it straight back
+  bumpCounter('tasksDeleted');
+  persist(); render();
+  if(r) showToast({icon:'🔁', text:'Occurrence retirée', sub:'La routine continue les autres jours (gère-la dans la barre latérale).'});
+}
+
+// ================= Views: jour / semaine / mois =================
+function setView(mode){
+  if(!['day','week','month'].includes(mode)) mode = 'day';
+  viewMode = mode;
+  state.settings.view = mode;
+  persist(); render();
+  if(mode==='day') scrollToNow();
+}
+function shiftPeriod(dir){
+  if(viewMode==='day') currentDate.setDate(currentDate.getDate()+dir);
+  else if(viewMode==='week') currentDate.setDate(currentDate.getDate()+7*dir);
+  else currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()+dir, 1, 12);
+  render();
+}
+function periodLabel(){
+  if(viewMode==='day') return fmtLabel(currentDate);
+  if(viewMode==='week'){
+    const ws = weekStart(currentDate), we = new Date(ws);
+    we.setDate(we.getDate()+6);
+    return `Semaine du ${fmtShort(ws)} au ${fmtShort(we)}`;
+  }
+  return currentDate.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+}
+function renderPlanView(){
+  if(viewMode==='week') renderWeekView();
+  else if(viewMode==='month') renderMonthView();
+}
+
+function renderWeekView(){
+  const pv = document.getElementById('planView');
+  const keepScroll = pv.scrollTop;
+  pv.innerHTML = '';
+  const wk = iso(weekStart(currentDate));
+  const tk = todayKey();
+
+  // weekly quests strip — the week's goals right above the week
+  const strip = document.createElement('div');
+  strip.className = 'wkQuests';
+  weeklyQuests(wk).forEach(q=>{
+    const c = document.createElement('div');
+    c.className = 'wkQuest'+(q.claimed ? ' done' : '');
+    c.title = q.desc;
+    c.innerHTML = `<span class="qIcon">${q.icon}</span><div class="qInfo"><div class="qName"></div>
+      <div class="qBar"><div style="width:${Math.min(100, q.progress/q.target*100)}%"></div></div>
+      <div class="qCount">${Math.min(q.progress, q.target)}/${q.target}${q.claimed ? ' · ✓ accomplie' : ` · +${q.xp} XP`}</div></div>`;
+    c.querySelector('.qName').textContent = q.name;
+    c.onclick = openQuestModal;
+    strip.appendChild(c);
+  });
+  pv.appendChild(strip);
+
+  const grid = document.createElement('div');
+  grid.className = 'wkGrid';
+  weekKeys(wk).forEach(key=>{
+    const d = keyToDate(key);
+    const tasks = [...(state.days[key]||[])].sort((a,b)=> hhmmToMinutes(a.start)-hhmmToMinutes(b.start));
+    const done = tasks.filter(t=>t.done).length;
+    const col = document.createElement('div');
+    col.className = 'wkCol'+(key===tk ? ' today' : '')+(key<tk ? ' past' : '');
+    const head = document.createElement('div');
+    head.className = 'wkHead';
+    head.title = 'Ouvrir la journée';
+    head.innerHTML = `<div class="wkHeadTop"><span class="wkDow">${d.toLocaleDateString('fr-FR',{weekday:'short'})}</span>
+      <span class="wkPct">${tasks.length ? (done===tasks.length ? '🏆 ' : '')+done+'/'+tasks.length : ''}</span></div>
+      <div class="wkHeadRow"><div class="wkNum">${d.getDate()}</div>
+      ${tasks.length ? '<button class="wkDel" title="Vider cette journée">🗑️</button>' : ''}</div>`;
+    head.querySelector('.wkHeadTop').onclick = ()=>{ currentDate = keyToDate(key); setView('day'); };
+    head.querySelector('.wkNum').onclick = ()=>{ currentDate = keyToDate(key); setView('day'); };
+    const delBtn = head.querySelector('.wkDel');
+    if(delBtn){
+      delBtn.onclick = (e)=>{ e.stopPropagation(); clearDay(key); };
+    }
+    const body = document.createElement('div');
+    body.className = 'wkTasks';
+    if(!tasks.length) body.innerHTML = '<div class="wkEmpty">Rien de prévu</div>';
+    tasks.forEach(t=>{
+      const row = document.createElement('div');
+      row.className = 'wkTask'+(t.done ? ' done' : '');
+      row.dataset.id = t.id;
+      row.style.setProperty('--catColor', state.categories[t.category] || '#8b5cf6');
+      row.title = 'Modifier';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = !!t.done;
+      cb.onclick = (e)=> e.stopPropagation();
+      cb.onchange = ()=> onTaskChecked(t, key, cb.checked, cb);
+      const txt = document.createElement('div'); txt.className = 'wkTxt';
+      const tm = document.createElement('span'); tm.className = 'wkTime';
+      tm.textContent = `${t.start} · ${fmtDur(t.duration)}${findRoutine(t.recurId) ? ' · 🔁' : ''}${t.parallel ? ' · 🔀' : ''}`;
+      const ti = document.createElement('span'); ti.className = 'wkTitle'; ti.textContent = t.title;
+      txt.append(tm, ti);
+      row.append(cb, txt);
+      row.onclick = ()=> openTaskModal(null, t, {dayKey:key});
+      body.appendChild(row);
+    });
+    const add = document.createElement('button');
+    add.className = 'wkAdd'; add.textContent = '+ Ajouter';
+    add.onclick = ()=> openTaskModal(null, null, {dayKey:key});
+    col.append(head, body, add);
+    grid.appendChild(col);
+  });
+  pv.appendChild(grid);
+  pv.scrollTop = keepScroll;
+}
+
+function renderMonthView(){
+  const pv = document.getElementById('planView');
+  pv.innerHTML = '';
+  const {start, weeks, month} = monthGrid();
+  const tk = todayKey();
+  const dow = document.createElement('div');
+  dow.className = 'moDow';
+  DOW_ORDER.forEach(d=>{ const x = document.createElement('div'); x.textContent = DOW_NAME[d]; dow.appendChild(x); });
+  pv.appendChild(dow);
+  const grid = document.createElement('div');
+  grid.className = 'moGrid';
+  for(let i=0; i<weeks*7; i++){
+    const key = addDaysKey(start, i), d = keyToDate(key);
+    const tasks = state.days[key] || [];
+    const done = tasks.filter(t=>t.done).length;
+    const perfect = tasks.length>0 && done===tasks.length;
+    const cell = document.createElement('div');
+    cell.className = 'moCell'+(d.getMonth()!==month ? ' out' : '')+(key===tk ? ' today' : '')+(perfect ? ' perfect' : '');
+    cell.title = fmtLabel(d);
+    cell.innerHTML = `<div class="moNum"><span>${d.getDate()}</span><span>${perfect ? '🏆' : ''}</span></div>
+      <div class="moDots"></div><div class="moInfo">${tasks.length ? `${done}/${tasks.length} ✓` : ''}</div>`;
+    const dots = cell.querySelector('.moDots');
+    [...tasks].sort((a,b)=> hhmmToMinutes(a.start)-hhmmToMinutes(b.start)).slice(0,14).forEach(t=>{
+      const s = document.createElement('span');
+      s.style.background = state.categories[t.category] || '#8b5cf6';
+      if(t.done) s.style.opacity = '.35';
+      dots.appendChild(s);
+    });
+    cell.onclick = ()=>{ currentDate = d; setView('day'); };
+    grid.appendChild(cell);
+  }
+  pv.appendChild(grid);
+}
+
+// ================= Planifier la semaine (remplissage en lot) =================
+let wfDaysSel = new Set();
+function wfSourceTasks(val){
+  if(!val) return [];
+  const i = val.indexOf(':');
+  const kind = val.slice(0, i), name = val.slice(i+1);
+  if(kind==='tpl') return state.templates[name] || [];
+  if(kind==='theme') return (DAY_THEMES[name] || {}).tasks || [];
+  if(kind==='day') return (state.days[name] || []).map(t=>({title:t.title, start:t.start, duration:t.duration,
+    category:t.category, ...(t.parallel ? {parallel:true} : {})}));
+  return [];
+}
+function openWeekFill(preselect){
+  const wk = iso(weekStart(currentDate));
+  const tk = todayKey();
+  const sel = document.getElementById('wfSource');
+  sel.innerHTML = '';
+  const addOpt = (v, l)=>{ const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o); };
+  weekKeys(wk).forEach(k=>{
+    const n = (state.days[k]||[]).length;
+    if(n) addOpt('day:'+k, `📅 Copier ${fmtLabel(keyToDate(k))} (${n} tâche${n>1?'s':''})`);
+  });
+  Object.keys(state.templates).forEach(n=> addOpt('tpl:'+n, `💾 Modèle « ${n} »`));
+  Object.entries(DAY_THEMES).forEach(([n, t])=> addOpt('theme:'+n, `${t.icon} ${n}`));
+  if(preselect && [...sel.options].some(o=>o.value===preselect)) sel.value = preselect;
+  const upcoming = weekKeys(wk).filter(k=> k>=tk);
+  const pool = upcoming.length ? upcoming : weekKeys(wk);
+  wfDaysSel = new Set(pool.map(dowOfKey).filter(d=> d>=1 && d<=5));
+  if(!wfDaysSel.size) wfDaysSel = new Set(pool.map(dowOfKey));
+  document.getElementById('wfSub').textContent = `${periodLabel()} — copie une journée sur plusieurs jours d'un coup ; les créneaux déjà occupés sont conservés.`;
+  renderWfDays();
+  document.getElementById('weekFillOverlay').classList.add('show');
+}
+function closeWeekFill(){ document.getElementById('weekFillOverlay').classList.remove('show'); }
+function renderWfDays(){
+  const el = document.getElementById('wfDays');
+  el.innerHTML = '';
+  DOW_ORDER.forEach(d=>{
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = DOW_SHORT[d]; b.title = DOW_NAME[d];
+    b.className = wfDaysSel.has(d) ? 'on' : '';
+    b.onclick = ()=>{ wfDaysSel.has(d) ? wfDaysSel.delete(d) : wfDaysSel.add(d); renderWfDays(); };
+    el.appendChild(b);
+  });
+}
+function applyWeekFill(){
+  const val = document.getElementById('wfSource').value;
+  const src = wfSourceTasks(val);
+  if(!src.length){ showToast({icon:'🤷', text:'Cette source est vide'}); return; }
+  const wk = iso(weekStart(currentDate));
+  const srcDay = val.startsWith('day:') ? val.slice(4) : null;
+  let added = 0, skipped = 0, n = 0;
+  weekKeys(wk).forEach(k=>{
+    if(!wfDaysSel.has(dowOfKey(k)) || k===srcDay) return;
+    const r = addCopiesToDay(src, '', k, true);
+    added += r.added; skipped += r.skipped; n++;
+  });
+  if(!n){ showToast({icon:'🤷', text:'Choisis au moins un jour'}); return; }
+  bumpCounter('weekPlanned');
+  closeWeekFill(); persist(); render();
+  showToast({icon:'🗓️', text:`${added} tâche${added>1?'s':''} planifiée${added>1?'s':''} sur ${n} jour${n>1?'s':''}`,
+    sub: skipped ? `${skipped} ignorée(s) : le créneau était déjà pris.` : 'Bonne semaine !'});
+}
+
+// ================= Quêtes de la semaine =================
+const MOVE_WORDS = ['sport','gym','muscu','course','courir','running','yoga','velo','marche','natation','nager','foot',
+  'fitness','etirement','seance','rando','pilates','danse','boxe','escalade','workout','cardio','balade'];
+function isMoveTask(t){
+  if(t.category==='Santé') return true;
+  const s = normTxt(t.title);
+  return MOVE_WORDS.some(w=> s.includes(w));
+}
+function doneTasks(l){ return (l||[]).filter(t=>t.done); }
+const QUEST_POOL = [
+  {id:'move7', reg:true, icon:'💪', name:'Bouger chaque jour', desc:'Une tâche Santé ou sport cochée chacun des 7 jours', target:7, xp:120,
+    count:ls=> ls.filter(l=> doneTasks(l).some(isMoveTask)).length},
+  {id:'work5', reg:true, icon:'💼', name:'Régularité pro', desc:'Une tâche Travail cochée 5 jours dans la semaine', target:5, xp:90,
+    count:ls=> ls.filter(l=> doneTasks(l).some(t=>t.category==='Travail')).length},
+  {id:'perso5', reg:true, icon:'🌟', name:'Du temps pour soi', desc:'Une tâche Personnel cochée 5 jours dans la semaine', target:5, xp:80,
+    count:ls=> ls.filter(l=> doneTasks(l).some(t=>t.category==='Personnel')).length},
+  {id:'perfect4', icon:'🏆', name:'4 journées parfaites', desc:'Termine 100 % de ta journée 4 fois cette semaine', target:4, xp:100,
+    count:ls=> ls.filter(l=> l.length && l.every(t=>t.done)).length},
+  {id:'chain3', icon:'🔥', name:'Enchaînement', desc:'3 journées parfaites d\'affilée', target:3, xp:110,
+    count:ls=>{ let best=0, cur=0; ls.forEach(l=>{ if(l.length && l.every(t=>t.done)){ cur++; best=Math.max(best,cur); } else cur=0; }); return best; }},
+  {id:'tasks25', icon:'✅', name:'25 tâches cochées', desc:'Coche 25 tâches au total cette semaine', target:25, xp:80,
+    count:ls=> ls.reduce((n,l)=> n+doneTasks(l).length, 0)},
+  {id:'early4', icon:'🌅', name:'Matinal', desc:'Coche une tâche prévue avant 9h, 4 jours', target:4, xp:70,
+    count:ls=> ls.filter(l=> doneTasks(l).some(t=> hhmmToMinutes(t.start) < 9*60)).length},
+  {id:'evening3', icon:'🌙', name:'Soirées actives', desc:'Coche une tâche prévue à 19h ou après, 3 soirs', target:3, xp:60,
+    count:ls=> ls.filter(l=> doneTasks(l).some(t=> hhmmToMinutes(t.start) >= 19*60)).length},
+  {id:'variety', icon:'🎨', name:'Semaine variée', desc:'Coche des tâches dans 5 catégories différentes', xp:70,
+    target:()=> Math.max(1, Math.min(5, Object.keys(state.categories).length)),
+    count:ls=> new Set(ls.flatMap(l=> doneTasks(l).map(t=>t.category))).size},
+  {id:'plan7', icon:'🗓️', name:'Semaine planifiée', desc:'Au moins une tâche prévue chacun des 7 jours', target:7, xp:50,
+    count:ls=> ls.filter(l=> l.length>0).length},
+];
+// deterministic per week: the same 3 quests every time the week is opened
+function seededRandom(seed){
+  let h = 2166136261;
+  for(const c of seed){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return ()=>{ h += 0x6D2B79F5; let t = h; t = Math.imul(t ^ t>>>15, t|1); t ^= t + Math.imul(t ^ t>>>7, t|61); return ((t ^ t>>>14)>>>0)/4294967296; };
+}
+function weeklyQuestDefs(wk){
+  const rnd = seededRandom('quests-'+wk);
+  const regPool = ['move7','move7','work5','perso5']; // "bouger chaque jour" comes up more often
+  const first = regPool[Math.floor(rnd()*regPool.length)];
+  const others = QUEST_POOL.filter(q=> !q.reg).map(q=>({q, k:rnd()})).sort((a,b)=> a.k-b.k).slice(0,2).map(x=>x.q);
+  return [QUEST_POOL.find(q=> q.id===first), ...others];
+}
+function weeklyQuests(wk){
+  const lists = weekKeys(wk).map(k=> state.days[k] || []);
+  const claimed = (state.quests && state.quests.claimed && state.quests.claimed[wk]) || [];
+  return weeklyQuestDefs(wk).map(q=>{
+    const target = typeof q.target==='function' ? q.target() : q.target;
+    return {...q, target, progress:q.count(lists), claimed:claimed.includes(q.id)};
+  });
+}
+function questStats(){
+  let xp = 0, done = 0, weeksCleared = 0;
+  const claimed = (state.quests && state.quests.claimed) || {};
+  Object.values(claimed).forEach(ids=> ids.forEach(id=>{
+    if(id==='__all'){ weeksCleared++; return; }
+    const q = QUEST_POOL.find(x=> x.id===id);
+    if(q){ xp += q.xp; done++; }
+  }));
+  return {xp, done, weeksCleared};
+}
+function updateQuestPill(){
+  if(!state.quests) return;
+  const qs = weeklyQuests(weekKeyOf(todayKey()));
+  const n = qs.filter(q=> q.claimed).length;
+  document.getElementById('questLabel').textContent = `${n}/${qs.length}`;
+  const pill = document.getElementById('questPill');
+  pill.classList.toggle('complete', n===qs.length);
+  const active = (state.challenges||[]).filter(c=> c.status==='active').length;
+  pill.title = `Quêtes de la semaine : ${n}/${qs.length}` + (active ? ` · ${active} défi${active>1?'s':''} en cours` : '');
+}
+
+// ================= Défis de régularité =================
+const CHALLENGE_PRESETS = [
+  {icon:'💪', title:'Sport 30 jours', category:'Santé', keywords:'sport, gym, muscu, course, yoga, vélo', length:30, time:'07:30', dur:30},
+  {icon:'📚', title:'Lecture 21 jours', category:'Personnel', keywords:'lecture, lire, livre', length:21, time:'21:30', dur:20},
+  {icon:'🧘', title:'Méditation 14 jours', category:'Santé', keywords:'méditation, respiration', length:14, time:'08:00', dur:15},
+  {icon:'✍️', title:'Journal 21 jours', category:'Personnel', keywords:'journal, journaling, écrire', length:21, time:'22:00', dur:15},
+  {icon:'🚶', title:'Marche 30 jours', category:'Santé', keywords:'marche, balade, promenade', length:30, time:'18:00', dur:30},
+  {icon:'🎨', title:'Créer chaque jour', category:'Divers', keywords:'dessin, création, créatif, projet perso', length:30, time:'20:00', dur:45},
+];
+let chFormCat = null, chFormIcon = '🔥';
+function challengeMatches(ch, t){
+  if(ch.routineId && t.recurId===ch.routineId) return true;
+  const kws = ch.keywords || [];
+  if(!ch.category && !kws.length) return false;
+  if(ch.category && t.category!==ch.category) return false;
+  if(kws.length){ const s = normTxt(t.title); if(!kws.some(k=> s.includes(k))) return false; }
+  return true;
+}
+function challengeDayOk(ch, key){ return (state.days[key]||[]).some(t=> t.done && challengeMatches(ch, t)); }
+function challengeProgress(ch){
+  const tk = todayKey();
+  const res = {days:[], ok:0, streak:0, failedOn:null};
+  for(let i=0; i<ch.length; i++){
+    const k = addDaysKey(ch.start, i);
+    const ok = k<=tk && challengeDayOk(ch, k);
+    const st = k>tk ? 'future' : ok ? 'ok' : (k<tk ? 'miss' : 'today');
+    res.days.push({k, st});
+    if(ok) res.ok++;
+    if(st==='miss' && !res.failedOn) res.failedOn = k;
+  }
+  for(let i=res.days.length-1; i>=0; i--){
+    const st = res.days[i].st;
+    if(st==='future' || st==='today') continue;
+    if(st==='ok') res.streak++; else break;
+  }
+  return res;
+}
+function challengeXp(ch){ return ch.length*4; }
+function challengeStats(){
+  const won = (state.challenges||[]).filter(c=> c.status==='won');
+  return {xp: won.reduce((n,c)=> n+challengeXp(c), 0), won: won.length, best: won.reduce((m,c)=> Math.max(m, c.length), 0)};
+}
+function planChallengeRoutine(ch){
+  const cat = ch.category || Object.keys(state.categories)[0];
+  const r = createRoutine({title:ch.title, start:ch.time, duration:ch.dur, category:cat},
+    [0,1,2,3,4,5,6], ch.start, addDaysKey(ch.start, ch.length-1), {challengeId:ch.id});
+  ch.routineId = r.id;
+}
+function stopChallengeRoutine(ch){
+  const r = findRoutine(ch.routineId);
+  if(!r) return;
+  removeFutureInstances(r, todayKey());
+  state.routines = state.routines.filter(x=> x.id!==r.id);
+}
+
+// Claims finished weekly quests, settles challenges (won / missed day). Runs on every refresh.
+function evaluateGoals(){
+  if(!state.quests || !state.quests.claimed) return false;
+  const tk = todayKey(), curWk = weekKeyOf(tk);
+  const weeks = new Set([curWk]);
+  const viewedWk = iso(weekStart(currentDate));
+  if(viewedWk < curWk) weeks.add(viewedWk); // late check-offs on a past week still count
+  let changed = false;
+  weeks.forEach(wk=>{
+    const qs = weeklyQuests(wk);
+    const claimed = state.quests.claimed[wk] || [];
+    qs.forEach(q=>{
+      if(q.claimed || q.progress < q.target) return;
+      claimed.push(q.id); changed = true;
+      showToast({icon:q.icon, text:`${withNick('Quête accomplie')} !`, sub:`${q.name} · +${q.xp} XP`, cls:'crit'});
+      playAchievementSound();
+    });
+    if(!claimed.includes('__all') && qs.every(q=> claimed.includes(q.id))){
+      claimed.push('__all'); changed = true;
+      showToast({icon:'👑', text:'Semaine accomplie : 3/3 quêtes !', sub:'+50 pièces bonus', cls:'loot'});
+      addCoins(50);
+    }
+    if(claimed.length) state.quests.claimed[wk] = claimed;
+  });
+  (state.challenges||[]).forEach(ch=>{
+    if(ch.status!=='active') return;
+    const p = challengeProgress(ch);
+    if(p.failedOn){
+      ch.status = 'failed'; ch.failedOn = p.failedOn; changed = true;
+      stopChallengeRoutine(ch);
+      showToast({icon:'💔', text:`Défi « ${ch.title} » interrompu`,
+        sub:`Jour manqué le ${fmtShort(keyToDate(p.failedOn))}. Relance-le depuis 🎯 Quêtes & défis.`});
+    } else if(p.ok >= ch.length){
+      ch.status = 'won'; ch.wonOn = tk; changed = true;
+      showToast({icon:'🏅', text:`${withNick('Défi relevé')} !`, sub:`${ch.title} · +${challengeXp(ch)} XP`, cls:'crit'});
+      playAchievementSound();
+    }
+  });
+  if(changed) persist();
+  return changed;
+}
+
+function openQuestModal(){
+  renderQuestModal();
+  document.getElementById('questOverlay').classList.add('show');
+}
+function closeQuestModal(){
+  document.getElementById('questOverlay').classList.remove('show');
+  document.getElementById('challengeForm').classList.remove('show');
+}
+function renderQuestModal(){
+  const tk = todayKey(), wk = weekKeyOf(tk);
+  const qs = weeklyQuests(wk);
+  const nDone = qs.filter(q=> q.claimed).length;
+  const active = state.challenges.filter(c=> c.status==='active').length;
+  document.getElementById('questTitle').textContent = nick() ? `🎯 Les quêtes de ${nick()}` : '🎯 Quêtes & défis';
+  document.getElementById('questSub').textContent = `${nDone}/${qs.length} quêtes cette semaine · ${active} défi${active>1?'s':''} en cours`;
+  document.getElementById('questReset').textContent = `— nouvelles quêtes ${fmtLabel(keyToDate(addDaysKey(wk, 7)))}`;
+
+  const ql = document.getElementById('weeklyQuestList');
+  ql.innerHTML = '';
+  qs.forEach(q=>{
+    const row = document.createElement('div');
+    row.className = 'questRow'+(q.claimed ? ' done' : '');
+    row.innerHTML = `<span class="qIcon">${q.icon}</span>
+      <div class="qInfo"><div class="qName"></div><div class="qDesc"></div>
+        <div class="qBar${q.progress>=q.target ? ' full' : ''}"><div style="width:${Math.min(100, q.progress/q.target*100)}%"></div></div>
+        <div class="qCount">${Math.min(q.progress, q.target)} / ${q.target}</div></div>
+      <div class="qReward">${q.claimed ? '✓ Accomplie' : `+${q.xp} XP<br>🪙 +${q.xp}`}</div>`;
+    row.querySelector('.qName').textContent = q.name;
+    row.querySelector('.qDesc').textContent = q.desc;
+    ql.appendChild(row);
+  });
+
+  const cl = document.getElementById('challengeList');
+  cl.innerHTML = '';
+  const order = {active:0, won:1, failed:2, abandoned:3};
+  const list = [...state.challenges].sort((a,b)=> (order[a.status]-order[b.status]) || (b.start.localeCompare(a.start)));
+  if(!list.length){
+    cl.innerHTML = '<div class="chEmpty">Aucun défi pour l\'instant.<br>Lance-toi : choisis un modèle (Sport 30 jours, Lecture 21 jours…) ou crée le tien.</div>';
+    return;
+  }
+  list.forEach(ch=>{
+    const p = challengeProgress(ch);
+    const dayIdx = Math.min(ch.length, Math.round((keyToDate(tk)-keyToDate(ch.start))/86400000)+1);
+    const row = document.createElement('div');
+    row.className = 'chRow '+ch.status;
+    const statusLabel = {active:'En cours', won:'Relevé 🏅', failed:'Interrompu', abandoned:'Abandonné'}[ch.status];
+    let desc;
+    if(ch.status==='active') desc = `Jour ${dayIdx}/${ch.length} · série ${p.streak} 🔥 · ${p.ok} jour${p.ok>1?'s':''} validé${p.ok>1?'s':''}`;
+    else if(ch.status==='won') desc = `${ch.length} jours sans faute · +${challengeXp(ch)} XP`;
+    else if(ch.status==='failed') desc = `Arrêté au jour ${p.ok+1} (manqué le ${fmtShort(keyToDate(ch.failedOn||p.failedOn||ch.start))})`;
+    else desc = `${p.ok} jour${p.ok>1?'s':''} validé${p.ok>1?'s':''} avant l'abandon`;
+    const rule = [ch.category ? `catégorie ${ch.category}` : '', (ch.keywords||[]).length ? `mots : ${ch.keywords.join(', ')}` : '',
+      ch.routineId && findRoutine(ch.routineId) ? `planifié à ${ch.time}` : ''].filter(Boolean).join(' · ');
+    row.innerHTML = `<div class="chTop"><span class="qIcon">${ch.icon||'🔥'}</span>
+      <div class="qInfo"><div class="qName"></div><div class="qDesc"></div></div>
+      <span class="chStatus ${ch.status}">${statusLabel}</span></div>
+      <div class="chDays"></div><div class="qDesc" style="margin-top:6px"></div><div class="chActions"></div>`;
+    row.querySelector('.qName').textContent = ch.title;
+    row.querySelectorAll('.qDesc')[0].textContent = desc;
+    row.querySelectorAll('.qDesc')[1].textContent = rule ? `Compte : ${rule}` : '';
+    const daysEl = row.querySelector('.chDays');
+    p.days.forEach(d=>{
+      const s = document.createElement('span');
+      s.className = d.st==='ok' ? 'ok' : (d.st==='miss' && ch.status!=='abandoned') ? 'miss' : '';
+      if(d.k===tk && ch.status==='active') s.classList.add('today');
+      s.title = fmtLabel(keyToDate(d.k));
+      daysEl.appendChild(s);
+    });
+    const acts = row.querySelector('.chActions');
+    const btn = (label, fn, danger)=>{ const b = document.createElement('button'); b.textContent = label; if(danger) b.className = 'danger'; b.onclick = fn; acts.appendChild(b); };
+    if(ch.status==='active') btn('Abandonner', ()=> abandonChallenge(ch), true);
+    else btn('↻ Relancer', ()=> relaunchChallenge(ch));
+    if(ch.status!=='active') btn('Supprimer', ()=> deleteChallenge(ch), true);
+    cl.appendChild(row);
+  });
+}
+
+function openChallengeForm(){
+  const f = document.getElementById('challengeForm');
+  if(f.classList.contains('show')){ f.classList.remove('show'); return; }
+  document.getElementById('chTitle').value = '';
+  document.getElementById('chKeywords').value = '';
+  document.getElementById('chLength').value = '21';
+  document.getElementById('chAutoPlan').checked = true;
+  document.getElementById('chTime').value = '07:30';
+  document.getElementById('chDur').value = '30';
+  chFormCat = null; chFormIcon = '🔥';
+  const pr = document.getElementById('chPresets');
+  pr.innerHTML = '';
+  CHALLENGE_PRESETS.forEach(p=>{
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = `${p.icon} ${p.title}`;
+    b.onclick = ()=>{
+      document.getElementById('chTitle').value = p.title;
+      document.getElementById('chKeywords').value = p.keywords;
+      document.getElementById('chLength').value = String(p.length);
+      document.getElementById('chTime').value = p.time;
+      document.getElementById('chDur').value = String(p.dur);
+      chFormCat = state.categories[p.category] ? p.category : null;
+      chFormIcon = p.icon;
+      renderChCats();
+    };
+    pr.appendChild(b);
+  });
+  renderChCats();
+  f.classList.add('show');
+  setTimeout(()=> document.getElementById('chTitle').focus(), 60);
+}
+function renderChCats(){
+  const el = document.getElementById('chCatPicker');
+  el.innerHTML = '';
+  [[null, 'Toutes', 'var(--text-faint)'], ...Object.entries(state.categories).map(([n,c])=>[n, n, c])].forEach(([val, label, color])=>{
+    const chip = document.createElement('div');
+    chip.className = 'catChip'+(chFormCat===val ? ' selected' : '');
+    const dot = document.createElement('span'); dot.className = 'catDot'; dot.style.background = color;
+    chip.append(dot, document.createTextNode(label));
+    chip.onclick = ()=>{ chFormCat = val; renderChCats(); };
+    el.appendChild(chip);
+  });
+}
+async function createChallengeFromForm(){
+  const title = document.getElementById('chTitle').value.trim();
+  if(!title){ document.getElementById('chTitle').focus(); return; }
+  const keywords = document.getElementById('chKeywords').value.split(',').map(k=> normTxt(k).trim()).filter(Boolean);
+  if(!chFormCat && !keywords.length){
+    await showAlert('Choisis une catégorie ou des mots-clés : c\'est ce qui permet de savoir quelles tâches valident ton défi.', 'Il manque une règle', '🎯');
+    return;
+  }
+  const ch = {id:'c'+uid(), title, icon:chFormIcon, category:chFormCat, keywords,
+    length:parseInt(document.getElementById('chLength').value, 10), start:todayKey(), status:'active'};
+  if(document.getElementById('chAutoPlan').checked){
+    const time = document.getElementById('chTime').value || '07:30';
+    const m = hhmmToMinutes(time);
+    if(m < START_HOUR*60 || m >= END_HOUR*60){
+      await showAlert(`Choisis une heure entre ${pad(START_HOUR)}:00 et minuit.`, 'Heure hors planning', '🕒');
+      return;
+    }
+    ch.time = time;
+    ch.dur = Math.min(parseInt(document.getElementById('chDur').value, 10), END_HOUR*60 - m);
+    planChallengeRoutine(ch);
+  }
+  state.challenges.push(ch);
+  bumpCounter('challengesStarted');
+  document.getElementById('challengeForm').classList.remove('show');
+  persist(); render(); renderQuestModal();
+  showToast({icon:ch.icon, text:`${withNick('Défi lancé')} !`, sub:`${ch.length} jours d'affilée — jour 1 : aujourd'hui.${ch.routineId ? ' Planifié automatiquement.' : ''}`});
+}
+async function abandonChallenge(ch){
+  const ok = await showConfirm({icon:'🏳️', title:`Abandonner « ${ch.title} » ?`,
+    msg:'Le défi reste dans ton historique, et tu pourras le relancer plus tard.', okLabel:'Abandonner', danger:true});
+  if(!ok) return;
+  ch.status = 'abandoned';
+  stopChallengeRoutine(ch);
+  persist(); render(); renderQuestModal();
+}
+async function deleteChallenge(ch){
+  const ok = await showConfirm({icon:'🗑️', title:`Supprimer « ${ch.title} » ?`, msg:'Il disparaît de l\'historique.', okLabel:'Supprimer', danger:true});
+  if(!ok) return;
+  stopChallengeRoutine(ch);
+  state.challenges = state.challenges.filter(c=> c.id!==ch.id);
+  persist(); render(); renderQuestModal();
+}
+function relaunchChallenge(ch){
+  const n = {id:'c'+uid(), title:ch.title, icon:ch.icon, category:ch.category, keywords:[...(ch.keywords||[])],
+    length:ch.length, start:todayKey(), status:'active', ...(ch.time ? {time:ch.time, dur:ch.dur} : {})};
+  if(n.time) planChallengeRoutine(n);
+  state.challenges.push(n);
+  bumpCounter('challengesStarted');
+  persist(); render(); renderQuestModal();
+  showToast({icon:n.icon||'🔥', text:withNick('C\'est reparti')+' !', sub:`${n.length} jours, à partir d'aujourd'hui.`});
+}
+
+// ================= Task modal (création / édition / routine) =================
+let modalSelectedCat = 'Travail';
+let editingTaskId = null, editingDayKey = null, editingRoutineId = null;
+let repeatDays = new Set();
+
+function openTaskModal(presetMinutes, task, opts){
+  opts = opts || {};
+  const routine = opts.routine || null;
+  editingTaskId = task ? task.id : null;
+  editingDayKey = task ? (opts.dayKey || iso(currentDate)) : null;
+  editingRoutineId = routine ? routine.id : null;
+  const src = task || routine;
+  const linked = routine || (task ? findRoutine(task.recurId) : null);
+  document.querySelector('#taskModal h3').textContent = routine ? '🔁 Modifier la routine' : task ? '✏️ Modifier la tâche' : '✨ Nouvelle tâche';
+  document.getElementById('modalSave').textContent = src ? 'Enregistrer' : 'Ajouter la tâche';
+  document.getElementById('modalTitle').value = src ? src.title : '';
+  document.getElementById('modalDateField').style.display = routine ? 'none' : '';
+  document.getElementById('modalDate').value = opts.dayKey || iso(currentDate);
+  document.getElementById('modalStart').value = src ? src.start
+    : (presetMinutes!=null ? minutesToHHMM(Math.min(presetMinutes, END_HOUR*60-15)) : '09:00');
+  // a resized task can have a duration that isn't in the preset list: add it on the fly
+  const sel = document.getElementById('modalDurSelect');
+  sel.querySelectorAll('option[data-custom]').forEach(o=>o.remove());
+  const dur = String(src ? src.duration : 30);
+  if(![...sel.options].some(o=>o.value===dur)){
+    const opt = document.createElement('option');
+    opt.value = dur; opt.dataset.custom = '1';
+    opt.textContent = fmtDur(Number(dur)).replace('min', ' min');
+    const after = [...sel.options].find(o=> Number(o.value) > Number(dur));
+    sel.insertBefore(opt, after || null);
+  }
+  sel.value = dur;
+  document.getElementById('modalParallel').checked = !!(src && src.parallel);
+  modalSelectedCat = src ? src.category : activeCategory;
+  repeatDays = new Set(linked ? linked.days : []);
+  document.getElementById('modalRepeatEnd').value = linked ? (linked.until || '') : '';
+  document.getElementById('repeatScopeWrap').classList.toggle('show', !!(task && linked));
+  document.getElementById('modalRepeatScope').checked = true;
+  document.getElementById('modalDelete').classList.toggle('show', !!src);
+  renderModalCategories();
+  renderRepeatUI();
+  document.getElementById('modalOverlay').classList.add('show');
+  setTimeout(()=> document.getElementById('modalTitle').focus(), 80);
+}
+
+function closeTaskModal(){
+  document.getElementById('modalOverlay').classList.remove('show');
+  editingTaskId = null; editingDayKey = null; editingRoutineId = null;
+}
+
+function renderRepeatUI(){
+  const picker = document.getElementById('modalDowPicker');
+  picker.innerHTML = '';
+  DOW_ORDER.forEach(d=>{
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = DOW_SHORT[d]; b.title = DOW_NAME[d];
+    b.className = repeatDays.has(d) ? 'on' : '';
+    b.onclick = ()=>{ repeatDays.has(d) ? repeatDays.delete(d) : repeatDays.add(d); renderRepeatUI(); };
+    picker.appendChild(b);
+  });
+  const cur = daysKeyStr(repeatDays);
+  document.querySelectorAll('#repeatPresets button').forEach(b=>
+    b.classList.toggle('active', daysKeyStr(PRESET_DAYS[b.dataset.preset]||[])===cur));
+  document.getElementById('repeatExtra').classList.toggle('show', repeatDays.size>0);
+}
+
+function renderModalCategories(){
+  const el = document.getElementById('modalCatPicker');
+  el.innerHTML = '';
+  Object.entries(state.categories).forEach(([name, color])=>{
+    const chip = document.createElement('div');
+    chip.className = 'catChip'+(name===modalSelectedCat?' selected':'');
+    chip.innerHTML = `<span class="catDot" style="background:${escapeHtml(color)}"></span>${escapeHtml(name)}`;
+    chip.onclick = ()=>{ modalSelectedCat = name; renderModalCategories(); };
+    el.appendChild(chip);
+  });
+}
+
+async function saveModalTask(){
+  const title = document.getElementById('modalTitle').value.trim();
+  if(!title){ document.getElementById('modalTitle').focus(); return; }
+  const start = document.getElementById('modalStart').value || '09:00';
+  const startMin = hhmmToMinutes(start);
+  let duration = parseInt(document.getElementById('modalDurSelect').value, 10);
+  if(startMin < START_HOUR*60 || startMin >= END_HOUR*60){
+    await showAlert(`La timeline va de ${pad(START_HOUR)}:00 à minuit : choisis une heure de début dans cette plage.`, 'Heure hors planning', '🕒');
+    return;
+  }
+  let trimmed = false;
+  if(startMin + duration > END_HOUR*60){ duration = END_HOUR*60 - startMin; trimmed = true; }
+  const parallel = document.getElementById('modalParallel').checked;
+  const category = state.categories[modalSelectedCat] ? modalSelectedCat : Object.keys(state.categories)[0];
+  const fields = {title, start, duration, category, parallel};
+  const days = [...repeatDays];
+  const until = days.length ? (document.getElementById('modalRepeatEnd').value || '') : '';
+  const tk = todayKey();
+  const dateKey = editingRoutineId ? null : (document.getElementById('modalDate').value || iso(currentDate));
+  if(until && until < (dateKey || tk)){
+    await showAlert('La date de fin de la répétition est avant le premier jour.', 'Dates incohérentes', '📅');
+    return;
+  }
+  let toast = null;
+
+  if(editingRoutineId){                                   // routine edited from the sidebar
+    const r = findRoutine(editingRoutineId);
+    if(r){
+      if(!days.length){
+        await deleteRoutine(r, false);
+        toast = {icon:'🔁', text:'Routine arrêtée', sub:'Les occurrences à venir non cochées ont été retirées.'};
+      } else {
+        applyRoutineFields(r, fields, days, until);
+        syncRoutineInstances(r, tk);
+        toast = {icon:'🔁', text:'Routine mise à jour', sub:`${describeDays(days)} à ${start}`};
+      }
+    }
+  } else if(editingTaskId){                               // existing task
+    const origKey = editingDayKey;
+    const list = state.days[origKey] || [];
+    const t = list.find(x=> x.id===editingTaskId);
+    if(!t){ closeTaskModal(); return; }
+    const r = findRoutine(t.recurId);
+    const scope = !!r && document.getElementById('modalRepeatScope').checked;
+    Object.assign(t, {title, start, duration, category});
+    if(parallel) t.parallel = true; else delete t.parallel;
+    if(dateKey !== origKey){
+      list.splice(list.indexOf(t), 1);
+      ensureDay(dateKey).push(t);
+      if(r) skipRoutineOn(r.id, origKey); // the moved occurrence must not be re-created
+    }
+    if(r && scope){
+      if(!days.length){
+        delete t.recurId;
+        r.until = addDaysKey(origKey, -1);
+        removeFutureInstances(r, origKey);
+        if(r.until < r.from) state.routines = state.routines.filter(x=> x.id!==r.id);
+        toast = {icon:'🔁', text:'Répétition arrêtée à partir de ce jour', sub:'Cette tâche reste, les suivantes sont retirées.'};
+      } else {
+        applyRoutineFields(r, fields, days, until);
+        syncRoutineInstances(r, origKey, t.id);
+        toast = {icon:'🔁', text:'Routine mise à jour', sub:'Les prochaines occurrences suivent ces réglages.'};
+      }
+    } else if(!r && days.length){
+      const nr = createRoutine(fields, days, dateKey, until);
+      if(days.includes(dowOfKey(dateKey))) t.recurId = nr.id;
+      toast = {icon:'🔁', text:'Tâche transformée en routine', sub:`${describeDays(days)} à ${start}`};
+    }
+  } else if(days.length){                                 // new routine
+    const r = createRoutine(fields, days, dateKey, until);
+    if(routineActiveOn(r, dateKey)) ensureDay(dateKey).push(instanceFromRoutine(r));
+    const first = nextOccurrence(r, dateKey);
+    toast = {icon:'🔁', text:'Routine créée', sub:`${describeDays(days)} à ${start}`
+      + (first && first!==dateKey ? ` · 1re fois ${fmtLabel(keyToDate(first))}` : '') + ' · plus besoin de la copier !'};
+  } else {                                                // new one-off task
+    ensureDay(dateKey).push({id:uid(), title, start, duration, category, done:false, ...(parallel ? {parallel:true} : {})});
+    if(viewMode==='day' && dateKey!==iso(currentDate)) toast = {icon:'📅', text:`Ajoutée au ${fmtLabel(keyToDate(dateKey))}`};
+  }
+  closeTaskModal();
+  persist(); render();
+  if(toast) showToast(toast);
+  if(trimmed) showToast({icon:'✂️', text:`Durée ajustée à ${duration} min`, sub:'La tâche ne peut pas dépasser minuit.'});
+}
+
+function deleteFromModal(){
+  const taskId = editingTaskId, dayKey = editingDayKey, routineId = editingRoutineId;
+  if(routineId){
+    const r = findRoutine(routineId);
+    if(!r){ closeTaskModal(); return; }
+    deleteRoutine(r).then(ok=>{ if(ok){ closeTaskModal(); persist(); render(); } });
+    return;
+  }
+  const t = (state.days[dayKey]||[]).find(x=> x.id===taskId);
+  closeTaskModal();
+  if(t) deleteTask(t, dayKey);
+}
+
+function openQuickAddAt(minutes){
+  openTaskModal(minutes);
+}
+
+// --- events ---
+document.getElementById('openAddBtn').onclick = ()=>openTaskModal();
+document.getElementById('modalCancel').onclick = closeTaskModal;
+document.getElementById('modalSave').onclick = saveModalTask;
+document.getElementById('modalOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='modalOverlay') closeTaskModal();
+});
+document.getElementById('modalTitle').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.defaultPrevented) saveModalTask(); });
+document.addEventListener('keydown', (e)=>{
+  if(e.key!=='Escape' || e.defaultPrevented) return; // already consumed by the confirm popup
+  if(document.getElementById('modalOverlay').classList.contains('show')) closeTaskModal();
+  else if(document.getElementById('weekFillOverlay').classList.contains('show')) closeWeekFill();
+  else if(document.getElementById('questOverlay').classList.contains('show')) closeQuestModal();
+  else if(document.getElementById('dayThemesOverlay').classList.contains('show')) closeDayThemesModal();
+  else if(document.getElementById('profileOverlay').classList.contains('show')) closeProfileModal();
+  else if(document.getElementById('dayRecapOverlay').classList.contains('show')) document.getElementById('dayRecapOverlay').classList.remove('show');
+  else document.getElementById('miniCal').classList.remove('show');
+});
+// close the mini calendar when clicking anywhere else
+document.addEventListener('mousedown', (e)=>{
+  const cal = document.getElementById('miniCal');
+  if(cal.classList.contains('show') && !cal.contains(e.target) && e.target.id!=='calBtn') cal.classList.remove('show');
+});
+// keep the "now" line moving and follow midnight rollover while the app stays open
+let lastTodayKey = iso(new Date());
+setInterval(()=>{
+  if(!window.pywebview || !state.days) return;
+  const todayKey = iso(new Date());
+  if(todayKey !== lastTodayKey){
+    const wasOnToday = iso(currentDate) === lastTodayKey;
+    lastTodayKey = todayKey;
+    if(wasOnToday) currentDate = new Date();
+    render(); // new day: routines, quests (on Monday) and challenges all roll over
+    return;
+  }
+  if(viewMode==='day') renderNowLine();
+}, 60000);
+document.getElementById('prevDay').onclick = ()=> shiftPeriod(-1);
+document.getElementById('nextDay').onclick = ()=> shiftPeriod(1);
+document.getElementById('todayBtn').onclick = ()=>{ currentDate = new Date(); render(); if(viewMode==='day') scrollToNow(); };
+document.querySelectorAll('#viewSwitch button').forEach(b=> b.onclick = ()=> setView(b.dataset.view));
+document.getElementById('weekFillBtn').onclick = ()=>{ if(viewMode==='month') setView('week'); openWeekFill(); };
+document.getElementById('wfCancel').onclick = closeWeekFill;
+document.getElementById('wfApply').onclick = applyWeekFill;
+document.getElementById('weekFillOverlay').addEventListener('click', (e)=>{ if(e.target.id==='weekFillOverlay') closeWeekFill(); });
+document.querySelectorAll('#wfPresets button').forEach(b=> b.onclick = ()=>{
+  if(b.dataset.preset==='empty'){
+    const wk = iso(weekStart(currentDate)), tk = todayKey();
+    wfDaysSel = new Set(weekKeys(wk).filter(k=> k>=tk && !(state.days[k]||[]).length).map(dowOfKey));
+  } else wfDaysSel = new Set(PRESET_DAYS[b.dataset.preset]);
+  renderWfDays();
+});
+document.querySelectorAll('#repeatPresets button').forEach(b=> b.onclick = ()=>{
+  repeatDays = new Set(PRESET_DAYS[b.dataset.preset]); renderRepeatUI();
+});
+document.getElementById('modalDelete').onclick = deleteFromModal;
+document.getElementById('questPill').onclick = openQuestModal;
+document.getElementById('questsBtn').onclick = openQuestModal;
+document.getElementById('questClose').onclick = closeQuestModal;
+document.getElementById('questOverlay').addEventListener('click', (e)=>{ if(e.target.id==='questOverlay') closeQuestModal(); });
+document.getElementById('newChallengeBtn').onclick = openChallengeForm;
+document.getElementById('chCancel').onclick = ()=> document.getElementById('challengeForm').classList.remove('show');
+document.getElementById('chCreate').onclick = createChallengeFromForm;
+document.getElementById('calBtn').onclick = ()=>{ document.getElementById('miniCal').classList.toggle('show'); };
+document.getElementById('dateInput').addEventListener('change', (e)=>{
+  if(!e.target.value) return;
+  currentDate = new Date(e.target.value+'T12:00:00');
+  document.getElementById('miniCal').classList.remove('show');
+  render();
+});
+document.getElementById('saveTplBtn').onclick = saveTemplateFromToday;
+document.getElementById('copyYesterdayBtn').onclick = copyYesterday;
+document.getElementById('dayThemesBtn').onclick = openDayThemesModal;
+document.getElementById('clearDayBtn').onclick = clearDay;
+document.getElementById('dayThemesClose').onclick = closeDayThemesModal;
+document.getElementById('dayThemesOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='dayThemesOverlay') closeDayThemesModal();
+});
+document.getElementById('refreshBtn').onclick = async ()=>{
+  await loadState();
+  showToast({icon:'🔄', text:'Données rechargées depuis le disque'});
+};
+function setZoom(h){
+  HOUR_H = h;
+  state.settings = state.settings || {};
+  state.settings.zoom = HOUR_H;
+  bumpCounter('zoomClicks');
+  // keep the same time of day centered while zooming
+  const wrap = document.getElementById('timelineWrap');
+  const oldH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hour-h')) || HOUR_H;
+  const centerMin = (wrap.scrollTop + wrap.clientHeight/2) / oldH;
+  render();
+  wrap.scrollTop = Math.max(0, centerMin*HOUR_H - wrap.clientHeight/2);
+  persist();
+}
+document.getElementById('zoomInBtn').onclick = ()=> setZoom(Math.min(140, HOUR_H+14));
+document.getElementById('zoomOutBtn').onclick = ()=> setZoom(Math.max(32, HOUR_H-14));
+document.getElementById('themeToggle').onclick = ()=>{
+  const mode = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  applyLightDark(mode);
+  state.settings = state.settings || {};
+  state.settings.theme = mode; // remembered on next launch (was reset to dark every time)
+  bumpCounter('themeToggles');
+  persist();
+  updateGamification();
+};
+document.getElementById('levelPill').onclick = ()=> openProfileModal();
+document.getElementById('profileClose').onclick = ()=> closeProfileModal();
+document.getElementById('profileOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='profileOverlay') closeProfileModal();
+});
+document.querySelectorAll('.profileTabBtn').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.profileTabBtn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.profileTabPanel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab'+btn.dataset.tab.charAt(0).toUpperCase()+btn.dataset.tab.slice(1)).classList.add('active');
+  };
+});
+// The nickname is saved as you type (and on Enter / closing the profile): it used to be
+// lost unless the "Enregistrer" button was clicked.
+function commitNickname(announce){
+  const input = document.getElementById('profileNameInput');
+  const name = input.value.trim().slice(0,24);
+  const changed = name !== (state.profile.name || '');
+  if(changed){
+    state.profile.name = name;
+    state.profile.askedName = true;
+    persist();
+    updateProfileHeader(); updateGreeting(); updateGamification();
+  }
+  if(announce) showToast({icon:'✅', text: name ? `Ravi de te connaître, ${name} !` : 'Pseudo effacé.',
+    sub: name ? 'Ton pseudo est enregistré.' : undefined});
+  return changed;
+}
+let nickTimer = null;
+document.getElementById('profileNameInput').addEventListener('input', ()=>{
+  clearTimeout(nickTimer);
+  nickTimer = setTimeout(()=> commitNickname(false), 500);
+});
+document.getElementById('profileNameInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){ e.preventDefault(); clearTimeout(nickTimer); commitNickname(true); }
+});
+document.getElementById('profileSaveBtn').onclick = ()=>{ clearTimeout(nickTimer); commitNickname(true); };
+
+// --- Konami code easter egg: ↑ ↑ ↓ ↓ ← → ← → B A ---
+const KONAMI_SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiProgress = 0;
+document.addEventListener('keydown', (e)=>{
+  const key = e.key.length===1 ? e.key.toLowerCase() : e.key;
+  if(key === KONAMI_SEQ[konamiProgress]){
+    konamiProgress++;
+    if(konamiProgress === KONAMI_SEQ.length){
+      konamiProgress = 0;
+      const firstTime = getCounter('konamiFound') === 0;
+      bumpCounter('konamiFound');
+      persist();
+      playAchievementSound();
+      if(firstTime){
+        // reward once — repeating the code used to mint +100 coins every time
+        showToast({icon:'🕹️', text:'Code Konami détecté !', sub:'Les vrais savent. +100 pièces.', cls:'crit'});
+        addCoins(100);
+      } else {
+        showToast({icon:'🕹️', text:'Code Konami… encore ?', sub:'Le bonus ne se touche qu\'une fois 😉'});
+      }
+      updateGamification();
+    }
+  } else {
+    konamiProgress = (key === KONAMI_SEQ[0]) ? 1 : 0;
+  }
+});
+
+let loadStarted = false;
+function initialLoad(){ if(loadStarted) return; loadStarted = true; loadState(); }
+window.addEventListener('pywebviewready', initialLoad);
+// fallback if event already fired before listener attached
+setTimeout(()=>{ if(window.pywebview && window.pywebview.api) initialLoad(); }, 300);
+</script>
+</body>
+</html>
