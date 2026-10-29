@@ -5363,6 +5363,9 @@ function maybeSuggestReminders(task, dayKey){
 
 // ================= Quit sidequest (content in quit.js) =================
 let quitSel = null, quitView = 'dash', quitTicker = null, quitEditing = null, quitFormKind = 'tabac';
+// toolbox sections the user opened: the dashboard re-renders every 30 s (live
+// counter) and must not fold them back up
+const quitOpenTools = new Set();
 
 function quitById(id){ return (state.quits || []).find(q=> q.id === id) || null; }
 function quitName(q){ return q.kind === 'autre' ? (q.label || 'Mon habitude') : QUIT_KINDS[q.kind].label; }
@@ -5562,6 +5565,8 @@ function renderQuitDash(body, q){
     det.className = 'qtTool';
     det.innerHTML = '<summary></summary><ul></ul>';
     det.querySelector('summary').textContent = t.title;
+    det.open = quitOpenTools.has(t.title);
+    det.addEventListener('toggle', ()=>{ if(det.open) quitOpenTools.add(t.title); else quitOpenTools.delete(t.title); });
     t.items.forEach(it=>{ const li = document.createElement('li'); li.textContent = it; det.querySelector('ul').appendChild(li); });
     tools.appendChild(det);
   });
