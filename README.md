@@ -5,14 +5,24 @@ pensé d'abord comme une vraie boucle quotidienne — capturer, prioriser,
 exécuter, clôturer — en app de bureau Windows, construite avec
 [pywebview](https://pywebview.flowrl.com/) (interface HTML/CSS/JS, logique Python).
 
+## ⬇️ Télécharger l'app
+
+**[Télécharger RemontadaPlanner.zip](https://github.com/Guillomus-lab/RemontadaPlanner/releases/latest/download/RemontadaPlanner.zip)**
+(dernière version, Windows)
+
+Dézippe, puis double-clique sur `RemontadaPlanner.exe`. C'est tout.
+
+> ⚠️ N'utilise pas le bouton vert **Code → Download ZIP** : il donne le code
+> source (pour développer), pas l'app.
+
 ## Installation
 
 Deux façons d'utiliser l'app :
 
-### 1. Version installée (.exe) — pour un usage courant
+### 1. Version prête à l'emploi (.exe) — pour un usage courant
 
-Aucune installation : double-clique sur `dist/RemontadaPlanner.exe` (ou le
-raccourci fourni) pour lancer l'app. Windows peut afficher un avertissement
+Aucune installation : télécharge le zip ci-dessus, dézippe-le et double-clique
+sur `RemontadaPlanner.exe` pour lancer l'app. Windows peut afficher un avertissement
 SmartScreen au premier lancement (exe non signé) — clique sur
 "Informations complémentaires" puis "Exécuter quand même".
 

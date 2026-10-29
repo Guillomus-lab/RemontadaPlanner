@@ -22,6 +22,18 @@ If FSO.FileExists(cfgPath) Then
   cfg.Close
 End If
 
+' Source folder without the dev setup (e.g. GitHub's "Code > Download ZIP"):
+' explain and point to the ready-to-use app instead of a cryptic WSH error.
+If Not FSO.FileExists(pyExe) Then
+  ' (no accented letters here: WSH reads .vbs files in the ANSI code page)
+  answer = MsgBox("Ce dossier contient le code source de Remontada Planner, pas l'app." & vbCrLf & vbCrLf & _
+    "Pour utiliser l'app : prends RemontadaPlanner.zip sur la page des versions, " & _
+    "extrais-le, puis lance RemontadaPlanner.exe." & vbCrLf & vbCrLf & _
+    "Ouvrir la page des versions maintenant ?", vbYesNo + vbInformation, "Remontada Planner")
+  If answer = vbYes Then WshShell.Run "https://github.com/Guillomus-lab/RemontadaPlanner/releases/latest"
+  WScript.Quit
+End If
+
 WshShell.CurrentDirectory = scriptDir
 ' 1 = normal window: pythonw.exe has no console, so nothing else appears
 WshShell.Run Chr(34) & pyExe & Chr(34) & " " & Chr(34) & appFile & Chr(34), 1, False
