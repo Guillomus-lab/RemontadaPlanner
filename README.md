@@ -97,7 +97,8 @@ timeline, ou planifiées au prochain créneau libre d'un clic sur 📅.
   routines, modèles et actions.
 - Notes et URL sur chaque tâche, affichées dans la timeline et la vue semaine.
 - Rappels Windows optionnels (toast système + toast dans l'app) tant que l'app
-  est ouverte. Le bouton « Tester la notification » (Profil → Réglages) vérifie
+  est ouverte, avec le son « Rappel » de Windows (désactivable dans les réglages)
+  et une notification qui reste affichée jusqu'à ce que tu cliques OK. Le bouton « Tester la notification » (Profil → Réglages) vérifie
   qu'elles s'affichent ; si rien n'apparaît, regarde le mode Ne pas déranger.
 - Récap hebdomadaire Discord via webhook (par exemple le salon de Luron) :
   envoi manuel, ou automatique le lundi si activé. Aucun ping.

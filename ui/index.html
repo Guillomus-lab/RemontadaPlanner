@@ -1397,6 +1397,9 @@
               <option value="30">30 min avant</option>
             </select>
           </div>
+          <div class="settingsRow">
+            <label><input type="checkbox" id="reminderSoundToggle" /> 🔔 Jouer un son avec le rappel</label>
+          </div>
           <div class="settingsBtnRow">
             <button id="testNotifyBtn">Tester la notification</button>
           </div>
@@ -2923,6 +2926,33 @@ function playAchievementSound(){
   const t = ctx.currentTime;
   [523.25, 659.25, 783.99, 1046.5].forEach((f,i)=> playTone(f, t + i*0.09, 0.22, 0.085));
 }
+// Reminder chime: has its own on/off in Réglages, independent from the 🔊
+// game-sound toggle (a reminder is useful, not cosmetic).
+function playReminderSound(){
+  try{
+    if(!audioCtx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(AC) audioCtx = new AC();
+    }
+    if(!audioCtx) return;
+    if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+    const t = audioCtx.currentTime;
+    // two rising three-note bells: noticeable without being an alarm
+    [0, 0.55].forEach(off=> [659.25, 880, 1174.66].forEach((f,i)=> rawTone(f, t + off + i*0.11, 0.32, 0.12)));
+  }catch(e){}
+}
+function rawTone(freq, startTime, duration, gainPeak){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(gainPeak, startTime + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.02);
+}
 function playClickSound(){
   const ctx = getAudioCtx();
   if(!ctx) return;
@@ -3682,6 +3712,7 @@ function ensureCollections(){
     state.settings.dayCapacity = 480;
   if(typeof state.settings.reminders !== 'boolean') state.settings.reminders = false;
   if(!Number.isFinite(Number(state.settings.reminderLead))) state.settings.reminderLead = 10;
+  if(typeof state.settings.reminderSound !== 'boolean') state.settings.reminderSound = true;
   if(typeof state.settings.discordWebhook !== 'string') state.settings.discordWebhook = '';
   if(typeof state.settings.discordWeekly !== 'boolean') state.settings.discordWeekly = false;
   if(typeof state.settings.lastDiscordRecap !== 'string') state.settings.lastDiscordRecap = '';
@@ -4084,6 +4115,8 @@ function renderSettingsTab(){
   toggle.checked = !!state.settings.reminders;
   const lead = document.getElementById('reminderLead');
   if(lead) lead.value = String(Number(state.settings.reminderLead) || 10);
+  const snd = document.getElementById('reminderSoundToggle');
+  if(snd) snd.checked = state.settings.reminderSound !== false;
   const cap = document.getElementById('dayCapacityInput');
   if(cap) cap.value = String(Math.round((Number(state.settings.dayCapacity) || 480) / 6) / 10);
   const webhook = document.getElementById('discordWebhook');
@@ -4232,9 +4265,15 @@ function checkTaskReminders(){
     changed = true;
     const sub = `Commence dans ${delta} min · ${t.start}`;
     showToast({icon:'⏰', text:t.title, sub});
-    if(window.pywebview.api && window.pywebview.api.notify){
-      try{ window.pywebview.api.notify(t.title, sub).catch(()=>{}); }catch(e){}
-    }
+    const sound = state.settings.reminderSound !== false;
+    const api = window.pywebview.api;
+    // The Windows toast carries the sound. If it can't be shown, chime in-app.
+    const fallback = ()=>{ if(sound) playReminderSound(); };
+    if(api && api.notify){
+      try{
+        api.notify(t.title, sub, sound).then(res=>{ if(!res || !res.ok) fallback(); }).catch(fallback);
+      }catch(e){ fallback(); }
+    } else fallback();
   });
   if(changed) persist();
 }
@@ -5858,7 +5897,7 @@ document.getElementById('testNotifyBtn').onclick = async (e)=>{
   }
   btn.disabled = true;
   try{
-    const res = await api.test_notify();
+    const res = await api.test_notify(state.settings.reminderSound !== false);
     if(res && res.ok){
       showToast({icon:'✅', text:'Notification envoyée', sub:'Rien en bas à droite ? Vérifie le mode Ne pas déranger / Assistant de concentration.'});
     } else {
@@ -5869,6 +5908,11 @@ document.getElementById('testNotifyBtn').onclick = async (e)=>{
   }finally{
     btn.disabled = false;
   }
+};
+document.getElementById('reminderSoundToggle').onchange = (e)=>{
+  state.settings.reminderSound = e.target.checked;
+  persist();
+  if(e.target.checked) playReminderSound();
 };
 document.getElementById('reminderLead').onchange = (e)=>{
   state.settings.reminderLead = Number(e.target.value) || 10;
