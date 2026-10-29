@@ -882,6 +882,7 @@
         <div class="shopSectionTitle">Choisis ton avatar</div>
         <div class="avatarGrid" id="identityAvatarGrid"></div>
         <button id="profileSaveBtn">Enregistrer</button>
+        <button id="resetProgressBtn" class="danger" style="margin-top:18px;background:#dc2626;border-color:#dc2626;color:#fff;" onclick="resetAllProgress()">⚠️ Réinitialiser toute ma progression</button>
       </div>
     </div>
   </div>
@@ -2237,6 +2238,28 @@ function buyAvatar(icon){
   showToast({icon, text:'Avatar débloqué !', cls:'loot'});
   updateGamification();
   renderShopTab();
+}
+
+async function resetAllProgress(){
+  const ok = await showConfirm({
+    icon:'⚠️', title:'Réinitialiser toute ta progression ?',
+    msg:`Ceci remet à zéro tes <b>succès</b>, <b>pièces</b>, <b>thèmes et avatars achetés</b>, <b>défis</b> et <b>quêtes</b>.<br><br>Cette action est <b>définitive et irréversible</b>.<br><br>⚠️ Tes <b>tâches et journées planifiées ne sont PAS affectées</b> — ton calendrier reste intact.`,
+    okLabel:'Oui, tout réinitialiser', cancelLabel:'Annuler', danger:true
+  });
+  if(!ok) return;
+  state.unlockedAchievements = [];
+  state.counters = {};
+  state.challenges = [];
+  state.quests = {claimed:{}};
+  state.economy = {coinsSpent:0, unlockedThemes:['default'], unlockedAvatars:['🙂','😎','🦊','🐱','🐼','🤖','👾','🌟'], activeThemeId:'default'};
+  unlockedAchIds = new Set();
+  if(typeof applyColorTheme === 'function') applyColorTheme('default');
+  persist();
+  updateGamification();
+  renderAchievements(computeGameStats());
+  renderShopTab();
+  renderIdentityAvatars();
+  showToast({icon:'🔄', text:'Progression réinitialisée', sub:'Tu repars de zéro !'});
 }
 
 function showToast({icon, text, sub, cls}){
