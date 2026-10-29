@@ -1,10 +1,13 @@
-# Construit RemontadaPlanner.exe sur Windows et publie la Release GitHub
-# quand on pousse un tag de version (ex. v1.1.0). Rien à builder en local.
+# Construit RemontadaPlanner.exe sur Windows et publie la Release GitHub.
+# Deux façons de le lancer : pousser un tag (ex. v1.1.0), ou cliquer sur
+# "Run workflow" dans l'onglet Actions (le tag est alors créé à partir de
+# APP_VERSION). Rien à builder en local.
 name: Release
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -19,13 +22,23 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Vérifie que APP_VERSION correspond au tag
+      - name: Détermine la version
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "$env:GITHUB_REF_NAME".TrimStart('v')
           $m = Select-String -Path app.pyw -Pattern '^APP_VERSION = "(.+)"'
           $ver = $m.Matches[0].Groups[1].Value
-          if ($ver -ne $tag) { Write-Error "APP_VERSION ($ver) ne correspond pas au tag ($tag)"; exit 1 }
+          if ("$env:GITHUB_REF_TYPE" -eq "tag") {
+            $tag = "$env:GITHUB_REF_NAME"
+            if ($tag.TrimStart('v') -ne $ver) { Write-Error "APP_VERSION ($ver) ne correspond pas au tag ($tag)"; exit 1 }
+          } else {
+            $tag = "v$ver"
+            gh release view $tag *> $null
+            if ($LASTEXITCODE -eq 0) { Write-Error "La release $tag existe déjà : augmente APP_VERSION"; exit 1 }
+            $global:LASTEXITCODE = 0
+          }
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Installe les dépendances
         run: |
@@ -52,7 +65,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $notes = "packaging\notes\$env:GITHUB_REF_NAME.md"
+          $notes = "packaging\notes\$env:RELEASE_TAG.md"
           if (-not (Test-Path $notes)) { $notes = "packaging\notes\default.md" }
-          gh release create "$env:GITHUB_REF_NAME" RemontadaPlanner.zip `
-            --title "Remontada Planner $env:GITHUB_REF_NAME" --notes-file $notes
+          gh release create "$env:RELEASE_TAG" RemontadaPlanner.zip --target "$env:GITHUB_SHA" `
+            --title "Remontada Planner $env:RELEASE_TAG" --notes-file $notes

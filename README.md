@@ -63,11 +63,14 @@ le `.vbs`/`.bat`) après le `git pull`.
 1. Bump `APP_VERSION` dans `app.pyw` (ex. `1.2.0`).
 2. Optionnel : écris les nouveautés dans `packaging/notes/v1.2.0.md`
    (sinon le texte de `packaging/notes/default.md` est utilisé).
-3. Commit sur `main`, puis pousse le tag : `git tag v1.2.0` et `git push origin v1.2.0`.
+3. Commit sur `main`, puis lance la publication : onglet **Actions** du dépôt →
+   **Release** → **Run workflow** (le tag `v1.2.0` est créé tout seul). Pousser
+   le tag à la main (`git tag v1.2.0` puis `git push origin v1.2.0`) marche aussi.
 
 GitHub Actions (`.github/workflows/release.yml`) construit l'exe sur Windows,
 fait le zip (exe + `LISEZMOI.txt`) et publie la Release. Rien à builder en local.
-Le workflow refuse de publier si `APP_VERSION` ne correspond pas au tag.
+Le workflow refuse de publier si `APP_VERSION` ne correspond pas au tag, ou si
+la release de cette version existe déjà.
 
 La vérification de mise à jour compare `APP_VERSION` au tag de la dernière
 release publiée sur `Guillomus-lab/RemontadaPlanner` — pense à publier une
