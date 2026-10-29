@@ -31,7 +31,7 @@ BACKUPS_TO_KEEP = 30
 SCHEMA_VERSION = 5
 
 # Bump this on every release alongside a matching GitHub tag (vX.Y.Z) / Release.
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.2.1"
 UPDATE_CHECK_URL = "https://api.github.com/repos/Guillomus-lab/RemontadaPlanner/releases/latest"
 RELEASES_PAGE_URL = "https://github.com/Guillomus-lab/RemontadaPlanner/releases/latest"
 
