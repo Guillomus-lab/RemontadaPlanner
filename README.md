@@ -60,11 +60,14 @@ le `.vbs`/`.bat`) après le `git pull`.
 
 ### Publier une nouvelle version (pour le mainteneur)
 
-1. Bump `APP_VERSION` dans `app.pyw`.
-2. Commit, tag (`git tag vX.Y.Z`), push (`git push && git push --tags`).
-3. `gh release create vX.Y.Z dist/RemontadaPlanner.zip --title "vX.Y.Z" --notes "..."`
-   (ou crée la release depuis l'interface GitHub). Un seul lien de téléchargement —
-   le zip contient l'exe + le LISEZMOI — pour ne pas perdre les gens avec plusieurs choix.
+1. Bump `APP_VERSION` dans `app.pyw` (ex. `1.2.0`).
+2. Optionnel : écris les nouveautés dans `packaging/notes/v1.2.0.md`
+   (sinon le texte de `packaging/notes/default.md` est utilisé).
+3. Commit sur `main`, puis pousse le tag : `git tag v1.2.0` et `git push origin v1.2.0`.
+
+GitHub Actions (`.github/workflows/release.yml`) construit l'exe sur Windows,
+fait le zip (exe + `LISEZMOI.txt`) et publie la Release. Rien à builder en local.
+Le workflow refuse de publier si `APP_VERSION` ne correspond pas au tag.
 
 La vérification de mise à jour compare `APP_VERSION` au tag de la dernière
 release publiée sur `Guillomus-lab/RemontadaPlanner` — pense à publier une

@@ -1,0 +1,15 @@
+Remontada Planner
+=================
+
+Lancer l'app : double-clique sur RemontadaPlanner.exe. Aucune installation.
+
+Au premier lancement, Windows peut afficher un avertissement SmartScreen
+(l'exe n'est pas signé) : clique sur "Informations complémentaires", puis
+sur "Exécuter quand même".
+
+Tes données (planning, succès, pièces...) sont enregistrées dans
+%APPDATA%\DailyPlanner\plans.json, à part de l'exe.
+
+Mettre à jour : au lancement, l'app te prévient quand une nouvelle version
+existe. Télécharge le nouveau zip et remplace l'ancien RemontadaPlanner.exe
+par le nouveau. Tes données ne bougent pas.

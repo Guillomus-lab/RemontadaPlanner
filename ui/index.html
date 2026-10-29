@@ -2349,7 +2349,11 @@ function renderTasks(opts){
   });
 }
 
-function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+// Also escapes quotes: the result is used inside HTML attributes too.
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 function attachDrag(div, task){
   let mode = null, startY=0, origStart=0, origDuration=0, moved=false;
@@ -3622,8 +3626,6 @@ function render(){
 // ================= Pseudo =================
 function nick(){ return (state.profile && state.profile.name) ? state.profile.name : ''; }
 function withNick(base, sep=', '){ return nick() ? base + sep + nick() : base; }
-function lowerFirst(s){ return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
-
 function updateGreeting(){
   const el = document.getElementById('greeting');
   if(!el) return;

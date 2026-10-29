@@ -1,0 +1,58 @@
+# Construit RemontadaPlanner.exe sur Windows et publie la Release GitHub
+# quand on pousse un tag de version (ex. v1.1.0). Rien à builder en local.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Vérifie que APP_VERSION correspond au tag
+        shell: pwsh
+        run: |
+          $tag = "$env:GITHUB_REF_NAME".TrimStart('v')
+          $m = Select-String -Path app.pyw -Pattern '^APP_VERSION = "(.+)"'
+          $ver = $m.Matches[0].Groups[1].Value
+          if ($ver -ne $tag) { Write-Error "APP_VERSION ($ver) ne correspond pas au tag ($tag)"; exit 1 }
+
+      - name: Installe les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install pywebview pyinstaller
+
+      - name: Vérifie la syntaxe
+        run: python -m py_compile app.pyw
+
+      - name: Construit l'exe
+        run: pyinstaller --noconfirm RemontadaPlanner.spec
+
+      - name: Prépare le zip
+        shell: pwsh
+        run: |
+          if (-not (Test-Path dist\RemontadaPlanner.exe)) { Write-Error "exe manquant"; exit 1 }
+          New-Item -ItemType Directory -Force pkg | Out-Null
+          Copy-Item dist\RemontadaPlanner.exe pkg\
+          Copy-Item packaging\LISEZMOI.txt pkg\
+          Compress-Archive -Path pkg\* -DestinationPath RemontadaPlanner.zip -Force
+
+      - name: Publie la release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = "packaging\notes\$env:GITHUB_REF_NAME.md"
+          if (-not (Test-Path $notes)) { $notes = "packaging\notes\default.md" }
+          gh release create "$env:GITHUB_REF_NAME" RemontadaPlanner.zip `
+            --title "Remontada Planner $env:GITHUB_REF_NAME" --notes-file $notes
