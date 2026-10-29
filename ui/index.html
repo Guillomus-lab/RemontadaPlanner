@@ -14,7 +14,7 @@
   }
   [data-theme="light"]{
     --bg:#f7f5fd; --surface:#ffffff; --surface2:#f2eefc; --surface3:#e9e2fa; --border:#e2d9f7;
-    --text:#211c33; --text-dim:#6f6693; --text-faint:#b3a8d6;
+    --text:#211c33; --text-dim:#5f5684; --text-faint:#8a80ad;
     --accent:#7c3aed; --accent2:#db2777; --accent-soft:rgba(124,58,237,.12);
   }
 
@@ -180,16 +180,27 @@
       10%{opacity:.18;} 90%{opacity:.14;}
       100%{transform:translateY(-110vh) rotate(60deg);opacity:0;}}
   *{box-sizing:border-box;}
+  button, input, select, textarea{font-family:inherit;}
   body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);
        height:100vh;overflow:hidden;user-select:none;-webkit-font-smoothing:antialiased;}
   #app{display:flex;flex-direction:column;height:100vh;}
 
   header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 16px;border-bottom:1px solid var(--border);
          background:var(--surface);flex-shrink:0;row-gap:8px;}
-  header h1{font-size:15.5px;font-weight:800;margin:0;flex-shrink:0;display:flex;align-items:center;gap:8px;
-             letter-spacing:-.01em;background:linear-gradient(135deg,var(--accent),var(--accent2));
-             -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-             white-space:nowrap;}
+  /* --- Brand: mark + "REMONTADA / PLANNER" wordmark (fixed brand colors, whatever the theme) --- */
+  @font-face{font-family:"RP Brand";src:url("fonts/unbounded-800.woff2") format("woff2");
+      font-weight:800;font-style:normal;font-display:block;}
+  header h1{margin:0;flex-shrink:0;display:flex;align-items:center;gap:9px;white-space:nowrap;position:relative;}
+  .brandMark{flex-shrink:0;display:block;filter:drop-shadow(0 3px 8px rgba(139,92,246,.35));}
+  .brandText{display:flex;flex-direction:column;line-height:1;}
+  .brandName{font:800 19px/1 "RP Brand","Segoe UI",sans-serif;letter-spacing:-.02em;white-space:nowrap;}
+  .brandWord{background:linear-gradient(100deg,#8b5cf6 0%,#ec4899 55%,#fbbf24 100%);-webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;color:transparent;}
+  [data-theme="light"] .brandWord{background-image:linear-gradient(100deg,#7c3aed 0%,#db2777 55%,#f59e0b 100%);}
+  .brandDot{display:inline-block;width:.3em;height:.3em;border-radius:50%;background:#10d896;margin-left:.07em;
+      box-shadow:0 0 0 .1em rgba(16,216,150,.2);}
+  .brandSub{font:800 7.5px/1 "RP Brand","Segoe UI",sans-serif;letter-spacing:.5em;text-transform:lowercase;
+      color:var(--text-dim);margin-top:4px;padding-left:1px;}
   .navGroup{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);
             border-radius:10px;padding:3px;flex-shrink:0;}
   .navbtn{background:transparent;border:none;color:var(--text-dim);border-radius:7px;
@@ -208,7 +219,7 @@
   /* medium windows: shorter progress bar so the header stays on one line */
   @media (max-width: 1480px){ #progressBarOuter{width:56px;} header{gap:10px 10px;} }
   @media (max-width: 1380px){ #progressBarOuter{display:none;} }
-  @media (max-width: 1300px){ header h1{display:none;} }
+  @media (max-width: 1300px){ header h1 .brandText{display:none;} }
   #progressBarInner{height:100%;background:linear-gradient(90deg,var(--done),#5eead4);width:0%;transition:width .3s ease;border-radius:4px;}
   #dayBadge{font-size:17px;transition:transform .2s ease;}
   #dayBadge.pulse{animation:badgePulse .5s ease;}
@@ -431,22 +442,16 @@
       background:radial-gradient(circle, var(--accent-soft), transparent 70%);
       animation:splashOrbPulse 2.4s ease-in-out infinite;filter:blur(2px);}
   @keyframes splashOrbPulse{0%,100%{transform:scale(.9);opacity:.6;}50%{transform:scale(1.15);opacity:1;}}
-  .splashLogo{font-size:64px;z-index:1;animation:splashLogoFloat 2.6s ease-in-out infinite,
+  .splashLogo{z-index:1;animation:splashLogoFloat 2.6s ease-in-out infinite,
       splashLogoGlow 2.6s ease-in-out infinite;filter:drop-shadow(0 8px 28px var(--accent-soft));}
   @keyframes splashLogoFloat{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-10px) rotate(3deg);}}
   @keyframes splashLogoGlow{0%,100%{filter:drop-shadow(0 8px 20px var(--accent-soft));}
       50%{filter:drop-shadow(0 10px 36px var(--accent2));}}
-  .splashName{z-index:1;font-size:20px;font-weight:900;letter-spacing:.02em;text-align:center;line-height:1.25;
-      background:linear-gradient(135deg,var(--accent),var(--accent2),#fbbf24);
-      -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-      background-size:200% 200%;animation:splashNameShimmer 3s ease-in-out infinite;}
+  .splashName{z-index:1;display:flex;flex-direction:column;align-items:center;margin-top:6px;}
+  .splashName .brandName{font-size:44px;}
+  .splashName .brandWord{background-size:200% 100%;animation:splashNameShimmer 3s ease-in-out infinite;}
+  .splashName .brandSub{font-size:14px;margin-top:10px;padding-left:.5em;}
   @keyframes splashNameShimmer{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
-  .splashDots{z-index:1;display:flex;gap:7px;margin-top:6px;}
-  .splashDots span{width:7px;height:7px;border-radius:50%;background:var(--accent);
-      animation:splashDotBounce 1s ease-in-out infinite;}
-  .splashDots span:nth-child(2){animation-delay:.15s;background:var(--accent2);}
-  .splashDots span:nth-child(3){animation-delay:.3s;background:#fbbf24;}
-  @keyframes splashDotBounce{0%,80%,100%{transform:translateY(0);opacity:.5;}40%{transform:translateY(-8px);opacity:1;}}
   .splashBar{z-index:1;width:220px;height:5px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:14px;}
   #splashBarFill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2),#fbbf24);
       animation:splashBarFill 2.4s cubic-bezier(.3,.6,.4,1) forwards;}
@@ -484,6 +489,11 @@
       background:color-mix(in srgb, var(--surface) 72%, transparent)!important;
       backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
       box-shadow:inset 0 1px 0 rgba(255,255,255,.05);}
+  /* light theme: dialogs over the dark dim overlay turned grey and washed out */
+  [data-theme="light"] #profileCard, [data-theme="light"] #taskModal, [data-theme="light"] #dayRecapCard,
+  [data-theme="light"] #confirmCard, [data-theme="light"] #recapCard, [data-theme="light"] #questCard,
+  [data-theme="light"] #weekFillCard, [data-theme="light"] #dayThemesCard, [data-theme="light"] #updateCard{
+      background:color-mix(in srgb, var(--surface) 96%, transparent)!important;}
 
   /* --- Subtle film-grain noise overlay for texture, app-wide ---
      z-index kept LOW (just above flow content) and no mix-blend-mode:
@@ -573,7 +583,7 @@
       border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:700;cursor:pointer;
       box-shadow:0 4px 12px rgba(0,0,0,.25);}
   #zoomFloat button:hover{border-color:var(--accent);color:var(--accent);}
-  #quickAdd{display:flex;gap:8px;padding:12px 22px;border-bottom:1px solid var(--border);background:var(--surface);
+  #quickAdd{display:flex;gap:8px;padding:9px 22px;border-bottom:1px solid var(--border);background:var(--surface);
             align-items:center;flex-shrink:0;}
   #openAddBtn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;
               padding:10px 20px;font-size:13px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px;
@@ -631,7 +641,7 @@
   .task .time::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--catColor, var(--accent));
               display:inline-block;flex-shrink:0;}
   .task.compact .time{display:none;}
-  .task.compact{display:flex;align-items:center;padding:0 8px;gap:0;cursor:pointer;}
+  .task.compact{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;padding:0 8px;gap:0;cursor:pointer;}
   .task.compact .title{font-size:11px;margin:0;gap:5px;line-height:1;}
   /* Visually small (matches the thin bar) but the whole compact row is also
      clickable to toggle — see attachDrag()'s onUp — because a 11px box alone
@@ -702,12 +712,12 @@
   .catChip:hover{transform:translateY(-1px);}
   .catChip.selected{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
   .catChip .catDot{width:8px;height:8px;}
-  .parallelLabel{display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:12px;
+  .parallelLabel{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:12px;
       color:var(--text-dim);line-height:1.4;padding:9px 11px;border-radius:10px;background:var(--surface2);
       border:1px solid var(--border);transition:all .15s ease;}
   .parallelLabel:hover{border-color:var(--accent);}
   .modalField label.parallelLabel{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:0;}
-  .parallelLabel input[type=checkbox]{margin-top:1px;flex-shrink:0;cursor:pointer;width:15px;height:15px;
+  .parallelLabel input[type=checkbox]{margin-top:0;flex-shrink:0;cursor:pointer;width:15px;height:15px;
       accent-color:var(--accent);}
   .modalActions{display:flex;gap:10px;margin-top:20px;}
   #modalCancel{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;
@@ -964,7 +974,9 @@
   .fieldInput, .fieldSelect, #modalDate{width:100%;}
   .fieldInput:focus, .fieldSelect:focus, #modalDate:focus{outline:none;border-color:var(--accent);}
   .inlineTime, .inlineSelect{background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:2px 5px;font-size:12px;}
-  #taskModal{max-height:92vh;overflow-y:auto;width:440px;}
+  #taskModal{max-height:92vh;overflow-y:auto;width:440px;padding-bottom:0;}
+  #taskModal .modalActions{position:sticky;bottom:0;margin:20px -24px 0;padding:14px 24px 18px;z-index:2;
+      background:linear-gradient(to top, var(--surface) 75%, transparent);}
   #repeatScopeWrap{display:none;}
   #repeatScopeWrap.show{display:flex;}
   .btnPrimary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;
@@ -1193,7 +1205,7 @@
   .srItem.sel{background:var(--accent-soft);}
   .srIcon{width:25px;height:25px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;
       justify-content:center;font-size:14px;flex-shrink:0;}
-  .srMain{flex:1;min-width:0;}
+  .srMain{flex:1;min-width:0;display:flex;flex-direction:column;}
   .srTitle{font-size:12.5px;font-weight:650;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .srSub{font-size:10px;color:var(--text-faint);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .srTag{font-size:9px;color:var(--text-faint);border:1px solid var(--border);border-radius:5px;padding:1px 5px;flex-shrink:0;}
@@ -1329,17 +1341,31 @@
 </style>
 </head>
 <body data-theme="dark">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="rpGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#ec4899"/><stop offset="1" stop-color="#fbbf24"/></linearGradient>
+  <symbol id="rpMark" viewBox="0 0 64 64">
+    <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#rpGrad)"/>
+    <rect x="14" y="17" width="36" height="32" rx="6" fill="#fff" opacity=".96"/>
+    <rect x="14" y="17" width="36" height="9" rx="4" fill="#e9defe"/>
+    <rect x="21" y="11" width="5" height="11" rx="2.5" fill="#fff"/><rect x="38" y="11" width="5" height="11" rx="2.5" fill="#fff"/>
+    <rect x="20" y="32" width="18" height="3" rx="1.5" fill="#d9d0f2"/><rect x="20" y="39" width="12" height="3" rx="1.5" fill="#d9d0f2"/>
+    <circle cx="45" cy="45" r="11" fill="#10d896" stroke="#fff" stroke-width="3"/>
+    <path d="M40 45.5l3.6 3.6 6.4-7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</defs></svg>
 <div id="splashScreen">
   <div class="splashOrb"></div>
-  <div class="splashLogo">📅</div>
-  <div class="splashName">Remontada<br>Planner</div>
-  <div class="splashDots"><span></span><span></span><span></span></div>
+  <svg class="splashLogo" width="96" height="96" viewBox="0 0 64 64" aria-hidden="true"><use href="#rpMark"/></svg>
+  <div class="splashName"><span class="brandName"><span class="brandWord">remontada</span><span class="brandDot"></span></span><span class="brandSub">planner</span></div>
   <div class="splashBar"><div id="splashBarFill"></div></div>
   <div class="splashStatus" id="splashStatus">Chargement de ton planning…</div>
 </div>
 <div id="app">
   <header>
-    <h1>📅 Remontada Planner</h1>
+    <h1 aria-label="Remontada Planner">
+      <svg class="brandMark" width="32" height="32" viewBox="0 0 64 64" aria-hidden="true"><use href="#rpMark"/></svg>
+      <span class="brandText"><span class="brandName"><span class="brandWord">remontada</span><span class="brandDot"></span></span><span class="brandSub">planner</span></span>
+    </h1>
     <div class="navGroup">
       <button class="navbtn" id="prevDay">‹</button>
       <button class="navbtn" id="nextDay">›</button>
@@ -1409,23 +1435,23 @@
 
   <main>
     <div id="sidebar">
-      <h2>Catégories</h2>
+      <h2>🏷️ Catégories</h2>
       <div id="catList"></div>
       <div id="backlogSection">
         <h2>📥 À planifier <span id="backlogCount">0</span></h2>
         <div id="backlogList"></div>
         <div id="backlogAddRow">
           <input id="backlogInput" placeholder="Une idée, une tâche…" maxlength="90" />
-          <button id="backlogAddBtn" title="Ajouter au backlog">+</button>
+          <button id="backlogAddBtn" title="Ajouter à « À planifier »">+</button>
         </div>
         <div class="backlogHint">Clique pour modifier · glisse sur la timeline ou clique sur 📅 pour planifier.</div>
       </div>
       <div id="routineSection">
-        <h2>Routines 🔁</h2>
+        <h2>🔁 Routines</h2>
         <div id="routineList"></div>
       </div>
       <div id="templateSection">
-        <h2>Modèles</h2>
+        <h2>🧩 Modèles</h2>
         <div id="tplList"></div>
         <button id="weekFillBtn" class="periodOnly">🗓️ Planifier la semaine</button>
         <button id="saveTplBtn" class="dayOnly">💾 Enregistrer ce jour</button>
@@ -1597,7 +1623,7 @@
         </div>
         <div class="settingsBlock">
           <h4>💡 Conseils</h4>
-          <div class="settingsHint">Le loop quotidien : capture dans le backlog → choisis 3 priorités → exécute → clôture la journée. L'app s'occupe des reports.</div>
+          <div class="settingsHint">La boucle quotidienne : note tes idées dans « À planifier » → choisis 3 priorités → avance → clôture la journée. L'app s'occupe des reports.</div>
         </div>
       </div>
       <div class="profileTabPanel" id="tabHistory">
@@ -1755,7 +1781,7 @@
       <div class="cdChoice">
         <label><input type="radio" name="cdMode" value="tomorrow_same" checked /> 📅 Demain, même heure</label>
         <label><input type="radio" name="cdMode" value="tomorrow_free" /> 📅 Demain, prochain créneau libre</label>
-        <label><input type="radio" name="cdMode" value="backlog" /> 📥 Dans le backlog</label>
+        <label><input type="radio" name="cdMode" value="backlog" /> 📥 Dans « À planifier »</label>
       </div>
     </div>
     <div class="cdSectionLabel">Note du soir <span style="text-transform:none;letter-spacing:0;font-weight:500">(optionnel)</span></div>
@@ -1960,7 +1986,7 @@
       </label>
     </div>
     <div class="modalActions">
-      <button id="modalBacklog" title="Mettre dans le backlog (pas aujourd'hui)">📥</button>
+      <button id="modalBacklog" title="Mettre dans « À planifier » (sans heure)">📥</button>
       <button id="modalFocus" title="Mode concentration sur cette tâche">🎯</button>
       <button id="modalDelete" title="Supprimer">🗑️</button>
       <button id="modalCancel">Annuler</button>
@@ -2514,8 +2540,7 @@ function renderFreeGaps(tasks){
     div.style.top = (minutesFromStart(s)/60*HOUR_H)+'px';
     div.style.height = ((e-s)/60*HOUR_H)+'px';
     div.style.left = '66px'; div.style.right='4px';
-    const hrs = ((e-s)/60).toFixed(1).replace('.0','');
-    div.textContent = hrs+'h libre';
+    div.textContent = `${fmtDur(e-s)} de libre`;
     grid.appendChild(div);
   });
 }
@@ -5344,7 +5369,7 @@ function buildSearchGroups(query){
       tag:'À planifier',
       run:()=> openTaskModal(null, null, {backlog:i})
     }));
-  if(backlog.length) groups.push({label:'Backlog', items:backlog});
+  if(backlog.length) groups.push({label:'À planifier', items:backlog});
 
   const dayKeys = tokens.length
     ? Object.keys(state.days).sort().reverse()
@@ -6321,7 +6346,7 @@ function openTaskModal(presetMinutes, task, opts){
   editingBacklogId = backlog ? backlog.id : null;
   const src = task || routine || backlog;
   const linked = routine || (task ? findRoutine(task.recurId) : null);
-  document.querySelector('#taskModal h3').textContent = backlog ? '📥 Tâche du backlog'
+  document.querySelector('#taskModal h3').textContent = backlog ? '📥 Tâche à planifier'
     : routine ? '🔁 Modifier la routine' : task ? '✏️ Modifier la tâche' : '✨ Nouvelle tâche';
   document.getElementById('modalSave').textContent = src ? 'Enregistrer' : 'Ajouter la tâche';
   document.getElementById('modalTitle').value = src ? src.title : '';
@@ -6446,7 +6471,7 @@ async function saveModalTask(){
     const item = (state.backlog || []).find(x=> x.id===editingBacklogId);
     if(item){
       Object.assign(item, {title, duration, category, notes, url, priority:priorityWanted});
-      toast = {icon:'📥', text:'Backlog mis à jour'};
+      toast = {icon:'📥', text:'« À planifier » mis à jour'};
     }
   } else if(editingRoutineId){                             // routine edited from the sidebar
     const r = findRoutine(editingRoutineId);
@@ -6524,7 +6549,7 @@ function deleteFromModal(){
     state.backlog = (state.backlog || []).filter(x=> x.id!==backlogId);
     closeTaskModal();
     persist(); render();
-    showToast({icon:'🗑️', text:'Retiré du backlog'});
+    showToast({icon:'🗑️', text:'Retiré de « À planifier »'});
     return;
   }
   if(routineId){
@@ -6552,7 +6577,7 @@ function moveEditingTaskToBacklog(){
   list.splice(list.indexOf(t), 1);
   closeTaskModal();
   persist(); render();
-  showToast({icon:'📥', text:'Déplacée dans le backlog', sub:'Elle reste disponible, sans heure fixe.'});
+  showToast({icon:'📥', text:'Déplacée dans « À planifier »', sub:'Elle reste disponible, sans heure fixe.'});
 }
 
 function openQuickAddAt(minutes){

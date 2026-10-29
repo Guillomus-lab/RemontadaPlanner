@@ -1,0 +1,4 @@
+Unbounded (ExtraBold 800) — utilisée pour le logo.
+Copyright 2022 The Unbounded Project Authors (https://github.com/googlefonts/unbounded)
+Licence : SIL Open Font License 1.1 — https://openfontlicense.org
+Libre d'utilisation, d'intégration et de redistribution avec l'app.
